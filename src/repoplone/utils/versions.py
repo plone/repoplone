@@ -109,13 +109,11 @@ def report_cur_versions(settings: t.RepositorySettings) -> dict:
         ("Backend", settings.backend),
         ("Frontend", settings.frontend),
     ):
-        sections.append(
-            {
-                "title": title,
-                "name": section.name,
-                "version": section.version,
-            }
-        )
+        sections.append({
+            "title": title,
+            "name": section.name,
+            "version": section.version,
+        })
     return cur_versions
 
 
@@ -125,12 +123,10 @@ def report_next_versions(settings: t.RepositorySettings):
     for bump in BUMPS:
         nv = next_version(bump, cur_version)
         nv_semver = convert_python_node_version(nv)
-        versions.append(
-            {
-                "bump": bump,
-                "repository": nv,
-                "backend": nv,
-                "frontend": nv_semver,
-            }
-        )
+        versions.append({
+            "bump": bump,
+            "repository": nv,
+            "backend": nv,
+            "frontend": nv_semver,
+        })
     return versions
