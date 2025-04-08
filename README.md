@@ -252,17 +252,28 @@ Run all tests, but stop on the first error and open a `pdb` session with the fol
 uv run pytest -x --pdb
 ```
 
-Run only tests that match `test_run_sanity_checks_fail` with the following command.
+Run only tests that match `test_release_backend` with the following command.
 
 ```shell
-uv run pytest -k test_run_sanity_checks_fail
+uv run pytest -k test_release_backend
 ```
 
-Run only tests that match `test_run_sanity_checks_fail`, but stop on the first error and open a `pdb` session with the following command.
+Run only tests that match `test_release_backend`, but stop on the first error and open a `pdb` session with the following command.
 
 ```shell
-uv run pytest -k test_run_sanity_checks_fail -x --pdb
+uv run pytest -k test_release_backend -x --pdb
 ```
+
+### Run type checker
+
+We use [`mypy`](https://www.mypy-lang.org/) to run static type checking for this codebase.
+
+Run the checker with the following command.
+
+```shell
+uv run mypy src
+```
+
 
 ## Support 📢
 
