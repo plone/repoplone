@@ -173,4 +173,4 @@ ignore_missing_imports = true
 
 [tool.zest-releaser]
 upload-pypi = false # Build and upload with uv
-python-file-with-version = "repoplone/__init__.py"
+python-file-with-version = "src/repoplone/__init__.py"
