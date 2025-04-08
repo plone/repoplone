@@ -1,0 +1,133 @@
+name: RepoPlone QA
+
+on:
+  push:
+  workflow_dispatch:
+
+env:
+  python-version: "3.12"
+
+jobs:
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Install the latest version of uv
+          uses: astral-sh/setup-uv@v5
+          with:
+            python-version: ${{ env.python-version }}
+            enable-cache: false
+
+        - name: Restore uv cache
+          uses: actions/cache@v4
+          with:
+            path: ${{ env.UV_CACHE_DIR }}
+            key: uv-${{ runner.os }}-${{ env.python-version }}-${{ hashFiles('uv.lock') }}
+            restore-keys: |
+              uv-${{ runner.os }}-${{ env.python-version }}-${{ hashFiles('uv.lock') }}
+              uv-${{ runner.os }}-${{ env.python-version }}
+
+        - name: Check formatting
+          if: ${{ success() || failure() }}
+          id: ruff-format
+          run: uvx ruff@latest format --diff
+
+        - name: Check lint
+          if: ${{ success() || failure() }}
+          id: ruff-lint
+          run: uvx ruff@latest check --diff
+
+        - name: Check Package Metadata
+          if: ${{ success() || failure() }}
+          id: pyroma
+          run: uvx pyroma@latest -d .
+
+        - name: Check Python Versions
+          if: ${{ success() || failure() }}
+          id: py-versions
+          run: uvx check-python-versions@latest .
+
+        - name: Check typing
+          if: ${{ success() || failure() }}
+          id: typing
+          run: |
+            make install
+            uv run mypy src
+
+        - name: Report
+          if: ${{ success() || failure() }}
+          run: |
+            echo '# Code Analysis' >> $GITHUB_STEP_SUMMARY
+            echo '| Test | Status |' >> $GITHUB_STEP_SUMMARY
+            echo '| --- | --- |' >> $GITHUB_STEP_SUMMARY
+            echo '| Format | ${{ steps.ruff-format.conclusion == 'failure' && '❌' || ' ✅' }} |' >> $GITHUB_STEP_SUMMARY
+            echo '| Lint | ${{ steps.ruff-lint.conclusion == 'failure' && '❌' || ' ✅' }} |' >> $GITHUB_STEP_SUMMARY
+            echo '| Package Metadata | ${{ steps.pyroma.conclusion == 'failure' && '❌' || ' ✅' }} |' >> $GITHUB_STEP_SUMMARY
+            echo '| Python Versions | ${{ steps.py-versions.conclusion == 'failure' && '❌' || ' ✅' }} |' >> $GITHUB_STEP_SUMMARY
+            echo '| Typing | ${{ steps.typing.conclusion == 'failure' && '❌' || ' ✅' }} |' >> $GITHUB_STEP_SUMMARY
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.12"]
+    env:
+      PYTHON_VERSION: ${{ matrix.python-version }}
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Install the latest version of uv
+          uses: astral-sh/setup-uv@v5
+          with:
+            python-version: ${{ env.python-version }}
+            enable-cache: false
+
+        - name: Restore uv cache
+          uses: actions/cache@v4
+          with:
+            path: ${{ env.UV_CACHE_DIR }}
+            key: uv-${{ runner.os }}-${{ env.python-version }}-${{ hashFiles('uv.lock') }}
+            restore-keys: |
+              uv-${{ runner.os }}-${{ env.python-version }}-${{ hashFiles('uv.lock') }}
+              uv-${{ runner.os }}-${{ env.python-version }}
+
+        - name: Run tests
+          run: |
+            make test
+
+  coverage:
+    runs-on: ubuntu-latest
+    needs:
+      - test
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Install the latest version of uv
+          uses: astral-sh/setup-uv@v5
+          with:
+            python-version: ${{ env.python-version }}
+            enable-cache: false
+
+        - name: Restore uv cache
+          uses: actions/cache@v4
+          with:
+            path: /tmp/.uv-cache
+            key: uv-${{ runner.os }}-${{ env.python-version }}-${{ hashFiles('uv.lock') }}
+            restore-keys: |
+              uv-${{ runner.os }}-${{ env.python-version }}-${{ hashFiles('uv.lock') }}
+              uv-${{ runner.os }}-${{ env.python-version }}
+
+        - name: Run tests
+          run: |
+            make test-cov
+
+        - name: Report Coverage
+          run: |
+            echo "# Coverage Report" >> $GITHUB_STEP_SUMMARY
+            echo "$(uv run coverage report --format markdown)" >> $GITHUB_STEP_SUMMARY

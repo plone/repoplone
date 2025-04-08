@@ -1,0 +1,277 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://raw.githubusercontent.com/kitconcept/kitconcept.intranet/refs/tags/1.0.0a17/backend/pyproject.toml
+  response:
+    body:
+      string: "[build-system]\nrequires = [\"hatchling\"]\nbuild-backend = \"hatchling.build\"\n\n[project]\nname
+        = \"kitconcept.intranet\"\ndynamic = [\"version\"]\ndescription = \"A Plone
+        distribution for Intranets with Plone. Created by kitconcept.\"\nreadme =
+        \"README.md\"\nlicense = \"MIT\"\nrequires-python = \">=3.10\"\nauthors =
+        [\n    { name = \"kitconcept GmbH\", email = \"info@kitconcept.com\" },\n]\nkeywords
+        = [\"CMS\", \"Plone\", \"Python\", \"Intranet\"]\nclassifiers = [\n    \"Development
+        Status :: 3 - Alpha\",\n    \"Environment :: Web Environment\",\n    \"Framework
+        :: Plone\",\n    \"Framework :: Plone :: 6.1\",\n    \"Framework :: Plone
+        :: Distribution\",\n    \"License :: OSI Approved :: GNU General Public License
+        v2 (GPLv2)\",\n    \"Operating System :: OS Independent\",\n    \"Programming
+        Language :: Python\",\n    \"Programming Language :: Python :: 3.10\",\n    \"Programming
+        Language :: Python :: 3.11\",\n    \"Programming Language :: Python :: 3.12\",\n]\ndependencies
+        = [\n    \"Products.CMFPlone==6.1.1\",\n    \"collective.person\",\n    \"plone.api\",\n
+        \   \"plone.distribution\",\n    \"plone.restapi>=9.13.2\",\n    \"plone.volto>=5.0.2\",\n
+        \   \"python-dateutil\",\n    \"kitconcept.voltolighttheme==6.0.0a21\",\n]\n\n[dependency-groups]\nbuild
+        = [\n    \"hatchling\",\n    \"wheel\",\n]\ntest = [\n    \"mypy>=1.15.0\",\n
+        \   \"plone.app.testing\",\n    \"plone.restapi[test]\",\n    \"pytest\",\n
+        \   \"pytest-cov\",\n    \"pytest-docker>=3.2.0\",\n    \"pytest-plone>=0.5.0\",\n]\n\n[project.urls]\nHomepage
+        = \"https://github.com/kitconcept/kitconcept.intranet\"\nPyPI = \"https://pypi.python.org/pypi/kitconcept.intranet\"\nSource
+        = \"https://github.com/kitconcept/kitconcept.intranet\"\nTracker = \"https://github.com/kitconcept/kitconcept.intranet/issues\"\n\n[project.entry-points.\"z3c.autoinclude.plugin\"]\ntarget
+        = \"plone\"\n\n[tool.hatch.version]\npath = \"src/kitconcept/intranet/about.py\"\n\n[tool.hatch.build]\nstrict-naming
+        = true\n\n[tool.hatch.build.targets.sdist]\nexclude = [\n  \"/.github\",\n]\n\n[tool.hatch.build.targets.wheel]\npackages
+        = [\"src/kitconcept\"]\n\n[tool.coverage.run]\nsource_pkgs = [\"kitconcept.intranet\",
+        \"tests\"]\nbranch = true\nparallel = true\nomit = [\n  \"src/kitconcept/intranet/locales/__init__.py\",\n
+        \ \"src/kitconcept/intranet/locales/__main__.py\",\n]\n\n[tool.coverage.report]\nskip_empty
+        = true\nshow_missing = true\nexclude_lines = [\n  \"no cov\",\n  \"if __name__
+        == .__main__.:\",\n  \"if TYPE_CHECKING:\",\n]\n\n[tool.pytest.ini_options]\ntestpaths
+        = [\"tests\"]\n\n[tool.isort]\nprofile = \"plone\"\n\n[tool.towncrier]\npackage
+        = \"kitconcept.intranet\"\npackage_dir = \"src\"\ndirectory = \"news/\"\nfilename
+        = \"CHANGELOG.md\"\nstart_string = \"<!-- towncrier release notes start -->\\n\"\ntitle_format
+        = \"## {version} ({project_date})\"\ntemplate = \"news/.changelog_template.jinja\"\nunderlines
+        = [\"\", \"\", \"\"]\nissue_format = \"[#{issue}](https://github.com/kitconcept/kitconcept.intranet/issue/{issue})\"\n\n[[tool.towncrier.type]]\ndirectory
+        = \"breaking\"\nname = \"Breaking\"\nshowcontent = true\n\n[[tool.towncrier.type]]\ndirectory
+        = \"feature\"\nname = \"Feature\"\nshowcontent = true\n\n[[tool.towncrier.type]]\ndirectory
+        = \"bugfix\"\nname = \"Bugfix\"\nshowcontent = true\n\n[[tool.towncrier.type]]\ndirectory
+        = \"internal\"\nname = \"Internal\"\nshowcontent = true\n\n[[tool.towncrier.type]]\ndirectory
+        = \"documentation\"\nname = \"Documentation\"\nshowcontent = true\n\n[[tool.towncrier.type]]\ndirectory
+        = \"test\"\nname = \"Test\"\nshowcontent = true\n\n[tool.ruff]\ntarget-version
+        = \"py310\"\nline-length = 88\nfix = true\nlint.select = [\n    # flake8-2020\n
+        \   \"YTT\",\n    # flake8-bandit\n    \"S\",\n    # flake8-bugbear\n    \"B\",\n
+        \   # flake8-builtins\n    \"A\",\n    # flake8-comprehensions\n    \"C4\",\n
+        \   # flake8-debugger\n    \"T10\",\n    # flake8-simplify\n    \"SIM\",\n
+        \   # mccabe\n    \"C90\",\n    # pycodestyle\n    \"E\", \"W\",\n    # pyflakes\n
+        \   \"F\",\n    # pygrep-hooks\n    \"PGH\",\n    # pyupgrade\n    \"UP\",\n
+        \   # ruff\n    \"RUF\",\n]\nlint.ignore = [\n    # DoNotAssignLambda\n    \"E731\",\n]\n\n[tool.ruff.lint.isort]\ncase-sensitive
+        = false\nno-sections = true\nforce-single-line = true\nfrom-first = true\nlines-after-imports
+        = 2\nlines-between-types = 1\n\n[tool.ruff.format]\npreview = true\n\n[tool.ruff.lint.per-file-ignores]\n\"tests/*\"
+        = [\"S101\"]\n\n[tool.uv]\ndefault-groups = [\"build\", \"test\"]\nconstraint-dependencies
+        = [\n    \"AccessControl==7.2\",\n    \"Acquisition==6.1\",\n    \"alabaster==0.7.14;
+        python_version == '3.9'\",\n    \"alabaster==1.0.0; python_version > '3.9'\",\n
+        \   \"argcomplete==3.5.2\",\n    \"argh==0.31.3\",\n    \"async-generator==1.10\",\n
+        \   \"attrs==24.2.0\",\n    \"AuthEncoding==6.0\",\n    \"Babel==2.16.0\",\n
+        \   \"backports.cached-property==1.0.2\",\n    \"backports.tarfile==1.2.0\",\n
+        \   \"beautifulsoup4==4.12.3\",\n    \"bleach==6.2.0\",\n    \"borg.localrole==3.1.11\",\n
+        \   \"BTrees==6.1\",\n    \"build==1.2.2post1\",\n    \"cachecontrol==0.14.1\",\n
+        \   \"cached-property==2.0.1\",\n    \"certifi==2024.12.14\",\n    \"cffi==1.17.1\",\n
+        \   \"Chameleon==4.4.4\",\n    \"charset-normalizer==3.4.1\",\n    \"check-manifest==0.50\",\n
+        \   \"click-default-group==1.2.4\",\n    \"click==8.1.7\",\n    \"cmarkgfm==2024.11.20\",\n
+        \   \"collective.MockMailHost==3.0.0\",\n    \"collective.monkeypatcher==2.0.0\",\n
+        \   \"collective.recipe.omelette==2.0.0\",\n    \"collective.recipe.template==2.2\",\n
+        \   \"collective.recipe.vscode==0.1.9\",\n    \"collective.xmltestreport==2.0.2\",\n
+        \   \"collective.z3cform.datagridfield==3.0.3\",\n    \"colorama==0.4.6\",\n
+        \   \"colorama==0.4.6\",\n    \"commonmark==0.9.1\",\n    \"configparser==7.1.0\",\n
+        \   \"coverage==7.6.9\",\n    \"cryptography==44.0.0\",\n    \"cssselect==1.2.0\",\n
+        \   \"DateTime==5.5\",\n    \"decorator==5.1.1\",\n    \"Deprecated==1.2.15\",\n
+        \   \"diazo==2.0.3\",\n    \"distro==1.9.0\",\n    \"DocumentTemplate==4.6\",\n
+        \   \"docutils==0.20.1; python_version == '3.9'\",\n    \"docutils==0.21.2;
+        python_version > '3.9'\",\n    \"exceptiongroup==1.2.2\",\n    \"ExtensionClass==6.0\",\n
+        \   \"fancycompleter==0.9.1\",\n    \"feedparser==6.0.11\",\n    \"filelock==3.16.1\",\n
+        \   \"five.customerize==3.0.0\",\n    \"five.intid==2.0.1\",\n    \"five.localsitemanager==4.0\",\n
+        \   \"furl==2.1.3\",\n    \"furo==2024.8.6\",\n    \"future==1.0.0\",\n    \"gitdb==4.0.11\",\n
+        \   \"GitPython==3.1.43\",\n    \"gunicorn==23.0.0\",\n    \"h11==0.14.0\",\n
+        \   \"httplib2==0.22.0\",\n    \"i18ndude==6.2.1\",\n    \"icalendar==6.1.1\",\n
+        \   \"idna==3.10\",\n    \"imagesize==1.4.1\",\n    \"importlib-metadata==8.5.0\",\n
+        \   \"importlib-resources==6.4.5\",\n    \"incremental==24.7.2\",\n    \"iniconfig==2.0.0\",\n
+        \   \"jaraco.classes==3.4.0\",\n    \"jaraco.context==6.0.1\",\n    \"jaraco.functools==4.1.0\",\n
+        \   \"jeepney==0.8.0\",\n    \"Jinja2==3.1.5\",\n    \"jsonschema-specifications==2024.10.1\",\n
+        \   \"jsonschema==4.23.0\",\n    \"keyring==25.5.0\",\n    \"legacy-cgi==2.6.2\",\n
+        \   \"lockfile==0.12.2\",\n    \"lxml-html-clean==0.4.1\",\n    \"lxml==5.3.0\",\n
+        \   \"manuel==1.13.0\",\n    \"markdown-it-py==3.0.0\",\n    \"Markdown==3.7\",\n
+        \   \"MarkupSafe==3.0.2\",\n    \"mdurl==0.1.2\",\n    \"Missing==5.0\",\n
+        \   \"mock==5.1.0\",\n    \"more-itertools==10.5.0\",\n    \"mr.developer==2.0.2\",\n
+        \   \"msgpack==1.1.0\",\n    \"MultiMapping==5.0\",\n    \"multipart==1.2.1\",\n
+        \   \"mxdev==4.0.3\",\n    \"natsort==8.4.0\",\n    \"nh3==0.2.19\",\n    \"nt-svcutils==2.13.0\",\n
+        \   \"oauthlib==3.2.2\",\n    \"orderedmultidict==1.0.1\",\n    \"outcome==1.3.0post0\",\n
+        \   \"overrides==7.7.0\",\n    \"packaging==24.2\",\n    \"Paste==3.10.1\",\n
+        \   \"PasteDeploy==3.1.0\",\n    \"pdbpp==0.10.3\",\n    \"pep440==0.1.2\",\n
+        \   \"pep517==0.13.1\",\n    \"Persistence==5.1\",\n    \"persistent==6.1\",\n
+        \   \"piexif==1.1.3\",\n    \"Pillow==11.0.0\",\n    \"pip==25.0.1\",\n    \"pkginfo==1.10.0\",\n
+        \   \"plone.alterego==2.0.1\",\n    \"plone.api==2.5.0\",\n    \"plone.app.blocks==7.0.1\",\n
+        \   \"plone.app.caching==4.1.0\",\n    \"plone.app.content==4.1.9\",\n    \"plone.app.contentlisting==3.0.5\",\n
+        \   \"plone.app.contentmenu==3.0.7\",\n    \"plone.app.contentrules==5.0.6\",\n
+        \   \"plone.app.contenttypes==4.0.5\",\n    \"plone.app.customerize==2.0.2\",\n
+        \   \"plone.app.debugtoolbar==1.4.0\",\n    \"plone.app.dexterity==4.0.4\",\n
+        \   \"plone.app.discussion==5.0.0\",\n    \"plone.app.drafts==2.0.0\",\n    \"plone.app.event==5.2.1\",\n
+        \   \"plone.app.i18n==4.0.1\",\n    \"plone.app.intid==2.0.0\",\n    \"plone.app.iterate==6.1.0\",\n
+        \   \"plone.app.jquerytools==1.9.5\",\n    \"plone.app.layout==5.0.2\",\n
+        \   \"plone.app.linkintegrity==4.0.6\",\n    \"plone.app.locales==6.0.30\",\n
+        \   \"plone.app.lockingbehavior==2.0.2\",\n    \"plone.app.mosaic==3.2.1\",\n
+        \   \"plone.app.multilingual==8.2.3\",\n    \"plone.app.portlets==6.0.1\",\n
+        \   \"plone.app.querystring==2.1.3\",\n    \"plone.app.redirector==3.0.4\",\n
+        \   \"plone.app.registry==2.0.6\",\n    \"plone.app.relationfield==4.0.2\",\n
+        \   \"plone.app.robotframework==2.1.5\",\n    \"plone.app.standardtiles==3.2.1\",\n
+        \   \"plone.app.testing==7.1.1\",\n    \"plone.app.textfield==3.0.0\",\n    \"plone.app.theming==5.0.12\",\n
+        \   \"plone.app.tiles==4.0.1\",\n    \"plone.app.upgrade==3.2.0\",\n    \"plone.app.users==3.1.1\",\n
+        \   \"plone.app.uuid==2.2.3\",\n    \"plone.app.versioningbehavior==2.0.4\",\n
+        \   \"plone.app.viewletmanager==4.0.4\",\n    \"plone.app.vocabularies==6.0.2\",\n
+        \   \"plone.app.widgets==5.0.2\",\n    \"plone.app.workflow==5.0.4\",\n    \"plone.app.z3cform==4.7.4\",\n
+        \   \"plone.autoform==2.0.3\",\n    \"plone.autoinclude==2.0.3\",\n    \"plone.base==2.0.3\",\n
+        \   \"plone.batching==2.0.6\",\n    \"plone.behavior==2.0.1\",\n    \"plone.browserlayer==3.0.2\",\n
+        \   \"plone.cachepurging==3.0.2\",\n    \"plone.caching==2.0.1\",\n    \"plone.classicui==1.0.0\",\n
+        \   \"plone.contentrules==3.0.1\",\n    \"plone.dexterity==3.0.7\",\n    \"plone.distribution==3.1.1\",\n
+        \   \"plone.event==2.0.2\",\n    \"plone.exportimport==1.1.0\",\n    \"plone.folder==4.0.1\",\n
+        \   \"plone.formwidget.autocomplete==1.4.1\",\n    \"plone.formwidget.namedfile==3.1.1\",\n
+        \   \"plone.formwidget.recurrence==3.0.5\",\n    \"plone.i18n==5.1.0\",\n
+        \   \"plone.indexer==2.0.1\",\n    \"plone.intelligenttext==4.0.1\",\n    \"plone.jsonserializer==0.9.11\",\n
+        \   \"plone.keyring==4.0.2\",\n    \"plone.locking==3.0.2\",\n    \"plone.memoize==3.0.3\",\n
+        \   \"plone.namedfile==7.0.1\",\n    \"plone.outputfilters==5.0.4\",\n    \"plone.portlet.collection==4.0.4\",\n
+        \   \"plone.portlet.static==4.0.4\",\n    \"plone.portlets==3.0.2\",\n    \"plone.protect==5.0.3\",\n
+        \   \"plone.recipe.command==1.1\",\n    \"plone.recipe.zeoserver==3.0.4\",\n
+        \   \"plone.recipe.zope2instance==8.0.0\",\n    \"plone.registry==2.0.1\",\n
+        \   \"plone.releaser==2.4.1\",\n    \"plone.reload==4.0.0\",\n    \"plone.resource==3.0.2\",\n
+        \   \"plone.resourceeditor==4.0.1\",\n    \"plone.rest==5.0.0\",\n    \"plone.restapi==9.13.3\",\n
+        \   \"plone.rfc822==3.0.1\",\n    \"plone.scale==4.1.4\",\n    \"plone.schema==2.0.2\",\n
+        \   \"plone.schemaeditor==4.0.11\",\n    \"plone.session==4.0.4\",\n    \"plone.staticresources==2.2.5\",\n
+        \   \"plone.stringinterp==2.0.2\",\n    \"plone.subrequest==2.0.5\",\n    \"plone.supermodel==2.0.4\",\n
+        \   \"plone.testing==9.0.5\",\n    \"plone.theme==4.0.3\",\n    \"plone.tiles==2.3.1\",\n
+        \   \"plone.transformchain==3.0.1\",\n    \"plone.uuid==2.0.1\",\n    \"plone.versioncheck==1.8.2\",\n
+        \   \"plone.volto==5.0.4\",\n    \"plone.z3cform==2.0.4\",\n    \"Plone==6.1.1\",\n
+        \   \"plonetheme.barceloneta==3.2.3\",\n    \"pluggy==1.5.0\",\n    \"Products.BTreeFolder2==5.1\",\n
+        \   \"Products.CMFCore==3.7\",\n    \"Products.CMFDiffTool==4.0.4\",\n    \"Products.CMFDynamicViewFTI==7.0.2\",\n
+        \   \"Products.CMFEditions==4.0.5\",\n    \"Products.CMFPlacefulWorkflow==3.0.5\",\n
+        \   \"Products.CMFPlone==6.1.1\",\n    \"Products.CMFUid==4.2\",\n    \"Products.DateRecurringIndex==3.0.1\",\n
+        \   \"Products.DCWorkflow==3.0\",\n    \"Products.ExtendedPathIndex==4.0.1\",\n
+        \   \"Products.ExternalMethod==6.0\",\n    \"Products.GenericSetup==5.0.0\",\n
+        \   \"Products.isurlinportal==3.0.0\",\n    \"Products.MailHost==6.0\",\n
+        \   \"Products.MimetypesRegistry==3.0.1\",\n    \"Products.PDBDebugMode==2.0\",\n
+        \   \"Products.PlonePAS==8.0.5\",\n    \"Products.PluggableAuthService==3.0\",\n
+        \   \"Products.PluginRegistry==2.0\",\n    \"Products.PortalTransforms==4.1.1\",\n
+        \   \"Products.PrintingMailHost==1.1.7\",\n    \"Products.PythonScripts==5.1\",\n
+        \   \"Products.Sessions==5.0\",\n    \"Products.SiteErrorLog==6.0\",\n    \"Products.StandardCacheManagers==5.0\",\n
+        \   \"Products.statusmessages==5.0.6\",\n    \"Products.validation==3.0.0\",\n
+        \   \"Products.ZCatalog==7.1\",\n    \"Products.ZopeVersionControl==4.1\",\n
+        \   \"progress==1.6\",\n    \"prompt-toolkit==3.0.48\",\n    \"py==1.11.0\",\n
+        \   \"pycparser==2.22\",\n    \"PyGithub==2.5.0\",\n    \"Pygments==2.19.1\",\n
+        \   \"PyJWT==2.10.1\",\n    \"PyNaCl==1.5.0\",\n    \"pyOpenSSL==24.3.0\",\n
+        \   \"pyparsing==3.2.0\",\n    \"pyproject-hooks==1.2.0\",\n    \"pyrepl==0.9.0\",\n
+        \   \"pyroma==4.2\",\n    \"pyrsistent==0.20.0\",\n    \"PySocks==1.7.1\",\n
+        \   \"pytest-cov==5.0.0\",\n    \"pytest-plone==0.5.0\",\n    \"pytest==7.4.4\",\n
+        \   \"python-dateutil==2.9.0.post0\",\n    \"python-dotenv==1.0.1\",\n    \"python-gettext==5.0\",\n
+        \   \"pytz==2024.2\",\n    \"pywin32-ctypes==0.2.3; platform_system == \\\"Windows\\\"\",\n
+        \   \"PyYAML==6.0.2\",\n    \"readme-renderer==44.0\",\n    \"Record==4.1\",\n
+        \   \"referencing==0.35.1\",\n    \"repoze.xmliter==1.0b1\",\n    \"requests-toolbelt==1.0.0\",\n
+        \   \"requests==2.32.3\",\n    \"responses==0.25.3\",\n    \"RestrictedPython==8.0\",\n
+        \   \"rfc3986==2.0.0\",\n    \"rich==13.9.4\",\n    \"robotframework-assertion-engine==3.0.3\",\n
+        \   \"robotframework-browser==19.3.1\",\n    \"robotframework-debuglibrary==2.5.0\",\n
+        \   \"robotframework-lsp==1.10.1\",\n    \"robotframework-pythonlibcore==4.4.1\",\n
+        \   \"robotframework-selenium2library==3.0.0\",\n    \"robotframework-selenium2screenshots==0.8.1\",\n
+        \   \"robotframework-seleniumlibrary==6.1.3\",\n    \"robotframework-seleniumtestability==2.1.0\",\n
+        \   \"robotframework==6.0.2\",\n    \"robotsuite==2.3.2\",\n    \"roman==5.0\",\n
+        \   \"rpds-py==0.22.3\",\n    \"SecretStorage==3.3.3\",\n    \"seedir==0.5.0\",\n
+        \   \"selenium==4.9.1\",\n    \"setuptools==75.8.2\",\n    \"sgmllib3k==1.0.0\",\n
+        \   \"simplejson==3.19.3\",\n    \"six==1.17.0\",\n    \"smmap==5.0.1\",\n
+        \   \"sniffio==1.3.1\",\n    \"snowballstemmer==2.2.0\",\n    \"sortedcontainers==2.4.0\",\n
+        \   \"soupsieve==2.6\",\n    \"sphinx-basic-ng==1.0.0b2\",\n    \"Sphinx==7.4.7;
+        python_version == '3.9'\",\n    \"Sphinx==8.1.3; python_version > '3.9'\",\n
+        \   \"sphinxcontrib-applehelp==2.0.0\",\n    \"sphinxcontrib-devhelp==2.0.0\",\n
+        \   \"sphinxcontrib-htmlhelp==2.1.0\",\n    \"sphinxcontrib-jsmath==1.0.1\",\n
+        \   \"sphinxcontrib-qthelp==2.0.0\",\n    \"sphinxcontrib-serializinghtml==2.0.0\",\n
+        \   \"stdlib-list==0.11.0\",\n    \"tempstorage==6.0\",\n    \"toml==0.10.2\",\n
+        \   \"tomli==2.2.1\",\n    \"towncrier==24.8.0\",\n    \"transaction==5.0\",\n
+        \   \"trio-websocket==0.11.1\",\n    \"trio==0.27.0\",\n    \"trove-classifiers==2025.2.18.16\",\n
+        \   \"twine==5.1.1\",\n    \"types-PyYAML==6.0.12.10\",\n    \"types-toml==0.10.8.5\",\n
+        \   \"typing-extensions==4.12.2\",\n    \"tzdata==2025.1\",\n    \"Unidecode==1.3.8\",\n
+        \   \"urllib3-secure-extra==0.1.0\",\n    \"urllib3==2.3.0\",\n    \"wadllib==2.0.0\",\n
+        \   \"waitress==3.0.2\",\n    \"watchdog==6.0.0\",\n    \"wcwidth==0.2.13\",\n
+        \   \"webencodings==0.5.1\",\n    \"WebOb==1.8.9\",\n    \"webresource==1.2\",\n
+        \   \"WebTest==3.0.3\",\n    \"wheel==0.45.1\",\n    \"wmctrl==0.5\",\n    \"wrapt==1.17.0\",\n
+        \   \"WSGIProxy2==0.5.1\",\n    \"wsproto==1.2.0\",\n    \"z3c.caching==3.0\",\n
+        \   \"z3c.checkversions==2.1\",\n    \"z3c.dependencychecker==2.15\",\n    \"z3c.form==5.1\",\n
+        \   \"z3c.formwidget.query==2.0.0\",\n    \"z3c.jbot==2.0\",\n    \"z3c.objpath==2.0\",\n
+        \   \"z3c.pt==4.4\",\n    \"z3c.relationfield==2.0.0\",\n    \"z3c.unconfigure==2.1\",\n
+        \   \"z3c.zcmlhook==2.0\",\n    \"zc.buildout==4.1.4\",\n    \"zc.lockfile==3.0.post1\",\n
+        \   \"zc.recipe.egg==2.0.7\",\n    \"zc.recipe.testrunner==3.1\",\n    \"zc.relation==2.0\",\n
+        \   \"ZConfig==4.2\",\n    \"zdaemon==5.1\",\n    \"ZEO==6.0.0\",\n    \"zest.pocompile==2.0.0\",\n
+        \   \"zest.releaser==9.5.0\",\n    \"zestreleaser.towncrier==1.3.0\",\n    \"zExceptions==5.0\",\n
+        \   \"zipp==3.21.0\",\n    \"ZODB3==3.11.0\",\n    \"ZODB==6.0\",\n    \"zodbpickle==4.1.1\",\n
+        \   \"zodbupdate==2.0\",\n    \"zodbverify==1.2.0\",\n    \"zope.annotation==5.0\",\n
+        \   \"zope.app.locales==5.0\",\n    \"zope.browser==3.0\",\n    \"zope.browsermenu==5.0\",\n
+        \   \"zope.browserpage==5.0\",\n    \"zope.browserresource==5.1\",\n    \"zope.cachedescriptors==5.0\",\n
+        \   \"zope.component==6.0\",\n    \"zope.componentvocabulary==2.3.0\",\n    \"zope.configuration==6.0\",\n
+        \   \"zope.container==6.1\",\n    \"zope.contentprovider==6.0\",\n    \"zope.contenttype==5.1\",\n
+        \   \"zope.copy==5.0\",\n    \"zope.datetime==5.0.0\",\n    \"zope.deferredimport==5.0\",\n
+        \   \"zope.deprecation==5.1\",\n    \"zope.dottedname==6.0\",\n    \"zope.event==5.0\",\n
+        \   \"zope.exceptions==5.2\",\n    \"zope.filerepresentation==6.0\",\n    \"zope.globalrequest==2.0\",\n
+        \   \"zope.hookable==7.0\",\n    \"zope.i18n==5.2\",\n    \"zope.i18nmessageid==7.0\",\n
+        \   \"zope.interface==7.2\",\n    \"zope.intid==5.0\",\n    \"zope.keyreference==6.0\",\n
+        \   \"zope.lifecycleevent==5.0\",\n    \"zope.location==5.0\",\n    \"zope.mkzeoinstance==6.0\",\n
+        \   \"zope.pagetemplate==5.1\",\n    \"zope.processlifetime==3.0\",\n    \"zope.proxy==6.1\",\n
+        \   \"zope.ptresource==5.0\",\n    \"zope.publisher==7.3\",\n    \"zope.pytestlayer==8.2\",\n
+        \   \"zope.ramcache==3.0\",\n    \"zope.schema==7.0.1\",\n    \"zope.security==7.3\",\n
+        \   \"zope.sendmail==6.2\",\n    \"zope.sequencesort==5.0\",\n    \"zope.site==5.0\",\n
+        \   \"zope.size==5.0\",\n    \"zope.structuredtext==5.0\",\n    \"zope.tal==5.0.1\",\n
+        \   \"zope.tales==6.0\",\n    \"zope.testbrowser==7.0\",\n    \"zope.testing==5.0.1\",\n
+        \   \"zope.testrunner==7.2\",\n    \"zope.traversing==5.0\",\n    \"zope.viewlet==5.0\",\n
+        \   \"Zope2==4.0\",\n    \"Zope==5.13\",\n    \"ZopeUndo==6.0\",\n]\n"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '5510'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Mon, 07 Apr 2025 19:22:13 GMT
+      ETag:
+      - W/"c530e9bc187a5fde9ac495b9772a30b7144f91200e1a5f1b9f4a0e1d46a2a247"
+      Expires:
+      - Mon, 07 Apr 2025 19:27:13 GMT
+      Source-Age:
+      - '0'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '0'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 1472ab498e8f63ac6fca940c78c36de8504e7912
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 3868:285EC1:25BE70:3245F5:67F41867
+      X-Served-By:
+      - cache-gig2250049-GIG
+      X-Timer:
+      - S1744053734.523190,VS0,VE290
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

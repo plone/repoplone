@@ -1,0 +1,176 @@
+[project]
+name = "RepoPlone"
+description = "Toolset for Plone mono repo maintainers."
+readme = "README.md"
+dynamic = ["version"]
+authors = [
+    { name = "kitconcept GmbH", email = "info@kitconcept.com" },
+    { name = "PloneGov-BR", email = "gov@plone.org.br" }
+]
+license = "MIT"
+keywords = ["Plone"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Web Environment",
+  "Framework :: Plone",
+  "Framework :: Plone :: 6.1",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+  "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "dynaconf>=3.2.10",
+    "gitpython>=3.1.44",
+    "hatch>=1.14.0",
+    "hatchling>=1.27.0",
+    "mxdev>=4.0.3",
+    "packaging>=24.2",
+    "pyyaml>=6.0.2",
+    "requests>=2.32.3",
+    "semver>=3.0.4",
+    "tomlkit>=0.13.2",
+    "towncrier>=24.8.0",
+    "typer>=0.15.2",
+]
+
+[project.urls]
+Documentation = "https://github.com/plone/repoplone#readme"
+Issues = "https://github.com/plone/repoplone/issues"
+Source = "https://github.com/plone/repoplone"
+
+[project.scripts]
+repoplone = "repoplone.cli:cli"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "src/repoplone/__init__.py"
+
+[tool.hatch.build]
+strict-naming = true
+packages = ["src/repoplone"]
+
+[tool.hatch.build.targets.wheel]
+sources = ["src"]
+only-include = ["src/repoplone"]
+
+[dependency-groups]
+test = [
+    "pytest>8.0.0",
+    "ruff>=0.9.5",
+    "towncrier>=24.8.0",
+    "pytest-cov>=6.0.0",
+    "mypy>=1.15.0",
+    "pytest-recording>=0.13.2",
+    "types-requests>=2.32.0.20250306",
+    "zest-releaser[recommended]>=9.5.0",
+    "zestreleaser-towncrier>=1.3.0",
+]
+
+[tool.uv]
+default-groups = ["test"]
+
+[tool.towncrier]
+package = "repoplone"
+package_dir = "src"
+directory = "news/"
+filename = "CHANGELOG.md"
+start_string = "<!-- towncrier release notes start -->\n"
+title_format = "## {version} ({project_date})"
+template = "news/.changelog_template.jinja"
+issue_format = "[#{issue}](https://github.com/plone/repoplone/issues/{issue})"
+underlines = ["", "", ""]
+
+[[tool.towncrier.type]]
+directory = "breaking"
+name = "Breaking changes:"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "feature"
+name = "Feature"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "bugfix"
+name = "Bugfix"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "internal"
+name = "Internal"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "documentation"
+name = "Documentation"
+showcontent = true
+
+[[tool.towncrier.type]]
+directory = "tests"
+name = "Tests"
+showcontent = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+fix = true
+lint.select = [
+    # flake8-2020
+    "YTT",
+    # flake8-bandit
+    "S",
+    # flake8-bugbear
+    "B",
+    # flake8-builtins
+    "A",
+    # flake8-comprehensions
+    "C4",
+    # flake8-debugger
+    "T10",
+    # flake8-simplify
+    "SIM",
+    # mccabe
+    "C90",
+    # pycodestyle
+    "E", "W",
+    # pyflakes
+    "F",
+    # pygrep-hooks
+    "PGH",
+    # pyupgrade
+    "UP",
+    # ruff
+    "RUF",
+]
+lint.ignore = [
+    # DoNotAssignLambda
+    "E731",
+]
+
+[tool.ruff.lint.isort]
+case-sensitive = false
+no-sections = true
+force-single-line = true
+from-first = true
+lines-after-imports = 2
+lines-between-types = 1
+
+[tool.ruff.format]
+preview = true
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.zest-releaser]
+upload-pypi = false # Build and upload with uv
+python-file-with-version = "repoplone/__init__.py"
