@@ -125,7 +125,7 @@ jobs:
 
         - name: Run tests
           run: |
-            make test-cov
+            make test-coverage
 
         - name: Report Coverage
           run: |
