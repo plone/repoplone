@@ -23,6 +23,17 @@ def get_resource_file():
 
 
 @pytest.fixture
+def repository_toml_factory(test_dir, get_resource_file):
+    def func(filename: str) -> Path:
+        src = get_resource_file(filename).read_text()
+        dst = test_dir / "repository.toml"
+        dst.write_text(src)
+        return test_dir
+
+    return func
+
+
+@pytest.fixture
 def toml_parse():
     def func(path: Path) -> dict:
         return tomlkit.parse(path.read_text())

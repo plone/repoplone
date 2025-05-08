@@ -1,0 +1,24 @@
+[repository]
+name = "fake-project"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+compose = "docker-compose.yml"
+version_format = "calver"
+
+[repository.towncrier]
+section = "Project"
+settings = "towncrier.toml"
+
+[backend.package]
+name = "fake.project"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+publish = false
+
+[frontend.package]
+name = "fake-project"
+path = "frontend/packages/fake-project"
+changelog = "frontend/packages/fake-project/CHANGELOG.md"
+towncrier_settings = "frontend/packages/fake-project/towncrier.toml"
+publish = false

@@ -53,3 +53,43 @@ def test_internal_project_packages(test_internal_project, bust_path_cache):
     assert isinstance(frontend, t.Package)
     assert frontend.publish is False
     assert frontend.base_package == "@plone/volto"
+
+
+@pytest.mark.parametrize(
+    "path,expected_warnings,message",
+    [
+        [
+            "repository_toml/deprecated_100.toml",
+            3,
+            (
+                "Setting repository.managed_by_uv is deprecated and will be removed"
+                " in version 1.0.0"
+            ),
+        ],
+        [
+            "repository_toml/deprecated_100.toml",
+            3,
+            "Setting backend.path is deprecated and will be removed in version 1.0.0",
+        ],
+        [
+            "repository_toml/deprecated_100.toml",
+            3,
+            "Setting frontend.path is deprecated and will be removed in version 1.0.0",
+        ],
+        ["repository_toml/updated.toml", 0, ""],
+    ],
+)
+def test_deprecations(
+    repository_toml_factory, path: str, expected_warnings: int, message: str
+):
+    import warnings
+
+    root_path = repository_toml_factory(path)
+    func = settings._get_raw_settings
+    with warnings.catch_warnings(record=True) as w:
+        func(root_path)
+    total_warnings = len(w)
+    assert total_warnings == expected_warnings
+    if total_warnings:
+        messages = [str(deprecation.message) for deprecation in w]
+        assert message in messages
