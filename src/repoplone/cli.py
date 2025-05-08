@@ -3,6 +3,7 @@ from repoplone import _types as t
 from repoplone.commands.changelog import app as app_changelog
 from repoplone.commands.dependencies import app as app_deps
 from repoplone.commands.release import app as app_release
+from repoplone.commands.settings import app as app_settings
 from repoplone.commands.versions import app as app_versions
 from repoplone.settings import get_settings
 from typing import Annotated
@@ -51,6 +52,12 @@ app.add_typer(
     name="deps",
     no_args_is_help=True,
     help="Check and manage dependencies",
+)
+app.add_typer(
+    app_settings,
+    name="settings",
+    no_args_is_help=True,
+    help="Manage settings for a repository",
 )
 app.add_typer(
     app_versions,

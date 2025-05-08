@@ -1,11 +1,12 @@
 from rich import print  # noQA: A004
+from rich import print_json
 from rich.prompt import Confirm
 from rich.table import Table
 
 import textwrap
 
 
-__all__ = ["print", "table"]
+__all__ = ["print", "print_json", "table"]
 
 
 def table(title: str, columns: list[dict], rows: list) -> Table:
