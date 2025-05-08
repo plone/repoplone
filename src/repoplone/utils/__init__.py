@@ -4,6 +4,7 @@ from dynaconf.utils.boxing import DynaBox
 from pathlib import Path
 from repoplone import _types as t
 from repoplone.utils import versions
+from repoplone.utils.dependencies import frontend as frontend_utils
 from repoplone.utils.dependencies import pyproject as pyproject_utils
 
 
@@ -90,10 +91,14 @@ def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
     )
     pyproject_toml = package_info["path"] / "pyproject.toml"
     package_info["managed_by_uv"] = pyproject_utils.managed_by_uv(pyproject_toml)
+    package_info["base_package_version"] = pyproject_utils.current_base_package(
+        pyproject_toml,
+        package_info["base_package"],
+    )
     return t.BackendPackage(**package_info)
 
 
-def get_frontend(root_path: Path, raw_settings: Dynaconf) -> t.Package:
+def get_frontend(root_path: Path, raw_settings: Dynaconf) -> t.FrontendPackage:
     """Return package information for the frontend."""
     package_settings = raw_settings.frontend.package
     version_func = versions.get_frontend_version
@@ -101,4 +106,13 @@ def get_frontend(root_path: Path, raw_settings: Dynaconf) -> t.Package:
     package_info = _get_package_info(
         root_path, package_settings, default_base_package, version_func
     )
-    return t.Package(**package_info)
+    path = root_path / "frontend"
+    package_info["base_package_version"] = frontend_utils.package_version(
+        path,
+        package_info["base_package"],
+    )
+    package_info["volto_version"] = frontend_utils.package_version(
+        path,
+        "@plone/volto",
+    )
+    return t.FrontendPackage(**package_info)

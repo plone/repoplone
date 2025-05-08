@@ -107,6 +107,8 @@ uvx repoplone --version
 
 ## Check repository versions
 
+### Current versions
+
 List current versions for:
 
 - Repository
@@ -114,7 +116,31 @@ List current versions for:
 - Frontend package
 
 ```bash
-uvx repoplone versions
+uvx repoplone versions current
+```
+
+### Next versions
+
+Report next version of all components of this repository:
+
+- Repository
+- Backend package
+- Frontend package
+
+```bash
+uvx repoplone versions next
+```
+
+### Dependencies
+
+Report version information for major dependencies:
+
+- Backend base package
+- Frontend base package
+- Frontend @plone/volto package
+
+```bash
+uvx repoplone versions dependencies
 ```
 
 ## Preview Changelog

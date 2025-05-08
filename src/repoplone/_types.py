@@ -28,6 +28,7 @@ class Package:
     changelog: Path
     towncrier: Path
     base_package: str
+    base_package_version: str = ""
     publish: bool = True
     version: str = ""
 
@@ -42,6 +43,13 @@ class BackendPackage(Package):
     """Backend package information."""
 
     managed_by_uv: bool = False
+
+
+@dataclass
+class FrontendPackage(Package):
+    """Frontend package information."""
+
+    volto_version: str = ""
 
 
 @dataclass
@@ -84,7 +92,7 @@ class RepositorySettings:
     version: str
     version_format: str
     backend: BackendPackage
-    frontend: Package
+    frontend: FrontendPackage
     version_path: Path
     compose_path: Path
     towncrier: TowncrierSettings

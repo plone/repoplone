@@ -15,7 +15,7 @@ app = typer.Typer()
 
 def _serialize_value(value: Any) -> Any:
     if is_dataclass(value):
-        value = _serialize_dict(asdict(value))
+        value = _serialize_dict(asdict(value))  # type: ignore[arg-type]
     elif isinstance(value, dict):
         value = _serialize_dict(value)
     elif isinstance(value, tuple | set):

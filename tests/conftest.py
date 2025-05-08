@@ -8,6 +8,11 @@ import tomlkit
 RESOURCES = Path(__file__).parent / "_resources"
 
 
+@pytest.fixture(scope="session")
+def test_resources_dir() -> Path:
+    return RESOURCES
+
+
 @pytest.fixture
 def test_dir(monkeypatch, tmp_path) -> Path:
     monkeypatch.chdir(tmp_path)

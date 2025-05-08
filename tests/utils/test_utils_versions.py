@@ -91,3 +91,27 @@ def test_next_version_raise_value_error(desired_version: str, original_version: 
         f"the original version `{original_version}`"
     )
     assert expected in str(exc)
+
+
+@pytest.mark.parametrize(
+    "title,name,version",
+    [
+        ["Backend", "kitconcept.intranet", "1.0.0a17"],
+        ["Frontend", "@kitconcept/intranet", "1.0.0-alpha.17"],
+        ["Frontend", "@plone/volto", "18.14.1"],
+    ],
+)
+def test_report_deps_versions(
+    test_internal_project_from_distribution,
+    bust_path_cache,
+    title: str,
+    name: str,
+    version: str,
+):
+    from repoplone.settings import get_settings
+
+    func = versions.report_deps_versions
+    result = func(get_settings())
+    raw_sections = result.get("sections", [])
+    sections = [(i["title"], i["name"], i["version"]) for i in raw_sections]
+    assert (title, name, version) in sections
