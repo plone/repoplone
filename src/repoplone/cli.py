@@ -19,7 +19,7 @@ def main(
         bool, typer.Option(help="Report the version of this app.")
     ] = False,
 ):
-    """Welcome to Plone Distribution Helper."""
+    """Welcome to Plone Repository Helper."""
     try:
         settings = get_settings()
     except RuntimeError:

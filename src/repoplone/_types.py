@@ -37,6 +37,13 @@ class Package:
 
 
 @dataclass
+class BackendPackage(Package):
+    """Backend package information."""
+
+    managed_by_uv: bool = False
+
+
+@dataclass
 class TowncrierSection:
     """Towncrier section."""
 
@@ -75,7 +82,7 @@ class RepositorySettings:
     root_path: Path
     version: str
     version_format: str
-    backend: Package
+    backend: BackendPackage
     frontend: Package
     version_path: Path
     compose_path: Path

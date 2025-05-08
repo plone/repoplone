@@ -14,7 +14,7 @@ app = typer.Typer()
 def info(ctx: typer.Context):
     """Report the base package in use."""
     settings: t.RepositorySettings = ctx.obj.settings
-    if not settings.managed_by_uv:
+    if not settings.backend.managed_by_uv:
         typer.echo("Only available for installations managed by uv.")
         raise typer.Exit(1)
     package_name: str = settings.backend.base_package
@@ -25,7 +25,7 @@ def info(ctx: typer.Context):
 def check(ctx: typer.Context):
     """Check latest version of base package and compare it to our current pinning."""
     settings: t.RepositorySettings = ctx.obj.settings
-    if not settings.managed_by_uv:
+    if not settings.backend.managed_by_uv:
         typer.echo("Only available for installations managed by uv.")
         raise typer.Exit(1)
     package_name: str = settings.backend.base_package
@@ -49,7 +49,7 @@ def upgrade(
 ):
     """Upgrade a base dependency to a newer version."""
     settings: t.RepositorySettings = ctx.obj.settings
-    if not settings.managed_by_uv:
+    if not settings.backend.managed_by_uv:
         typer.echo("Only available for installations managed by uv.")
         raise typer.Exit(1)
     package_name: str = settings.backend.base_package

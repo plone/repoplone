@@ -101,3 +101,18 @@ def test_get_remote_uv_dependencies(url: str):
     constraints = result[1]
     assert isinstance(constraints, list)
     assert isinstance(constraints[0], str)
+
+
+@pytest.mark.parametrize(
+    "path,expected",
+    [
+        ["pyproject/distribution.toml", True],
+        ["pyproject/package.toml", False],
+        ["pyproject/project.toml", True],
+    ],
+)
+def test_pyproject_uv_managed(get_resource_file, path: str, expected: str):
+    func = pyproject_utils.managed_by_uv
+    pyproject_path = get_resource_file(path)
+    result = func(pyproject_path)
+    assert result == expected

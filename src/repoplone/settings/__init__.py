@@ -13,7 +13,6 @@ def get_settings() -> t.RepositorySettings:
         name = raw_settings.repository.name
     except AttributeError:
         raise RuntimeError() from None
-    managed_by_uv = bool(raw_settings.repository.get("managed_by_uv", False))
     root_changelog = root_path / raw_settings.repository.changelog
     version_path = root_path / raw_settings.repository.version
     version = version_path.read_text().strip()
@@ -21,6 +20,7 @@ def get_settings() -> t.RepositorySettings:
     compose_path = root_path / raw_settings.repository.compose
     repository_towncrier = raw_settings.repository.get("towncrier", {})
     backend = utils.get_backend(root_path, raw_settings)
+    managed_by_uv = backend.managed_by_uv
     frontend = utils.get_frontend(root_path, raw_settings)
     towncrier = utils.get_towncrier_settings(backend, frontend, repository_towncrier)
     changelogs = utils.get_changelogs(root_changelog, backend, frontend)

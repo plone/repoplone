@@ -11,7 +11,7 @@ import pytest
         ["name", str],
         ["root_path", Path],
         ["version", str],
-        ["backend", t.Package],
+        ["backend", t.BackendPackage],
         ["frontend", t.Package],
         ["version_path", Path],
         ["compose_path", Path],
@@ -45,8 +45,9 @@ def test_public_project_packages(test_public_project, bust_path_cache):
 def test_internal_project_packages(test_internal_project, bust_path_cache):
     result = settings.get_settings()
     backend = result.backend
-    assert isinstance(backend, t.Package)
+    assert isinstance(backend, t.BackendPackage)
     assert backend.publish is False
+    assert backend.managed_by_uv is True
     assert backend.base_package == "Products.CMFPlone"
     frontend = result.frontend
     assert isinstance(frontend, t.Package)
