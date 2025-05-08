@@ -5,7 +5,11 @@ from packaging.requirements import Requirement
 from repoplone import _types as t
 
 
-PACKAGE_CONSTRAINTS = {
+PACKAGE_CONSTRAINTS: dict[str, t.PackageConstraintInfo] = {
+    "Plone": {
+        "type": "pip",
+        "url": "https://dist.plone.org/release/{version}/constraints.txt",
+    },
     "plone": {
         "type": "pip",
         "url": "https://dist.plone.org/release/{version}/constraints.txt",
@@ -13,6 +17,10 @@ PACKAGE_CONSTRAINTS = {
     "Products.CMFPlone": {
         "type": "pip",
         "url": "https://dist.plone.org/release/{version}/constraints.txt",
+    },
+    "kitconcept.core": {
+        "type": "uv",
+        "url": "https://raw.githubusercontent.com/kitconcept/kitconcept.core/refs/tags/{version}/backend/pyproject.toml",
     },
     "kitconcept.intranet": {
         "type": "uv",
@@ -51,10 +59,15 @@ def parse_constraints(lines: list[str], existing: list[str]) -> list[str]:
     return sorted(constraints, key=lambda x: x.lower())
 
 
-def get_base_constraints(package_name: str, version: str) -> list[str]:
+def get_constraint_info(package_name: str) -> t.PackageConstraintInfo:
     pkg_config = PACKAGE_CONSTRAINTS.get(package_name)
     if not pkg_config:
         raise AttributeError(f"{package_name} is not supported at the moment.")
+    return pkg_config
+
+
+def get_base_constraints(package_name: str, version: str) -> list[str]:
+    pkg_config = get_constraint_info(package_name)
     constraints_type = pkg_config["type"]
     constraints_url = pkg_config["url"].format(version=version)
     match constraints_type:

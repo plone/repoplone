@@ -42,3 +42,25 @@ def test_get_package_constraints(
     func = const_utils.get_package_constraints
     result = func(core_package, core_package_version, existing_pins)
     assert constraint in result
+
+
+@pytest.mark.parametrize(
+    "core_package,raises",
+    [
+        ["Plone", False],
+        ["Products.CMFPlone", False],
+        ["kitconcept.core", False],
+        ["kitconcept.intranet", False],
+        ["portalbrasil.core", False],
+        ["foo.bar", True],
+    ],
+)
+def test_get_constraint_info(core_package: str, raises: bool):
+    func = const_utils.get_constraint_info
+    if raises:
+        with pytest.raises(AttributeError) as exc:
+            func(core_package)
+        assert f"{core_package} is not supported at the moment." in str(exc)
+    else:
+        result = func(core_package)
+        assert isinstance(result, dict)

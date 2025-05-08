@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from packaging.requirements import Requirement
 from pathlib import Path
+from typing import TypedDict
 
 
 Requirements = dict[str, Requirement]
@@ -113,3 +114,10 @@ class CTLContextObject:
     """Context object used by cli."""
 
     settings: RepositorySettings
+
+
+class PackageConstraintInfo(TypedDict):
+    """Definition on a Package constraint information."""
+
+    type: str
+    url: str
