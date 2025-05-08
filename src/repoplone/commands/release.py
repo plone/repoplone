@@ -171,8 +171,8 @@ def _step_gh_release(
         )
 
 
-@app.command()
-def do(
+@app.callback(invoke_without_command=True)
+def main(
     ctx: typer.Context,
     desired_version: Annotated[
         str,
@@ -185,7 +185,7 @@ def do(
     ],
     dry_run: Annotated[bool, typer.Option(help="Is this a dry run?")] = False,
 ):
-    """Release the packages in this mono repo."""
+    """Release the packages in this repository."""
     settings: t.RepositorySettings = ctx.obj.settings
     original_version = settings.version
 
@@ -213,17 +213,3 @@ def do(
         )
         func(step_id, title, settings, original_version, next_version, dry_run)
     raise typer.Exit(0)
-
-
-@app.command()
-def changelog(
-    ctx: typer.Context,
-):
-    """Generate a draft of the final changelog."""
-    settings: t.RepositorySettings = ctx.obj.settings
-    original_version = settings.version
-    # Changelog
-    new_entries, _ = chgutils.update_changelog(
-        settings, draft=True, version=original_version
-    )
-    dutils.print(f"{'=' * 50}\n{new_entries}\n{'=' * 50}")

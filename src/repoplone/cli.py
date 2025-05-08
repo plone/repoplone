@@ -1,5 +1,6 @@
 from repoplone import __version__
 from repoplone import _types as t
+from repoplone.commands.changelog import app as app_changelog
 from repoplone.commands.dependencies import app as app_deps
 from repoplone.commands.release import app as app_release
 from repoplone.commands.versions import app as app_versions
@@ -34,7 +35,16 @@ def main(
 
 
 app.add_typer(
-    app_release, name="release", no_args_is_help=True, help="Release mono repo packages"
+    app_changelog,
+    name="changelog",
+    no_args_is_help=False,
+    help="Displays a draft of Change log entries",
+)
+app.add_typer(
+    app_release,
+    name="release",
+    no_args_is_help=True,
+    help="Release packages in this repository",
 )
 app.add_typer(
     app_deps,

@@ -75,9 +75,6 @@ compose = "docker-compose.yml"
 section = "Project"
 settings = "towncrier.toml"
 
-[backend]
-path = "backend"
-
 [backend.package]
 name = "fake.distribution"
 path = "backend"
@@ -85,9 +82,6 @@ changelog = "backend/CHANGELOG.md"
 towncrier_settings = "backend/pyproject.toml"
 base_package = "Products.CMFPlone"
 publish = false
-
-[frontend]
-path = "frontend"
 
 [frontend.package]
 name = "fake-distribution"
@@ -123,21 +117,17 @@ List current versions for:
 uvx repoplone versions
 ```
 
-## Releasing Monorepo Packages
+## Preview Changelog
 
-The release process consists of two subcommands:
-- **`changelog`** – Generates a draft changelog for review.
-- **`do`** – Performs the package release.
-
-### Generate Changelog
 To generate and display the draft changelog, run:
 
 ```bash
-uvx repoplone release changelog
+uvx repoplone changelog
 ```
 
-### Perform Release
-The `do` command creates a new release and accepts the following arguments:
+## Releasing Monorepo Packages
+
+The `release` command creates a new release and accepts the following arguments:
 
 #### `version`
 The version argument defines the new version to be used in the release. It can be a specific version number or a version segment. Below is a reference table showing how version segments modify an existing `1.0.0` version:
@@ -161,7 +151,7 @@ Use this flag to simulate the release process without actually publishing the ne
 **Example:**
 
 ```bash
-uvx repoplone release do a
+uvx repoplone release a
 ```
 
 This will create an `alpha` release.
