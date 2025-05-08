@@ -109,9 +109,13 @@ def _update_dependency(data: tomlkit.TOMLDocument, package: str, version: str) -
     project = _get_project_table(data)
     deps = tomlkit.array()
     deps.multiline(True)
-    for dep in _get_project_dependencies(data):
-        if re.match(f"^{package}", dep):
+    project_dependencies = _get_project_dependencies(data)
+    for dep_name in project_dependencies:
+        if re.match(f"^{package}$", dep_name):
             dep = f"{package}=={version}"
+        else:
+            # Keep dependency as stated before
+            dep = str(project_dependencies[dep_name])
         deps.append(dep)
     project.update({"dependencies": deps})
 

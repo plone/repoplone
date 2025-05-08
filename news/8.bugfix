@@ -1,0 +1,1 @@
+pyproject.toml: Keep explicit dependency version when they are declared under [dependencies] @ericof
