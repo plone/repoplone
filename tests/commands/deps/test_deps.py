@@ -49,13 +49,11 @@ def test_deps_upgrade(
     bust_path_cache, in_pyproject_toml, in_package_name, toml_parse, version: str
 ):
     def _dependencies(data, base_package):
-        dependencies = sorted(
-            [
-                dep
-                for dep in data["project"]["dependencies"]
-                if not dep.startswith(base_package)
-            ]
-        )
+        dependencies = sorted([
+            dep
+            for dep in data["project"]["dependencies"]
+            if not dep.startswith(base_package)
+        ])
         return dependencies
 
     base_deps = _dependencies(toml_parse(in_pyproject_toml), in_package_name)
