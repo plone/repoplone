@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from packaging.requirements import Requirement
 from pathlib import Path
+from typing import TypedDict
 
 
 Requirements = dict[str, Requirement]
@@ -27,6 +28,7 @@ class Package:
     changelog: Path
     towncrier: Path
     base_package: str
+    base_package_version: str = ""
     publish: bool = True
     version: str = ""
 
@@ -34,6 +36,20 @@ class Package:
         return (
             self.path.exists() and self.changelog.exists() and self.towncrier.exists()
         )
+
+
+@dataclass
+class BackendPackage(Package):
+    """Backend package information."""
+
+    managed_by_uv: bool = False
+
+
+@dataclass
+class FrontendPackage(Package):
+    """Frontend package information."""
+
+    volto_version: str = ""
 
 
 @dataclass
@@ -75,8 +91,8 @@ class RepositorySettings:
     root_path: Path
     version: str
     version_format: str
-    backend: Package
-    frontend: Package
+    backend: BackendPackage
+    frontend: FrontendPackage
     version_path: Path
     compose_path: Path
     towncrier: TowncrierSettings
@@ -106,3 +122,10 @@ class CTLContextObject:
     """Context object used by cli."""
 
     settings: RepositorySettings
+
+
+class PackageConstraintInfo(TypedDict):
+    """Definition on a Package constraint information."""
+
+    type: str
+    url: str

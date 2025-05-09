@@ -81,6 +81,20 @@ def get_remote_uv_dependencies(url: str) -> tuple[list[str], list[str]]:
     return dependencies, constraints
 
 
+def managed_by_uv(pyproject: Path) -> bool:
+    """Check if a package is managed by UV.
+
+    ```toml
+    [tool.uv]
+    managed = false
+    ```
+    """
+    data = tomlkit.parse(pyproject.read_text())
+    uv_config = _get_uv_table(data)
+    is_managed = uv_config.get("managed", True)
+    return is_managed
+
+
 def current_base_package(pyproject: Path, package_name: str) -> str | None:
     """Return the current base package version."""
     data = tomlkit.parse(pyproject.read_text())
@@ -95,9 +109,13 @@ def _update_dependency(data: tomlkit.TOMLDocument, package: str, version: str) -
     project = _get_project_table(data)
     deps = tomlkit.array()
     deps.multiline(True)
-    for dep in _get_project_dependencies(data):
-        if re.match(f"^{package}", dep):
+    project_dependencies = _get_project_dependencies(data)
+    for dep_name in project_dependencies:
+        if re.match(f"^{package}$", dep_name):
             dep = f"{package}=={version}"
+        else:
+            # Keep dependency as stated before
+            dep = str(project_dependencies[dep_name])
         deps.append(dep)
     project.update({"dependencies": deps})
 

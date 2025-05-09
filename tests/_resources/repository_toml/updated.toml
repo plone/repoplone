@@ -1,6 +1,5 @@
 [repository]
 name = "fake-project"
-managed_by_uv = true
 changelog = "CHANGELOG.md"
 version = "version.txt"
 compose = "docker-compose.yml"
@@ -15,7 +14,6 @@ name = "fake.project"
 path = "backend"
 changelog = "backend/CHANGELOG.md"
 towncrier_settings = "backend/pyproject.toml"
-base_package = "kitconcept.intranet"
 publish = false
 
 [frontend.package]
@@ -23,5 +21,4 @@ name = "fake-project"
 path = "frontend/packages/fake-project"
 changelog = "frontend/packages/fake-project/CHANGELOG.md"
 towncrier_settings = "frontend/packages/fake-project/towncrier.toml"
-base_package = "@kitconcept/intranet"
 publish = false

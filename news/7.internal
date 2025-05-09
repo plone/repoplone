@@ -1,0 +1,1 @@
+repository.toml: Deprecate `backend.path` and `frontend.path` settings. @ericof

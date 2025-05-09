@@ -67,7 +67,6 @@ Ensure that your monorepo contains a `repository.toml` file. Below is an example
 ```toml
 [repository]
 name = "fake-distribution"
-managed_by_uv = true
 changelog = "CHANGELOG.md"
 version = "version.txt"
 compose = "docker-compose.yml"
@@ -76,9 +75,6 @@ compose = "docker-compose.yml"
 section = "Project"
 settings = "towncrier.toml"
 
-[backend]
-path = "backend"
-
 [backend.package]
 name = "fake.distribution"
 path = "backend"
@@ -86,9 +82,6 @@ changelog = "backend/CHANGELOG.md"
 towncrier_settings = "backend/pyproject.toml"
 base_package = "Products.CMFPlone"
 publish = false
-
-[frontend]
-path = "frontend"
 
 [frontend.package]
 name = "fake-distribution"
@@ -114,6 +107,8 @@ uvx repoplone --version
 
 ## Check repository versions
 
+### Current versions
+
 List current versions for:
 
 - Repository
@@ -121,24 +116,44 @@ List current versions for:
 - Frontend package
 
 ```bash
-uvx repoplone versions
+uvx repoplone versions current
+```
+
+### Next versions
+
+Report next version of all components of this repository:
+
+- Repository
+- Backend package
+- Frontend package
+
+```bash
+uvx repoplone versions next
+```
+
+### Dependencies
+
+Report version information for major dependencies:
+
+- Backend base package
+- Frontend base package
+- Frontend @plone/volto package
+
+```bash
+uvx repoplone versions dependencies
+```
+
+## Preview Changelog
+
+To generate and display the draft changelog, run:
+
+```bash
+uvx repoplone changelog
 ```
 
 ## Releasing Monorepo Packages
 
-The release process consists of two subcommands:
-- **`changelog`** – Generates a draft changelog for review.
-- **`do`** – Performs the package release.
-
-### Generate Changelog
-To generate and display the draft changelog, run:
-
-```bash
-uvx repoplone release changelog
-```
-
-### Perform Release
-The `do` command creates a new release and accepts the following arguments:
+The `release` command creates a new release and accepts the following arguments:
 
 #### `version`
 The version argument defines the new version to be used in the release. It can be a specific version number or a version segment. Below is a reference table showing how version segments modify an existing `1.0.0` version:
@@ -162,7 +177,7 @@ Use this flag to simulate the release process without actually publishing the ne
 **Example:**
 
 ```bash
-uvx repoplone release do a
+uvx repoplone release a
 ```
 
 This will create an `alpha` release.

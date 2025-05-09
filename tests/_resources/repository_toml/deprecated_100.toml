@@ -1,0 +1,24 @@
+[repository]
+name = "fake-distribution"
+managed_by_uv = true
+changelog = "CHANGELOG.md"
+version = "version.txt"
+compose = "docker-compose.yml"
+
+[backend]
+path = "backend"
+
+[backend.package]
+name = "fake.distribution"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+
+[frontend]
+path = "frontend"
+
+[frontend.package]
+name = "fake-distribution"
+path = "frontend/packages/fake-distribution"
+changelog = "frontend/packages/fake-distribution/CHANGELOG.md"
+towncrier_settings = "frontend/packages/fake-distribution/towncrier.toml"

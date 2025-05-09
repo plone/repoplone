@@ -48,9 +48,20 @@ def test_deps_check(
 def test_deps_upgrade(
     bust_path_cache, in_pyproject_toml, in_package_name, toml_parse, version: str
 ):
+    def _dependencies(data, base_package):
+        dependencies = sorted([
+            dep
+            for dep in data["project"]["dependencies"]
+            if not dep.startswith(base_package)
+        ])
+        return dependencies
+
+    base_deps = _dependencies(toml_parse(in_pyproject_toml), in_package_name)
     result = runner.invoke(app, ["deps", "upgrade", version])
     assert result.exit_code == 0
     data = toml_parse(in_pyproject_toml)
+    cur_deps = _dependencies(toml_parse(in_pyproject_toml), in_package_name)
+    assert base_deps == cur_deps
     assert f"{in_package_name}=={version}" in data["project"]["dependencies"]
     tool_uv = data["tool"]["uv"]
     assert "constraint-dependencies" in tool_uv

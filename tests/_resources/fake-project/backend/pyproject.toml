@@ -177,6 +177,7 @@ branch = true
 parallel = true
 
 [tool.uv]
+managed = true
 constraint-dependencies = [
     # Foo Bar
     "AccessControl==7.2",

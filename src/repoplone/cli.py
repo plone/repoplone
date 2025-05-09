@@ -1,7 +1,9 @@
 from repoplone import __version__
 from repoplone import _types as t
+from repoplone.commands.changelog import app as app_changelog
 from repoplone.commands.dependencies import app as app_deps
 from repoplone.commands.release import app as app_release
+from repoplone.commands.settings import app as app_settings
 from repoplone.commands.versions import app as app_versions
 from repoplone.settings import get_settings
 from typing import Annotated
@@ -19,7 +21,7 @@ def main(
         bool, typer.Option(help="Report the version of this app.")
     ] = False,
 ):
-    """Welcome to Plone Distribution Helper."""
+    """Welcome to Plone Repository Helper."""
     try:
         settings = get_settings()
     except RuntimeError:
@@ -34,13 +36,28 @@ def main(
 
 
 app.add_typer(
-    app_release, name="release", no_args_is_help=True, help="Release mono repo packages"
+    app_changelog,
+    name="changelog",
+    no_args_is_help=False,
+    help="Displays a draft of Change log entries",
+)
+app.add_typer(
+    app_release,
+    name="release",
+    no_args_is_help=True,
+    help="Release packages in this repository",
 )
 app.add_typer(
     app_deps,
     name="deps",
     no_args_is_help=True,
     help="Check and manage dependencies",
+)
+app.add_typer(
+    app_settings,
+    name="settings",
+    no_args_is_help=True,
+    help="Manage settings for a repository",
 )
 app.add_typer(
     app_versions,

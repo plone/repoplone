@@ -8,6 +8,11 @@ import tomlkit
 RESOURCES = Path(__file__).parent / "_resources"
 
 
+@pytest.fixture(scope="session")
+def test_resources_dir() -> Path:
+    return RESOURCES
+
+
 @pytest.fixture
 def test_dir(monkeypatch, tmp_path) -> Path:
     monkeypatch.chdir(tmp_path)
@@ -18,6 +23,17 @@ def test_dir(monkeypatch, tmp_path) -> Path:
 def get_resource_file():
     def func(name: str) -> Path:
         return RESOURCES / name
+
+    return func
+
+
+@pytest.fixture
+def repository_toml_factory(test_dir, get_resource_file):
+    def func(filename: str) -> Path:
+        src = get_resource_file(filename).read_text()
+        dst = test_dir / "repository.toml"
+        dst.write_text(src)
+        return test_dir
 
     return func
 

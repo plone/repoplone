@@ -117,6 +117,33 @@ def report_cur_versions(settings: t.RepositorySettings) -> dict:
     return cur_versions
 
 
+def report_deps_versions(settings: t.RepositorySettings) -> dict:
+    sections: list[dict] = []
+    cur_versions = {
+        "repository": {"title": "Repository", "version": settings.version},
+        "sections": sections,
+    }
+    for title, package, version in (
+        (
+            "Backend",
+            settings.backend.base_package,
+            settings.backend.base_package_version,
+        ),
+        (
+            "Frontend",
+            settings.frontend.base_package,
+            settings.frontend.base_package_version,
+        ),
+        ("Frontend", "@plone/volto", settings.frontend.volto_version),
+    ):
+        sections.append({
+            "title": title,
+            "name": package,
+            "version": version,
+        })
+    return cur_versions
+
+
 def report_next_versions(settings: t.RepositorySettings):
     cur_version = settings.version
     versions = []
