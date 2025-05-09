@@ -25,7 +25,7 @@ def main(
     try:
         settings = get_settings()
     except RuntimeError:
-        typer.echo("Not running inside a mono repo.")
+        typer.echo("Did not find a repository.toml file.")
         raise typer.Exit() from None
     if version:
         typer.echo(f"repoplone {__version__}")
