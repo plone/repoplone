@@ -20,7 +20,7 @@ PACKAGE_CONSTRAINTS: dict[str, t.PackageConstraintInfo] = {
     },
     "kitconcept.core": {
         "type": "uv",
-        "url": "https://raw.githubusercontent.com/kitconcept/kitconcept.core/refs/tags/{version}/backend/pyproject.toml",
+        "url": "https://raw.githubusercontent.com/kitconcept/kitconcept-core/refs/tags/{version}/backend/pyproject.toml",
     },
     "kitconcept.intranet": {
         "type": "uv",
