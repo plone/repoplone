@@ -69,6 +69,7 @@ Ensure that your monorepo contains a `repository.toml` file. Below is an example
 name = "fake-distribution"
 changelog = "CHANGELOG.md"
 version = "version.txt"
+version_format = "semver"
 compose = "docker-compose.yml"
 
 [repository.towncrier]
