@@ -41,8 +41,12 @@ def release_frontend(
     if dry_run:
         # No need to check if we are authenticated on NPM
         cmd += " --dry-run --npm.skipChecks"
-    elif not package.publish:
-        cmd += "  --npm.skipChecks --no-npm.publish"
+
+    cmd += (
+        "  --no-npm.publish --no-plonePrePublish.publish  --npm.skipChecks"
+        if not package.publish
+        else "-plonePrePublish.publish"
+    )
     cmd += f" -i {version}"
     result = subprocess.run(  # noQA: S602
         cmd,
