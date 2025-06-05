@@ -9,7 +9,7 @@ from repoplone.utils._path import get_root_path
 import warnings
 
 
-DEPRECATIONS = {
+DEPRECATIONS: dict[str, dict] = {
     "repository.managed_by_uv": {
         "path": ("REPOSITORY", "managed_by_uv"),
         "version": "1.0.0",
@@ -20,6 +20,11 @@ DEPRECATIONS = {
     },
     "frontend.path": {
         "path": ("FRONTEND", "path"),
+        "version": "1.0.0",
+    },
+    "repository.compose": {
+        "path": ("REPOSITORY", "compose"),
+        "data_type": str,
         "version": "1.0.0",
     },
 }
@@ -35,8 +40,14 @@ def _check_deprecations(raw_settings: LazySettings) -> list[str]:
             value = value.get(item, None)
             if value is None:
                 break
-        if value:
-            version = info["version"]
+        version = info["version"]
+        data_type = info.get("data_type")
+        if data_type and isinstance(value, data_type):
+            deprecations.append(
+                f"Setting {key} as `{data_type.__name__}` is deprecated "
+                f"and will be removed in version {version}"
+            )
+        elif value and not data_type:
             deprecations.append(
                 f"Setting {key} is deprecated and will be removed in version {version}"
             )
@@ -54,6 +65,16 @@ def _get_raw_settings(root_path: Path) -> LazySettings:
     return raw_settings
 
 
+def _get_compose_path(root_path: Path, raw_settings: LazySettings) -> list[Path]:
+    paths = []
+    raw_compose = raw_settings.repository.compose
+    if isinstance(raw_compose, str):
+        raw_compose = [raw_compose]
+    for compose_file in raw_compose:
+        paths.append(root_path / compose_file)
+    return paths
+
+
 def get_settings() -> t.RepositorySettings:
     """Return base settings."""
     root_path = get_root_path()
@@ -63,7 +84,7 @@ def get_settings() -> t.RepositorySettings:
     version_path = root_path / raw_settings.repository.version
     version = version_path.read_text().strip()
     version_format = raw_settings.repository.get("version_format", "semver")
-    compose_path = root_path / raw_settings.repository.compose
+    compose_path = _get_compose_path(root_path, raw_settings)
     repository_towncrier = raw_settings.repository.get("towncrier", {})
     backend = utils.get_backend(root_path, raw_settings)
     managed_by_uv = backend.managed_by_uv

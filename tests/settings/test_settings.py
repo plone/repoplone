@@ -14,7 +14,7 @@ import pytest
         ["backend", t.BackendPackage],
         ["frontend", t.FrontendPackage],
         ["version_path", Path],
-        ["compose_path", Path],
+        ["compose_path", list],
         ["towncrier", t.TowncrierSettings],
         ["changelogs", t.Changelogs],
     ],
@@ -75,7 +75,7 @@ def test_internal_project_packages(test_internal_project, bust_path_cache):
     [
         [
             "repository_toml/deprecated_100.toml",
-            3,
+            4,
             (
                 "Setting repository.managed_by_uv is deprecated and will be removed"
                 " in version 1.0.0"
@@ -83,13 +83,21 @@ def test_internal_project_packages(test_internal_project, bust_path_cache):
         ],
         [
             "repository_toml/deprecated_100.toml",
-            3,
+            4,
             "Setting backend.path is deprecated and will be removed in version 1.0.0",
         ],
         [
             "repository_toml/deprecated_100.toml",
-            3,
+            4,
             "Setting frontend.path is deprecated and will be removed in version 1.0.0",
+        ],
+        [
+            "repository_toml/old-compose.toml",
+            1,
+            (
+                "Setting repository.compose as `str` is deprecated and will be "
+                "removed in version 1.0.0"
+            ),
         ],
         ["repository_toml/updated.toml", 0, ""],
     ],

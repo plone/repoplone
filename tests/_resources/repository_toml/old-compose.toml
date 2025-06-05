@@ -2,7 +2,7 @@
 name = "fake-project"
 changelog = "CHANGELOG.md"
 version = "version.txt"
-compose = ["docker-compose.yml", "docker-compose-demo.yml"]
+compose = "docker-compose.yml"
 version_format = "calver"
 
 [repository.towncrier]

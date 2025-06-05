@@ -70,7 +70,7 @@ name = "fake-distribution"
 changelog = "CHANGELOG.md"
 version = "version.txt"
 version_format = "semver"
-compose = "docker-compose.yml"
+compose = ["docker-compose.yml"]
 
 [repository.towncrier]
 section = "Project"
