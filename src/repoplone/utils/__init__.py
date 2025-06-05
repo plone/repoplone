@@ -69,8 +69,10 @@ def _get_package_info(
     version = version_func(path)
     publish = bool(package_settings.get("publish", True))
     base_package = package_settings.get("base_package", default_base_package)
+    package_name = package_settings.name
     payload = {
-        "name": package_settings.name,
+        "enabled": bool(package_name),
+        "name": package_name,
         "path": path,
         "base_package": base_package,
         "version": version,
