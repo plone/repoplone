@@ -23,6 +23,7 @@ class Changelogs:
 class Package:
     """Package information."""
 
+    enabled: bool
     name: str
     path: Path
     changelog: Path
@@ -33,7 +34,7 @@ class Package:
     version: str = ""
 
     def sanity(self) -> bool:
-        return (
+        return self.enabled and (
             self.path.exists() and self.changelog.exists() and self.towncrier.exists()
         )
 

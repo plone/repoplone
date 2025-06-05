@@ -17,5 +17,5 @@ def change_cwd(path: Path):
 
 
 @cache
-def get_root_path() -> Path:
+def get_cwd_path() -> Path:
     return (Path().cwd()).resolve()

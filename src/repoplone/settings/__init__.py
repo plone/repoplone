@@ -4,7 +4,7 @@ from pathlib import Path
 from repoplone import _types as t
 from repoplone import utils
 from repoplone.utils import _git as git_utils
-from repoplone.utils._path import get_root_path
+from repoplone.utils._path import get_cwd_path
 
 import warnings
 
@@ -54,8 +54,8 @@ def _check_deprecations(raw_settings: LazySettings) -> list[str]:
     return deprecations
 
 
-def _get_raw_settings(root_path: Path) -> LazySettings:
-    raw_settings = parse_config()
+def _get_raw_settings(cwd_path: Path) -> LazySettings:
+    raw_settings = parse_config(cwd_path)
     try:
         _ = raw_settings.repository.name
     except AttributeError:
@@ -77,8 +77,9 @@ def _get_compose_path(root_path: Path, raw_settings: LazySettings) -> list[Path]
 
 def get_settings() -> t.RepositorySettings:
     """Return base settings."""
-    root_path = get_root_path()
-    raw_settings = _get_raw_settings(root_path)
+    cwd_path = get_cwd_path()
+    raw_settings = _get_raw_settings(cwd_path)
+    root_path = raw_settings.repository.__root__
     name = raw_settings.repository.name
     root_changelog = root_path / raw_settings.repository.changelog
     version_path = root_path / raw_settings.repository.version

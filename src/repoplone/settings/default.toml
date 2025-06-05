@@ -1,0 +1,28 @@
+[repository]
+__root__ = "./"
+name = ""
+changelog = "CHANGELOG.md"
+version = "version.txt"
+compose = ["docker-compose.yml"]
+version_format = "semver"
+
+[repository.towncrier]
+enabled = false
+section = ""
+settings = ""
+
+[backend.package]
+enabled = false
+name = ""
+path = ""
+changelog = ""
+towncrier_settings = ""
+publish = false
+
+[frontend.package]
+enabled = false
+name = ""
+path = ""
+changelog = "f"
+towncrier_settings = ""
+publish = false

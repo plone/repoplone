@@ -96,7 +96,7 @@ def test_project_root_changelog(monkeypatch, tmp_path) -> Path:
 def bust_path_cache():
     from repoplone.utils import _path
 
-    for name in ("get_root_path",):
+    for name in ("get_cwd_path",):
         func = getattr(_path, name)
         func.cache_clear()
 

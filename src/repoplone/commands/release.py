@@ -118,8 +118,11 @@ def _step_release_backend(
     next_version: str,
     dry_run: bool,
 ):
-    utils.release_backend(settings, next_version, dry_run)
-    dutils.indented_print(f"- Released {settings.backend.name}: {next_version}")
+    if settings.backend.enabled:
+        utils.release_backend(settings, next_version, dry_run)
+        dutils.indented_print(f"- Released {settings.backend.name}: {next_version}")
+    else:
+        dutils.indented_print("- Backend packaged is disabled")
 
 
 def _step_release_frontend(
@@ -130,9 +133,12 @@ def _step_release_frontend(
     next_version: str,
     dry_run: bool,
 ):
-    next_version = vutils.convert_python_node_version(next_version)
-    utils.release_frontend(settings, next_version, dry_run)
-    dutils.indented_print(f"- Released {settings.frontend.name}: {next_version}")
+    if settings.frontend.enabled:
+        next_version = vutils.convert_python_node_version(next_version)
+        utils.release_frontend(settings, next_version, dry_run)
+        dutils.indented_print(f"- Released {settings.frontend.name}: {next_version}")
+    else:
+        dutils.indented_print("- Frontend packaged is disabled")
 
 
 def _step_update_git(
