@@ -51,7 +51,10 @@ def test_get_package_constraints(
         ["Products.CMFPlone", False],
         ["kitconcept.core", False],
         ["kitconcept.intranet", False],
+        ["kitconcept.site", False],
         ["portalbrasil.core", False],
+        ["portalbrasil.intranet", False],
+        ["portalbrasil.legislativo", False],
         ["foo.bar", True],
     ],
 )

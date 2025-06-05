@@ -26,9 +26,21 @@ PACKAGE_CONSTRAINTS: dict[str, t.PackageConstraintInfo] = {
         "type": "uv",
         "url": "https://raw.githubusercontent.com/kitconcept/kitconcept.intranet/refs/tags/{version}/backend/pyproject.toml",
     },
+    "kitconcept.site": {
+        "type": "uv",
+        "url": "https://raw.githubusercontent.com/kitconcept/kitconcept-site/refs/tags/{version}/backend/pyproject.toml",
+    },
     "portalbrasil.core": {
         "type": "uv",
         "url": "https://raw.githubusercontent.com/portal-br/core/refs/tags/{version}/backend/pyproject.toml",
+    },
+    "portalbrasil.intranet": {
+        "type": "uv",
+        "url": "https://raw.githubusercontent.com/portal-br/intranet/refs/tags/{version}/backend/pyproject.toml",
+    },
+    "portalbrasil.legislativo": {
+        "type": "uv",
+        "url": "https://raw.githubusercontent.com/portal-br/legislativo/refs/tags/{version}/backend/pyproject.toml",
     },
 }
 
