@@ -100,13 +100,14 @@ def _step_update_repository(
     version_file.write_text(f"{next_version}\n")
     dutils.indented_print(f"- Updated {version_file} file")
     # Update docker-compose.yml
-    compose_file = settings.compose_path
-    if compose_file.exists() and compose_file.is_file():
-        contents = compose_file.read_text().replace(original_version, next_version)
-        compose_file.write_text(contents)
-        dutils.indented_print(f"- Updated {compose_file} file")
-    else:
-        dutils.indented_print("- No docker-compose.yml file to update")
+    compose_files = settings.compose_path
+    for compose_file in compose_files:
+        if compose_file.exists() and compose_file.is_file():
+            contents = compose_file.read_text().replace(original_version, next_version)
+            compose_file.write_text(contents)
+            dutils.indented_print(f"- Updated {compose_file} file")
+        else:
+            dutils.indented_print(f"- No {compose_file} file to update")
 
 
 def _step_release_backend(

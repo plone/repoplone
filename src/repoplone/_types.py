@@ -94,7 +94,7 @@ class RepositorySettings:
     backend: BackendPackage
     frontend: FrontendPackage
     version_path: Path
-    compose_path: Path
+    compose_path: list[Path]
     towncrier: TowncrierSettings
     changelogs: Changelogs
     remote_origin: str
@@ -110,7 +110,7 @@ class RepositorySettings:
             self.backend.sanity(),
             self.frontend.sanity(),
             self.version_path.exists(),
-            self.compose_path.exists(),
+            all(path.exists() for path in self.compose_path),
             self.towncrier.sanity(),
             self.changelogs.sanity(),
         ]
