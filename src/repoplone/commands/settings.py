@@ -3,6 +3,7 @@ from dataclasses import is_dataclass
 from pathlib import Path
 from pathlib import PosixPath
 from repoplone import _types as t
+from repoplone.app import RepoPlone
 from repoplone.utils import display as dutils
 from typing import Any
 
@@ -10,7 +11,7 @@ import json
 import typer
 
 
-app = typer.Typer()
+app = RepoPlone()
 
 
 def _serialize_value(value: Any) -> Any:

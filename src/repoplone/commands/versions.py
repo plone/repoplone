@@ -1,11 +1,12 @@
 from repoplone import _types as t
+from repoplone.app import RepoPlone
 from repoplone.utils import display as dutils
 from repoplone.utils import versions as vutils
 
 import typer
 
 
-app = typer.Typer()
+app = RepoPlone()
 
 
 @app.command()

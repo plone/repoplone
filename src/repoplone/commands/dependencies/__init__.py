@@ -1,13 +1,14 @@
 from repoplone import _types as t
 from repoplone import logger
 from repoplone import utils
+from repoplone.app import RepoPlone
 from repoplone.utils import dependencies
 from typing import Annotated
 
 import typer
 
 
-app = typer.Typer()
+app = RepoPlone()
 
 
 @app.command()

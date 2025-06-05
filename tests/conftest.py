@@ -101,6 +101,15 @@ def bust_path_cache():
         func.cache_clear()
 
 
+@pytest.fixture
+def bust_package_versions_cache():
+    from repoplone.utils.dependencies import versions
+
+    for name in ("package_versions",):
+        func = getattr(versions, name)
+        func.cache_clear()
+
+
 @pytest.fixture(scope="session")
 def vcr_config():
     return {
@@ -140,3 +149,13 @@ def initialize_repo():
         return repo
 
     return func
+
+
+@pytest.fixture
+def requests_timeout(monkeypatch):
+    import requests
+
+    def mock_get(*args, **kwargs):
+        raise requests.ConnectTimeout("Connection timed out")
+
+    monkeypatch.setattr(requests, "get", mock_get)
