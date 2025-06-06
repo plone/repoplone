@@ -2,6 +2,21 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a5 (2025-06-05)
+
+
+### Feature
+
+- Support more than one compose entry. @ericof [#5](https://github.com/plone/repoplone/issues/5)
+- Support passing no-plonePrePublish.publish to frontend package release. @ericof [#13](https://github.com/plone/repoplone/issues/13)
+- Support new distributions `kitconcept.site`, `portalbrasil.intranet` and `portalbrasil.legislativo`. @ericof 
+
+
+### Bugfix
+
+- Handle connection issues when resolving constraints files. @ericof [#12](https://github.com/plone/repoplone/issues/12)
+- Handle error when running repoplone in a subfolder of a repository. @ericof [#15](https://github.com/plone/repoplone/issues/15)
+
 ## 1.0.0a4 (2025-05-09)
 
 
