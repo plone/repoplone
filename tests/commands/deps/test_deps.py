@@ -1,3 +1,4 @@
+from repoplone import exceptions
 from repoplone.cli import app
 from typer.testing import CliRunner
 
@@ -66,3 +67,13 @@ def test_deps_upgrade(
     tool_uv = data["tool"]["uv"]
     assert "constraint-dependencies" in tool_uv
     assert f"{in_package_name}=={version}" in tool_uv["constraint-dependencies"]
+
+
+def test_deps_timeout(
+    bust_path_cache, bust_package_versions_cache, requests_timeout, test_public_project
+):
+    result = runner.invoke(app, ["deps", "check"])
+    assert result.exit_code == 1
+    exception = result.exception
+    assert isinstance(exception, exceptions.RepoPloneExternalException)
+    assert "Failed to fetch versions for package" in exception.message

@@ -3,6 +3,7 @@ from .versions import package_versions
 from mxdev.processing import resolve_dependencies
 from packaging.requirements import Requirement
 from repoplone import _types as t
+from repoplone import exceptions
 
 
 PACKAGE_CONSTRAINTS: dict[str, t.PackageConstraintInfo] = {
@@ -52,6 +53,17 @@ def _get_uv_constraints(url: str, package_name: str, version: str) -> list[str]:
     return parse_constraints(constraints, dependencies)
 
 
+def _get_pip_constraints(url: str, package_name: str, version: str) -> list[str]:
+    """Get constraints using pip."""
+    try:
+        _, constraints = resolve_dependencies(url, [], [], [], "c")
+    except Exception as exc:
+        raise exceptions.RepoPloneExternalException(
+            f"Failed to fetch constraints from {url}: {exc}"
+        ) from exc
+    return constraints
+
+
 def _process_constraint(src: str) -> tuple[str, str]:
     req = Requirement(src)
     return req.name, str(req)
@@ -84,7 +96,7 @@ def get_base_constraints(package_name: str, version: str) -> list[str]:
     constraints_url = pkg_config["url"].format(version=version)
     match constraints_type:
         case "pip":
-            _, constraints = resolve_dependencies(constraints_url, [], [], [], "c")
+            constraints = _get_pip_constraints(constraints_url, package_name, version)
         case "uv":
             constraints = _get_uv_constraints(constraints_url, package_name, version)
         case _:

@@ -1,4 +1,5 @@
 from repoplone import _types as t
+from repoplone.app import RepoPlone
 from repoplone.utils import _git as gitutils
 from repoplone.utils import _github as ghutils
 from repoplone.utils import changelog as chgutils
@@ -10,7 +11,7 @@ from typing import Annotated
 import typer
 
 
-app = typer.Typer()
+app = RepoPlone()
 
 
 def _check_for_confirmation(

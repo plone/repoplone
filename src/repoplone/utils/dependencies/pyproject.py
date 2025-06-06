@@ -1,11 +1,11 @@
 from packaging.requirements import Requirement
 from pathlib import Path
 from repoplone import _types as t
+from repoplone.utils._requests import get_remote_data
 from tomlkit import container
 from tomlkit import items
 
 import re
-import requests
 import tomlkit
 
 
@@ -68,7 +68,7 @@ def get_all_pinned_dependencies(data: tomlkit.TOMLDocument) -> t.Requirements:
 
 def get_remote_uv_dependencies(url: str) -> tuple[list[str], list[str]]:
     """Return dependencies listed under [tool.uv]."""
-    response = requests.get(url)  # noQA: S113
+    response = get_remote_data(url)
     data = response.content.decode("utf-8")
     pyproject = _parse_pyproject(data)
     dependencies = [

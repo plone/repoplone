@@ -1,11 +1,12 @@
 from repoplone import _types as t
+from repoplone.app import RepoPlone
 from repoplone.utils import changelog as chgutils
 from repoplone.utils import display as dutils
 
 import typer
 
 
-app = typer.Typer()
+app = RepoPlone()
 
 
 @app.callback(invoke_without_command=True)

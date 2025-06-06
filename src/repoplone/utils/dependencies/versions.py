@@ -1,8 +1,8 @@
 from functools import cache
 from packaging.version import InvalidVersion
 from packaging.version import Version
-
-import requests
+from repoplone import exceptions
+from repoplone.utils._requests import get_remote_data
 
 
 def is_valid_version(
@@ -50,14 +50,19 @@ def version_latest(
 def get_pypi_package_versions(package: str) -> list[str]:
     """Get versions for a PyPi package."""
     url: str = f"https://pypi.org/pypi/{package}/json"
-    resp = requests.get(url)  # noQA: S113
+    resp = get_remote_data(url)
     data = resp.json()
     return list(data.get("releases").keys())
 
 
 @cache
 def package_versions(package_name: str = "Products.CMFPlone") -> list[str]:
-    versions = sorted(get_pypi_package_versions(package_name))
+    try:
+        versions = sorted(get_pypi_package_versions(package_name))
+    except exceptions.RepoPloneExternalException as exc:
+        raise exceptions.RepoPloneExternalException(
+            f"Failed to fetch versions for package {package_name}: {exc}"
+        ) from exc
     return versions
 
 

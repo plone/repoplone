@@ -41,7 +41,7 @@ def pyproject_toml_dist(test_internal_project_from_distribution):
 def in_pyproject_toml(
     request, test_public_project, test_internal_project_from_distribution, monkeypatch
 ):
-    if request.param == "plone":
+    if getattr(request, "param", "plone") == "plone":
         path = test_public_project
     elif request.param == "dist":
         path = test_internal_project_from_distribution
@@ -51,7 +51,7 @@ def in_pyproject_toml(
 
 @pytest.fixture
 def in_package_name(request):
-    if request.param == "plone":
+    if getattr(request, "param", "plone") == "plone":
         return "Products.CMFPlone"
     elif request.param == "dist":
         return "kitconcept.intranet"

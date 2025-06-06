@@ -1,5 +1,6 @@
 from repoplone import __version__
 from repoplone import _types as t
+from repoplone.app import RepoPlone
 from repoplone.commands.changelog import app as app_changelog
 from repoplone.commands.dependencies import app as app_deps
 from repoplone.commands.release import app as app_release
@@ -11,7 +12,7 @@ from typing import Annotated
 import typer
 
 
-app = typer.Typer(no_args_is_help=True)
+app = RepoPlone(no_args_is_help=True)
 
 
 @app.callback(invoke_without_command=True)
