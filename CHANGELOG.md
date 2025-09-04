@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a6 (2025-09-04)
+
+
+### Feature
+
+- Add support to devsite distribution (https://github.com/portal-br/devsite). @ericof [#21](https://github.com/plone/repoplone/issues/21)
+- Rename kitconcept-site distribution to kitconcept-website (https://github.com/kitconcept-website). @ericof [#22](https://github.com/plone/repoplone/issues/22)
+
 ## 1.0.0a5 (2025-06-05)
 
 
