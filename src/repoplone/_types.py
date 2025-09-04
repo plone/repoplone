@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from packaging.requirements import Requirement
 from pathlib import Path
+from typing import NotRequired
 from typing import TypedDict
 
 
@@ -130,3 +131,4 @@ class PackageConstraintInfo(TypedDict):
 
     type: str
     url: str
+    warning: NotRequired[str]
