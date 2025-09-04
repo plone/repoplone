@@ -4,46 +4,7 @@ from mxdev.processing import resolve_dependencies
 from packaging.requirements import Requirement
 from repoplone import _types as t
 from repoplone import exceptions
-
-
-PACKAGE_CONSTRAINTS: dict[str, t.PackageConstraintInfo] = {
-    "Plone": {
-        "type": "pip",
-        "url": "https://dist.plone.org/release/{version}/constraints.txt",
-    },
-    "plone": {
-        "type": "pip",
-        "url": "https://dist.plone.org/release/{version}/constraints.txt",
-    },
-    "Products.CMFPlone": {
-        "type": "pip",
-        "url": "https://dist.plone.org/release/{version}/constraints.txt",
-    },
-    "kitconcept.core": {
-        "type": "uv",
-        "url": "https://raw.githubusercontent.com/kitconcept/kitconcept-core/refs/tags/{version}/backend/pyproject.toml",
-    },
-    "kitconcept.intranet": {
-        "type": "uv",
-        "url": "https://raw.githubusercontent.com/kitconcept/kitconcept.intranet/refs/tags/{version}/backend/pyproject.toml",
-    },
-    "kitconcept.site": {
-        "type": "uv",
-        "url": "https://raw.githubusercontent.com/kitconcept/kitconcept-site/refs/tags/{version}/backend/pyproject.toml",
-    },
-    "portalbrasil.core": {
-        "type": "uv",
-        "url": "https://raw.githubusercontent.com/portal-br/core/refs/tags/{version}/backend/pyproject.toml",
-    },
-    "portalbrasil.intranet": {
-        "type": "uv",
-        "url": "https://raw.githubusercontent.com/portal-br/intranet/refs/tags/{version}/backend/pyproject.toml",
-    },
-    "portalbrasil.legislativo": {
-        "type": "uv",
-        "url": "https://raw.githubusercontent.com/portal-br/legislativo/refs/tags/{version}/backend/pyproject.toml",
-    },
-}
+from repoplone.distributions import PACKAGE_CONSTRAINTS
 
 
 def _get_uv_constraints(url: str, package_name: str, version: str) -> list[str]:
@@ -87,6 +48,8 @@ def get_constraint_info(package_name: str) -> t.PackageConstraintInfo:
     pkg_config = PACKAGE_CONSTRAINTS.get(package_name)
     if not pkg_config:
         raise AttributeError(f"{package_name} is not supported at the moment.")
+    elif warning := pkg_config.get("warning"):
+        print(f"Warning: {warning}")
     return pkg_config
 
 
