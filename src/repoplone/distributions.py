@@ -38,6 +38,10 @@ PACKAGE_CONSTRAINTS: dict[str, t.PackageConstraintInfo] = {
         "type": "uv",
         "url": "https://raw.githubusercontent.com/portal-br/core/refs/tags/{version}/backend/pyproject.toml",
     },
+    "portalbrasil.devsite": {
+        "type": "uv",
+        "url": "https://raw.githubusercontent.com/portal-br/devsite/refs/tags/{version}/backend/pyproject.toml",
+    },
     "portalbrasil.intranet": {
         "type": "uv",
         "url": "https://raw.githubusercontent.com/portal-br/intranet/refs/tags/{version}/backend/pyproject.toml",

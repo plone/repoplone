@@ -54,6 +54,7 @@ def test_get_package_constraints(
         ["kitconcept.site", False],
         ["kitconcept.website", False],
         ["portalbrasil.core", False],
+        ["portalbrasil.devsite", False],
         ["portalbrasil.intranet", False],
         ["portalbrasil.legislativo", False],
         ["foo.bar", True],
