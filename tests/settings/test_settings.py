@@ -71,6 +71,31 @@ def test_internal_project_packages(test_internal_project, bust_path_cache):
 
 
 @pytest.mark.parametrize(
+    "idx,section_id,exists",
+    [
+        (0, "backend", True),
+        (1, "frontend", True),
+        (2, "repository", True),
+    ],
+)
+def test_settings_from_subdirectory(
+    test_internal_project_from_distribution,
+    monkeypatch,
+    bust_path_cache,
+    idx: int,
+    section_id: str,
+    exists: bool,
+):
+    monkeypatch.chdir(test_internal_project_from_distribution / "backend")
+    result = settings.get_settings()
+    assert result.root_path == test_internal_project_from_distribution
+    sections = result.towncrier.sections
+    section = sections[idx]
+    assert section.section_id == section_id
+    assert section.path.exists() is exists
+
+
+@pytest.mark.parametrize(
     "path,expected_warnings,message",
     [
         [

@@ -18,18 +18,19 @@ def get_changelogs(
 
 
 def get_towncrier_settings(
-    backend: t.Package, frontend: t.Package, repository: dict
+    root_path: Path, backend: t.Package, frontend: t.Package, repository: dict
 ) -> t.TowncrierSettings:
     sections = []
     raw_sections = [
-        ("backend", "Backend", backend.towncrier),
-        ("frontend", "Frontend", frontend.towncrier),
+        ("backend", "Backend", root_path / backend.towncrier),
+        ("frontend", "Frontend", root_path / frontend.towncrier),
     ]
-    if repository:
+    if repository and (towncrier := repository.get("settings", "")):
+        path: Path = root_path / towncrier
         section = (
             "repository",
             repository["section"],
-            Path(repository["settings"]).resolve(),
+            path.resolve(),
         )
         raw_sections.append(section)
     sections = [t.TowncrierSection(*info) for info in raw_sections]

@@ -79,18 +79,20 @@ def get_settings() -> t.RepositorySettings:
     """Return base settings."""
     cwd_path = get_cwd_path()
     raw_settings = _get_raw_settings(cwd_path)
-    root_path = raw_settings.repository.__root__
+    root_path: Path = raw_settings.repository.__root__
     name = raw_settings.repository.name
     root_changelog = root_path / raw_settings.repository.changelog
     version_path = root_path / raw_settings.repository.version
     version = version_path.read_text().strip()
     version_format = raw_settings.repository.get("version_format", "semver")
     compose_path = _get_compose_path(root_path, raw_settings)
-    repository_towncrier = raw_settings.repository.get("towncrier", {})
+    repository_towncrier: dict = raw_settings.repository.get("towncrier", {})
     backend = utils.get_backend(root_path, raw_settings)
     managed_by_uv = backend.managed_by_uv
     frontend = utils.get_frontend(root_path, raw_settings)
-    towncrier = utils.get_towncrier_settings(backend, frontend, repository_towncrier)
+    towncrier = utils.get_towncrier_settings(
+        root_path, backend, frontend, repository_towncrier
+    )
     changelogs = utils.get_changelogs(root_changelog, backend, frontend)
     remote_origin = git_utils.remote_origin(root_path)
     return t.RepositorySettings(
