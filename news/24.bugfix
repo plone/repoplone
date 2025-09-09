@@ -1,1 +1,0 @@
-Fix release command issue due to settings guessing the wrong path to the top-level towncrier.toml file when run from a subdirectory. @ericof

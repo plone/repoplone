@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0a7 (2025-09-09)
+
+
+### Bugfix
+
+- Fix release command issue due to settings guessing the wrong path to the top-level towncrier.toml file when run from a subdirectory. @ericof [#24](https://github.com/plone/repoplone/issues/24)
+
 ## 1.0.0a6 (2025-09-04)
 
 
