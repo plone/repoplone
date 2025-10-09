@@ -3,6 +3,7 @@ __root__ = "./"
 name = ""
 changelog = "CHANGELOG.md"
 version = "version.txt"
+container_images_prefix = ""
 compose = ["docker-compose.yml"]
 version_format = "semver"
 

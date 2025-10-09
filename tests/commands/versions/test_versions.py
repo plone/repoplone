@@ -41,7 +41,7 @@ def test_dependencies_versions(
     assert "kitconcept.intranet" in messages[4]
     assert "1.0.0a17" in messages[4]
     assert "Frontend" in messages[5]
-    assert "@kitconcept/intranet" in messages[5]
+    assert "@kitconcept/volto-intranet" in messages[5]
     assert "1.0.0-alpha.17" in messages[5]
     assert "Frontend" in messages[6]
     assert "@plone/volto" in messages[6]

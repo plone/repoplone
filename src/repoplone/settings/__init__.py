@@ -5,6 +5,7 @@ from repoplone import _types as t
 from repoplone import utils
 from repoplone.utils import _git as git_utils
 from repoplone.utils._path import get_cwd_path
+from typing import Any
 
 import warnings
 
@@ -35,7 +36,7 @@ def _check_deprecations(raw_settings: LazySettings) -> list[str]:
     deprecations = []
     as_dict: dict = raw_settings.as_dict()
     for key, info in DEPRECATIONS.items():
-        value = as_dict
+        value: Any = as_dict
         for item in info["path"]:
             value = value.get(item, None)
             if value is None:
@@ -79,14 +80,16 @@ def get_settings() -> t.RepositorySettings:
     """Return base settings."""
     cwd_path = get_cwd_path()
     raw_settings = _get_raw_settings(cwd_path)
-    root_path: Path = raw_settings.repository.__root__
-    name = raw_settings.repository.name
-    root_changelog = root_path / raw_settings.repository.changelog
-    version_path = root_path / raw_settings.repository.version
-    version = version_path.read_text().strip()
-    version_format = raw_settings.repository.get("version_format", "semver")
-    compose_path = _get_compose_path(root_path, raw_settings)
-    repository_towncrier: dict = raw_settings.repository.get("towncrier", {})
+    repository = raw_settings.repository
+    root_path: Path = repository.__root__
+    name: str = repository.name
+    container_images_prefix: str = repository.get("container_images_prefix", "") or ""
+    root_changelog: Path = root_path / repository.changelog
+    version_path: Path = root_path / repository.version
+    version: str = version_path.read_text().strip()
+    version_format: str = repository.get("version_format", "semver")
+    compose_path: list[Path] = _get_compose_path(root_path, raw_settings)
+    repository_towncrier: dict = repository.get("towncrier", {})
     backend = utils.get_backend(root_path, raw_settings)
     managed_by_uv = backend.managed_by_uv
     frontend = utils.get_frontend(root_path, raw_settings)
@@ -101,6 +104,7 @@ def get_settings() -> t.RepositorySettings:
         root_path=root_path,
         version=version,
         version_format=version_format,
+        container_images_prefix=container_images_prefix,
         backend=backend,
         frontend=frontend,
         version_path=version_path,

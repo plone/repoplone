@@ -1,12 +1,10 @@
-from ._path import change_cwd
-from click.testing import CliRunner
 from datetime import datetime
 from pathlib import Path
 from repoplone import _types as t
 from repoplone import utils
+from repoplone.integrations.towncrier import Towncrier
 from towncrier._builder import find_fragments
 from towncrier._settings import load_config_from_options
-from towncrier._shell import cli as towncrier_app
 
 
 CHANGELOG_PLACEHOLDER = "<!-- towncrier release notes start -->"
@@ -34,22 +32,9 @@ def _prepare_section_changelog(text: str) -> str:
 
 def _run_towncrier(config: Path, name: str, version: str, draft: bool = True) -> str:
     cwd = config.parent
-    runner = CliRunner()
-    args = [
-        "build",
-        "--config",
-        f"{config}",
-        "--yes",
-        "--name",
-        f"'{name}'",
-        "--version",
-        version,
-    ]
-    if draft:
-        args.append("--draft")
-    with change_cwd(cwd):
-        result = runner.invoke(towncrier_app, args)
-    return result.stdout
+    runner = Towncrier(cwd)
+    result = runner.run(config=config, name=name, version=version, draft=draft)
+    return result
 
 
 def generate_section_changelogs(
@@ -118,11 +103,34 @@ def update_backend_changelog(
     settings: t.RepositorySettings, draft: bool = True, version: str = ""
 ) -> str:
     config_path = settings.towncrier.backend.path
+    package_name = settings.backend.name
     result = _run_towncrier(
-        config_path, name=settings.name, version=version, draft=draft
+        config_path, name=package_name, version=version, draft=draft
     )
     if draft:
         result = _cleanup_draft(result, True)
+    return result
+
+
+def update_frontend_changelog(
+    settings: t.RepositorySettings, draft: bool = True, version: str = ""
+) -> str:
+    config_path = settings.towncrier.frontend.path
+    package_name = settings.frontend.name
+    result = _run_towncrier(
+        config_path, name=package_name, version=version, draft=draft
+    )
+    if draft:
+        result = _cleanup_draft(result, True)
+    else:
+        # Copy result to the frontend changelog file
+        package_path = settings.frontend.path
+        package_changelog = Path(package_path) / "CHANGELOG.md"
+        # Go up two levels to find the frontend root
+        frontend_path = package_path.parent.parent
+        frontend_changelog = Path(frontend_path) / "CHANGELOG.md"
+        if frontend_changelog.exists():
+            frontend_changelog.write_text(package_changelog.read_text())
     return result
 
 

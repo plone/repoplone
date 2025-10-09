@@ -1,5 +1,5 @@
 from .pyproject import get_remote_uv_dependencies
-from .versions import package_versions
+from .versions import pypi_package_versions
 from mxdev.processing import resolve_dependencies
 from packaging.requirements import Requirement
 from repoplone import _types as t
@@ -73,7 +73,7 @@ def get_package_constraints(
     package_name: str, version: str, existing_pins: t.Requirements
 ) -> list[str]:
     """Return plone constraints for a version."""
-    versions = package_versions(package_name)
+    versions = pypi_package_versions(package_name)
     existing_constraints = [
         str(v) for k, v in existing_pins.items() if k != package_name
     ]

@@ -3,10 +3,15 @@ from repoplone import exceptions
 import requests
 
 
-def get_remote_data(url: str) -> requests.Response:
+def get_remote_data(
+    url: str, headers: dict[str, str] | None = None
+) -> requests.Response:
     """Get external data from an external url."""
+    headers = headers or {"Accept": "application/json"}
     try:
-        response = requests.get(url, allow_redirects=True, timeout=(5, 5))
+        response = requests.get(
+            url, headers=headers, allow_redirects=True, timeout=(5, 5)
+        )
     except requests.ConnectionError as exc:
         raise exceptions.RepoPloneExternalException(
             f"Failed to connect to {url}: {exc}"

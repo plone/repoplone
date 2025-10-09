@@ -1,6 +1,14 @@
 {
-  "flake8.args": ["--config=pyproject.toml"],
+  "files.encoding": "utf8",
   "ruff.organizeImports": true,
+  "[python]": {
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
   "python.terminal.activateEnvironment": true,
   "python.testing.pytestArgs": [
     "tests"
