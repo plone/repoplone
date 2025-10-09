@@ -31,8 +31,27 @@ def __get_project_dependencies(lock_path: Path) -> dict[str, str]:
     return deps
 
 
+def _get_version_from_mrs_developer(
+    frontend_path: Path, checkout: str = "core", package_name: str = "@plone/volto"
+) -> str | None:
+    """Update package version and run make install again."""
+    mrs_developer_path = frontend_path / "mrs.developer.json"
+    data = _load_json_file(mrs_developer_path)
+    checkout_entry = data.get(checkout)
+    if not checkout_entry:
+        raise ValueError(f"No '{checkout}' entry found in mrs.developer.json")
+    elif (package_ := checkout_entry["package"]) != package_name:
+        raise ValueError(
+            f"mrs.developer.json {checkout} package is {package_}, not {package_name}"
+        )
+    current_version = checkout_entry.get("tag")
+    return current_version
+
+
 def package_version(frontend_path: Path, package_name: str) -> str | None:
     """Return the version of a package."""
+    if package_name == "@plone/volto":
+        return _get_version_from_mrs_developer(frontend_path, package_name=package_name)
     pnpm_lock = frontend_path / "pnpm-lock.yaml"
     if not pnpm_lock.exists():
         return None

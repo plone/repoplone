@@ -114,7 +114,7 @@ def report_deps_versions(settings: t.RepositorySettings) -> dict:
         "repository": {"title": "Repository", "version": settings.version},
         "sections": sections,
     }
-    for title, package, version in (
+    rows = [
         (
             "Backend",
             settings.backend.base_package,
@@ -125,8 +125,15 @@ def report_deps_versions(settings: t.RepositorySettings) -> dict:
             settings.frontend.base_package,
             settings.frontend.base_package_version,
         ),
-        ("Frontend", "@plone/volto", settings.frontend.volto_version),
-    ):
+    ]
+    if settings.frontend.base_package != "@plone/volto":
+        rows.append((
+            "Frontend",
+            "@plone/volto",
+            settings.frontend.volto_version,
+        ))
+
+    for title, package, version in rows:
         sections.append({
             "title": title,
             "name": package,
