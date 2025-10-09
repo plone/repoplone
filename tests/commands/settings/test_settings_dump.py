@@ -45,7 +45,7 @@ def test_settings_dump(bust_path_cache, project):
         [("backend", "base_package"), "kitconcept.intranet"],
         [("backend", "base_package_version"), "1.0.0a17"],
         [("backend", "version"), "1.0.0a0"],
-        [("frontend", "base_package"), "@kitconcept/intranet"],
+        [("frontend", "base_package"), "@kitconcept/volto-intranet"],
         [("frontend", "base_package_version"), "1.0.0-alpha.17"],
         [("frontend", "volto_version"), "18.14.1"],
         [("frontend", "version"), "1.0.0-alpha.0"],

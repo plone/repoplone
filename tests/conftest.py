@@ -50,7 +50,7 @@ def toml_parse():
 def update_pyproject():
     from repoplone.utils.dependencies import update_pyproject
 
-    def func(path: Path, package: str, version: str, constraints: list[str]) -> dict:
+    def func(path: Path, package: str, version: str, constraints: list[str]):
         update_pyproject(path, package, version, constraints)
 
     return func
@@ -75,6 +75,15 @@ def test_internal_project(monkeypatch, tmp_path) -> Path:
 
 
 @pytest.fixture
+def test_internal_project_calver(monkeypatch, tmp_path) -> Path:
+    src = RESOURCES / "fake-project-calver"
+    dst = tmp_path / "fake-project-calver"
+    shutil.copytree(src, dst)
+    monkeypatch.chdir(dst)
+    return dst
+
+
+@pytest.fixture
 def test_internal_project_from_distribution(monkeypatch, tmp_path) -> Path:
     src = RESOURCES / "fake-project-from-distribution"
     dst = tmp_path / "fake-project-from-distribution"
@@ -93,6 +102,15 @@ def test_project_root_changelog(monkeypatch, tmp_path) -> Path:
 
 
 @pytest.fixture
+def test_addon(monkeypatch, tmp_path) -> Path:
+    src = RESOURCES / "fake-addon"
+    dst = tmp_path / "fake-addon"
+    shutil.copytree(src, dst)
+    monkeypatch.chdir(dst)
+    return dst
+
+
+@pytest.fixture
 def bust_path_cache():
     from repoplone.utils import _path
 
@@ -105,7 +123,7 @@ def bust_path_cache():
 def bust_package_versions_cache():
     from repoplone.utils.dependencies import versions
 
-    for name in ("package_versions",):
+    for name in ("npm_package_versions", "pypi_package_versions"):
         func = getattr(versions, name)
         func.cache_clear()
 

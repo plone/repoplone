@@ -1,0 +1,26 @@
+[repository]
+name = "fake-addon"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+container_images_prefix = "ghcr.io/organization/fake-addon"
+compose = "docker-compose.yml"
+
+[backend]
+path = "backend"
+
+[backend.package]
+name = "fake.addon"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+publish = true
+
+[frontend]
+path = "frontend"
+
+[frontend.package]
+name = "fake-addon"
+path = "frontend/packages/fake-addon"
+changelog = "frontend/packages/fake-addon/CHANGELOG.md"
+towncrier_settings = "frontend/packages/fake-addon/towncrier.toml"
+publish = true

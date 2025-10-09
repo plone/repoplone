@@ -26,22 +26,28 @@ It provides various commands to streamline repository management, versioning, an
 
 ### Installation
 
-To install the latest version of this tool, run (on an isolated virtual environment):
+To use the latest version of this tool, run the command:
 
 ```sh
-pip install repoplone
+uvx repoplone
 ```
-
-Also, you can use `uvx` to run this tool, without the need to install it in your environment.
 
 ### Authentications
 
 #### PyPi
 
-We use hatch to make the release, please make sure authentication is in place by running:
+We use `uv` to make the release, please make sure authentication is in place by setting the environment variable `UV_PUBLISH_TOKEN`:
 
 ```sh
-hatch publish --initialize-auth
+export UV_PUBLISH_TOKEN=<MYTOKEN>
+```
+
+or by using the `uv auth` command, as explained [here](https://docs.astral.sh/uv/concepts/authentication/cli/#the-uv-auth-cli).
+
+#### NPM
+
+```sh
+npm whoami
 ```
 
 #### GitHub
@@ -50,12 +56,6 @@ To add releases to GitHub, you should have an environment variable `GH_TOKEN` se
 
 ```sh
 export GH_TOKEN='<token>'
-```
-
-#### NPM
-
-```sh
-npm whoami
 ```
 
 ## Usage

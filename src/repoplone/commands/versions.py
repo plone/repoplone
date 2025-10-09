@@ -47,7 +47,7 @@ def next_version(ctx: typer.Context):
     title = "Possible next version"
     cols = [
         {"header": "Current Version"},
-        {"header": "Desidered Version"},
+        {"header": "Desired Version"},
         {"header": "Repository"},
         {"header": "Backend"},
         {"header": "Frontend"},

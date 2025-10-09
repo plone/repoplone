@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from packaging.requirements import Requirement
 from pathlib import Path
 from typing import NotRequired
+from typing import Protocol
 from typing import TypedDict
 
 
@@ -93,6 +94,7 @@ class RepositorySettings:
     root_path: Path
     version: str
     version_format: str
+    container_images_prefix: str
     backend: BackendPackage
     frontend: FrontendPackage
     version_path: Path
@@ -132,3 +134,36 @@ class PackageConstraintInfo(TypedDict):
     type: str
     url: str
     warning: NotRequired[str]
+
+
+class ReleaseStepFunction(Protocol):
+    def __call__(
+        self,
+        step_id: int,
+        title: str,
+        settings: RepositorySettings,
+        original_version: str,
+        next_version: str,
+        dry_run: bool,
+    ) -> bool: ...
+
+
+@dataclass
+class ReleaseStep:
+    """Definition of a release step."""
+
+    id: str
+    title: str
+    func: ReleaseStepFunction
+
+
+class VersionChecker(Protocol):
+    """Protocol for version checkers."""
+
+    def __call__(self, settings: RepositorySettings) -> tuple[str, str, str]: ...
+
+
+class VersionUpgrader(Protocol):
+    """Protocol for version upgraders."""
+
+    def __call__(self, settings: RepositorySettings, version: str) -> bool: ...

@@ -92,12 +92,18 @@ def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
     package_info = _get_package_info(
         root_path, package_settings, default_base_package, version_func
     )
-    pyproject_toml = package_info["path"] / "pyproject.toml"
+    package_path = package_info["path"]
+    version_txt = package_path / "version.txt"
+    pyproject_toml = package_path / "pyproject.toml"
     package_info["managed_by_uv"] = pyproject_utils.managed_by_uv(pyproject_toml)
-    package_info["base_package_version"] = pyproject_utils.current_base_package(
+    base_package_version = pyproject_utils.current_base_package(
         pyproject_toml,
         package_info["base_package"],
     )
+    if not base_package_version and version_txt.exists():
+        # Get the version from the `version.txt` file as a fallback
+        base_package_version = version_txt.read_text().strip()
+    package_info["base_package_version"] = base_package_version
     return t.BackendPackage(**package_info)
 
 

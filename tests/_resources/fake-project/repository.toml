@@ -3,8 +3,8 @@ name = "fake-project"
 managed_by_uv = true
 changelog = "CHANGELOG.md"
 version = "version.txt"
+container_images_prefix = "ghcr.io/organization/fake-project"
 compose = "docker-compose.yml"
-version_format = "calver"
 
 [backend]
 path = "backend"

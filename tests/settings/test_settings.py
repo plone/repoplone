@@ -11,6 +11,7 @@ import pytest
         ["name", str],
         ["root_path", Path],
         ["version", str],
+        ["container_images_prefix", str],
         ["backend", t.BackendPackage],
         ["frontend", t.FrontendPackage],
         ["version_path", Path],
@@ -52,7 +53,7 @@ def test_internal_project_base_packages(
     assert backend.base_package_version == "1.0.0a17"
     frontend = result.frontend
     assert isinstance(frontend, t.FrontendPackage)
-    assert frontend.base_package == "@kitconcept/intranet"
+    assert frontend.base_package == "@kitconcept/volto-intranet"
     assert frontend.base_package_version == "1.0.0-alpha.17"
     assert frontend.volto_version == "18.14.1"
 
@@ -141,3 +142,10 @@ def test_deprecations(
     if total_warnings:
         messages = [str(deprecation.message) for deprecation in w]
         assert message in messages
+
+
+def test_default_container_images_prefix(test_project_root_changelog, bust_path_cache):
+    result = settings.get_settings()
+    assert isinstance(result, t.RepositorySettings)
+    value = result.container_images_prefix
+    assert value == ""

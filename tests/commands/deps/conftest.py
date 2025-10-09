@@ -38,15 +38,51 @@ def pyproject_toml_dist(test_internal_project_from_distribution):
 
 
 @pytest.fixture
-def in_pyproject_toml(
+def in_patch_sync(monkeypatch):
+    from repoplone.commands import dependencies
+
+    def func(*args, **kwargs):
+        return None
+
+    monkeypatch.setattr(dependencies, "_sync_dependencies", func)
+
+
+@pytest.fixture
+def in_project_path(
     request, test_public_project, test_internal_project_from_distribution, monkeypatch
 ):
-    if getattr(request, "param", "plone") == "plone":
-        path = test_public_project
-    elif request.param == "dist":
+    path = test_public_project
+    if request.param == "dist":
         path = test_internal_project_from_distribution
     monkeypatch.chdir(path)
-    return path / "backend" / "pyproject.toml"
+    return path
+
+
+@pytest.fixture
+def in_pyproject_toml(request, in_pyproject_path):
+    return in_pyproject_path / "backend" / "pyproject.toml"
+
+
+@pytest.fixture
+def in_mrs_developer_json(
+    request, test_public_project, test_internal_project_from_distribution, monkeypatch
+):
+    path = test_public_project
+    if request.param == "dist":
+        path = test_internal_project_from_distribution
+    monkeypatch.chdir(path)
+    return path / "frontend" / "mrs.developer.json"
+
+
+@pytest.fixture
+def in_package_json(
+    request, test_public_project, test_internal_project_from_distribution, monkeypatch
+):
+    path = test_public_project
+    if request.param == "dist":
+        path = test_internal_project_from_distribution
+    monkeypatch.chdir(path)
+    return path / "frontend" / "packages" / "fake-project" / "package.json"
 
 
 @pytest.fixture
@@ -59,32 +95,101 @@ def in_package_name(request):
 
 @pytest.fixture
 def in_latest_version(request):
-    if request.param == "plone":
-        return "6.1.1"
-    elif request.param == "dist":
-        return "1.0.0a17"
+    match request.param:
+        case "plone":
+            return {"Backend": "6.1.1", "Frontend": "16.0.2"}
+        case "dist":
+            return {"Backend": "1.0.0a15", "Frontend": "1.0.0-alpha.15"}
 
 
 TEST_DATA = {
     "test_deps_info": {
-        "argnames": "in_package_name,in_pyproject_toml,expected",
+        "argnames": "in_project_path,in_package_name,idx,title,package_name",
         "packages": {
-            "plone": ["Products.CMFPlone"],
-            "dist": ["kitconcept.intranet"],
+            "plone": (
+                (4, "Backend", "Products.CMFPlone"),
+                (5, "Frontend", "@plone/volto"),
+            ),
+            "dist": (
+                (4, "Backend", "kitconcept.intranet"),
+                (5, "Frontend", "@kitconcept/volto-intranet"),
+            ),
         },
     },
     "test_deps_check": {
-        "argnames": "in_package_name,in_pyproject_toml,current_version,in_latest_version",  # noQA: E501
+        "argnames": "in_project_path,in_package_name,idx,component,package_name,current_version,latest_version",  # noQA: E501
         "packages": {
-            "plone": ["6.0.13", "6.1.0a1", "6.1.0a2"],
-            "dist": ["1.0.0a12", "1.0.0a13", "1.0.0a15"],
+            "plone": (
+                (4, "Backend", "Products.CMFPlone", "6.1.0", "6.1.3"),
+                (5, "Frontend", "@plone/volto", "18.14.1", "19.0.0-alpha.6"),
+            ),
+            "dist": (
+                (4, "Backend", "kitconcept.intranet", "1.0.0a17", "1.0.0b15"),
+                (
+                    5,
+                    "Frontend",
+                    "@kitconcept/volto-intranet",
+                    "1.0.0-alpha.17",
+                    "1.0.0-beta.15",
+                ),
+            ),
         },
     },
     "test_deps_upgrade": {
-        "argnames": "in_package_name,in_pyproject_toml,version",
+        "argnames": "in_project_path,in_package_name,in_patch_sync,component,package_name,version,expected",  # noQA: E501
         "packages": {
-            "plone": ["6.1.0rc1", "6.1.0"],
-            "dist": ["1.0.0a12", "1.0.0a13", "1.0.0a15"],
+            "plone": (
+                (
+                    "backend",
+                    "Products.CMFPlone",
+                    "6.1.0",
+                    "Products.CMFPlone (Backend) already at version 6.1.0.",
+                ),
+                (
+                    "frontend",
+                    "@plone/volto",
+                    "18.14.1",
+                    "@plone/volto (Frontend) already at version 18.14.1.",
+                ),
+                (
+                    "backend",
+                    "Products.CMFPlone",
+                    "latest",
+                    "Upgrade Products.CMFPlone (Backend) from 6.1.0 to 6.1.3",
+                ),
+                (
+                    "frontend",
+                    "@plone/volto",
+                    "latest",
+                    "Upgrade @plone/volto (Frontend) from 18.14.1 to 19.0.0-alpha.6",
+                ),
+            ),
+            "dist": (
+                (
+                    "backend",
+                    "kitconcept.intranet",
+                    "1.0.0a17",
+                    "kitconcept.intranet (Backend) already at version 1.0.0a17.",
+                ),
+                (
+                    "frontend",
+                    "@kitconcept/volto-intranet",
+                    "1.0.0-alpha.17",
+                    "@kitconcept/volto-intranet (Frontend) already at version 1.0.0-alpha.17.",  # noQA: E501
+                ),
+                (
+                    "backend",
+                    "kitconcept.intranet",
+                    "latest",
+                    "Upgrade kitconcept.intranet (Backend) from 1.0.0a17 to 1.0.0b15",
+                ),
+                (
+                    "frontend",
+                    "@kitconcept/volto-intranet",
+                    "latest",
+                    "Upgrade @kitconcept/volto-intranet (Frontend) from 1.0.0-alpha.17 to 1.0.0-beta.15",  # noQA: E501
+                ),
+            ),
         },
     },
 }
@@ -93,14 +198,15 @@ TEST_DATA = {
 def pytest_generate_tests(metafunc):
     func_name = metafunc.function.__name__
     if func_name in TEST_DATA:
-        argnames = TEST_DATA[func_name]["argnames"]
-        total_args = len(argnames.split(","))
-        indirect = [arg for arg in argnames.split(",") if arg.startswith("in_")]
+        all_argnames = TEST_DATA[func_name]["argnames"].split(",")
+        argnames = [arg for arg in all_argnames if not arg.startswith("in_")]
+        total_args = len(all_argnames)
+        indirect = [arg for arg in all_argnames if arg not in argnames]
         args = []
         for package, values in TEST_DATA[func_name]["packages"].items():
-            for value in values:
-                params = [package, package, value]
-                if len(params) < total_args:
-                    params.append(package)
+            for params in values:
+                diff = total_args - len(params)
+                for _ in range(diff):
+                    params = [package, *params]
                 args.append(params)
-        metafunc.parametrize(argnames, args, indirect=indirect)
+        metafunc.parametrize(all_argnames, args, indirect=indirect)

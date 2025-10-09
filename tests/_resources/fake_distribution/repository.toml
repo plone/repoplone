@@ -2,6 +2,7 @@
 name = "fake-distribution"
 changelog = "CHANGELOG.md"
 version = "version.txt"
+container_images_prefix = "ghcr.io/organization/fake-distribution"
 compose = ["docker-compose.yml"]
 
 [backend.package]

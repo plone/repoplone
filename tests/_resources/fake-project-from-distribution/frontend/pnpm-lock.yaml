@@ -3045,7 +3045,7 @@ packages:
   '@keyv/serialize@1.0.3':
     resolution: {integrity: sha512-qnEovoOp5Np2JDGonIDL6Ayihw0RhnRh6vxPuHo4RDn1UOzwEo4AeIfpL6UGIrsceWrCMiVPgwRjbHu4vYFc3g==}
 
-  '@kitconcept/intranet@1.0.0-alpha.17':
+  '@kitconcept/volto-intranet@1.0.0-alpha.17':
     resolution: {integrity: sha512-M2PqQqM30W7amS6OvFRAyHKg94eFV0pQO5KMn1Sn6SmS0YJElz6sA9MOCy39znoHExcKeO2AD2/78ze4LbYgDQ==}
     peerDependencies:
       react: 18.2.0
