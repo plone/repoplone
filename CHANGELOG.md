@@ -2,6 +2,25 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b1 (2025-10-09)
+
+
+### Feature
+
+- Update frontend package using deps upgrade command. @ericof [#4](https://github.com/plone/repoplone/issues/4)
+- Update backend uv lock, and frontend lock file when running upgrade deps command. @ericof [#27](https://github.com/plone/repoplone/issues/27)
+- Use uv instead of hatch to build and publish backend packages. @ericof [#28](https://github.com/plone/repoplone/issues/28)
+- Add zest.pocompile as a dependency (and generate .mo files when releasing the backend). @ericof [#30](https://github.com/plone/repoplone/issues/30)
+- Add support to versioning with [Calendar versioning](https://calver.org/). @ericof 
+- Improve repoplone settings dump to return the backend base package version even if the package is not managed by UV. @ericof 
+- Support container_images_prefix in repository.toml. @ericof 
+
+
+### Internal
+
+- Remove License classifier -- as we explicitly set it with the license setting. @ericof 
+- Update typer to version 0.19.2. @ericof 
+
 ## 1.0.0a7 (2025-09-09)
 
 
