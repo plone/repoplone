@@ -101,7 +101,7 @@ class RepositorySettings:
     compose_path: list[Path]
     towncrier: TowncrierSettings
     changelogs: Changelogs
-    remote_origin: str
+    remote_origin: str = ""
     _tmp_changelog: str = ""
 
     @property

@@ -22,7 +22,7 @@ def _get_remote(repo: Repo) -> Remote | None:
     try:
         origin = repo.remote("origin")
     except ValueError:
-        logger.info("No origin for this repo")
+        logger.debug("No origin for this repo")
         origin = None
     return origin
 
