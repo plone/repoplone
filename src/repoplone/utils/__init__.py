@@ -64,9 +64,11 @@ def _get_package_info(
     version_func: Callable,
 ) -> dict:
     """Return package information for the frontend."""
-    path = (root_path / package_settings.path).resolve()
-    changelog = (root_path / package_settings.changelog).resolve()
-    towncrier = (root_path / package_settings.towncrier_settings).resolve()
+    path = (root_path / str(package_settings.path)).resolve()
+    changelog = (root_path / str(package_settings.changelog)).resolve()
+    towncrier = (root_path / str(package_settings.towncrier_settings)).resolve()
+    raw_code_path = package_settings.get("code_path", "src")
+    code_path = (path / str(raw_code_path)).resolve()
     version = version_func(path)
     publish = bool(package_settings.get("publish", True))
     base_package = package_settings.get("base_package", default_base_package)
@@ -75,6 +77,7 @@ def _get_package_info(
         "enabled": bool(package_name),
         "name": package_name,
         "path": path,
+        "code_path": code_path,
         "base_package": base_package,
         "version": version,
         "publish": publish,

@@ -1,4 +1,3 @@
-from pathlib import Path
 from repoplone import _types as t
 from repoplone import logger
 from repoplone import utils
@@ -52,28 +51,15 @@ def check(ctx: typer.Context):
     dutils.print(table)
 
 
-def _update_constraints(pyproject_path: Path, package_name: str, version: str) -> bool:
-    """Update constraints in pyproject.toml."""
-    if pyproject := dependencies.parse_pyproject(pyproject_path):
-        existing_pins = dependencies.get_all_pinned_dependencies(pyproject)
-        constraints = dependencies.get_package_constraints(
-            package_name, version, existing_pins
-        )
-        logger.info(f"Updating {pyproject_path} dependencies and constraints")
-        dependencies.update_pyproject(
-            pyproject_path, package_name, version, constraints
-        )
-        return True
-    return False
-
-
 def _upgrade_backend(settings: t.RepositorySettings, version: str) -> bool:
     """Upgrade a base dependency to a newer version."""
     package_name: str = settings.backend.base_package
     logger.info(f"Getting {package_name} constraints for version {version}")
     pyproject_path = utils.get_pyproject(settings)
     if pyproject_path:
-        status = _update_constraints(pyproject_path, package_name, version)
+        status = dependencies.update_backend_constraints(
+            pyproject_path, package_name, version
+        )
         # Update versions.txt if it exists
         backend_path = settings.backend.path
         version_file = (backend_path / "version.txt").resolve()
@@ -90,36 +76,44 @@ def _upgrade_frontend(settings: t.RepositorySettings, version: str) -> bool:
     return dependencies.update_frontend_base_package(settings, package_name, version)
 
 
-def _sync_dependencies(
-    settings: t.RepositorySettings, component: str, check_constraints: bool = True
-):
+def _sync_dependencies(settings: t.RepositorySettings, component: str):
     """Sync the lockfile for a specific component."""
-    towncrier_path = settings.root_path / "news"
-    if component == "backend":
-        if check_constraints:
-            # We need to update the constrains
-            info = dependencies.check_backend_base_package(settings)
-            package_name, version = info[0:2]
-            status = _update_constraints(
-                settings.backend.path / "pyproject.toml", package_name, version
-            )
-        else:
-            status = True
-        towncrier_path = settings.backend.path / "news"
+    path = settings.backend.path if component == "backend" else settings.frontend.path
+    towncrier_path = path / "news"
+    make = Make(settings.root_path)
+    try:
+        target = f"{component}-install"
+        typer.echo(f" - Will update lockfile by running 'make {target}'")
+        make.run(target)
+    except RuntimeError as e:
+        typer.echo(f" - Error running 'make {target}: {e}")
+        raise typer.Exit(1) from e
+    typer.echo("\n")
+    typer.echo(f"Now, please, add a news entry in {towncrier_path}.")
+
+
+@app.command()
+def constraints(
+    ctx: typer.Context,
+    component: Annotated[
+        str,
+        typer.Argument(help="Which component to update constraints?"),
+    ] = "backend",
+):
+    """Update constraints for a specific component."""
+    settings: t.RepositorySettings = ctx.obj.settings
+    if component not in ("backend"):
+        typer.echo("Component must be 'backend'.")
+        raise typer.Exit(1)
+    managed_by_uv = settings.backend.managed_by_uv
+    pyproject_path = utils.get_pyproject(settings)
+    if managed_by_uv and pyproject_path:
+        info = dependencies.check_backend_base_package(settings)
+        package_name, version = info[0:2]
+        dependencies.update_backend_constraints(pyproject_path, package_name, version)
+        typer.echo("Updated constraints in pyproject.toml.")
     else:
-        towncrier_path = settings.frontend.path / "news"
-        status = True
-    if status:
-        make = Make(settings.root_path)
-        try:
-            target = f"{component}-install"
-            typer.echo(f" - Will update lockfile by running 'make {target}'")
-            make.run(target)
-        except RuntimeError as e:
-            typer.echo(f" - Error running 'make {target}: {e}")
-            raise typer.Exit(1) from e
-        typer.echo("\n")
-        typer.echo(f"Now, please, add a news entry in {towncrier_path}.")
+        typer.echo("Only available in projects managed by uv (pyproject.toml).")
 
 
 @app.command()
@@ -137,6 +131,7 @@ def sync(
     if component not in ("backend", "frontend", "both"):
         typer.echo("Component must be either 'backend' or 'frontend'.")
         raise typer.Exit(1)
+
     components = [component] if component != "both" else ["backend", "frontend"]
     for component_ in components:
         _sync_dependencies(settings, component_)
@@ -179,7 +174,7 @@ def upgrade(
         typer.echo(f"Upgrade {package_title} from {current_version} to {version}")
         if upgrade_func(settings, version):
             typer.echo(f"- {package_title} at version {version}.")
-            _sync_dependencies(settings, component, check_constraints=False)
+            _sync_dependencies(settings, component)
         else:
             typer.echo(f"- Failed to upgrade {package_title} to version {version}.")
             raise typer.Exit(1)

@@ -14,6 +14,7 @@ settings = "towncrier.toml"
 [backend.package]
 name = "fake.project"
 path = "backend"
+code_path = "src/fake/project"
 changelog = "backend/CHANGELOG.md"
 towncrier_settings = "backend/pyproject.toml"
 base_package = "kitconcept.intranet"
@@ -22,6 +23,7 @@ publish = false
 [frontend.package]
 name = "fake-project"
 path = "frontend/packages/fake-project"
+code_path = "src"
 changelog = "frontend/packages/fake-project/CHANGELOG.md"
 towncrier_settings = "frontend/packages/fake-project/towncrier.toml"
 base_package = "@kitconcept/volto-intranet"

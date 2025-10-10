@@ -31,6 +31,7 @@ class Package:
     changelog: Path
     towncrier: Path
     base_package: str
+    code_path: Path
     base_package_version: str = ""
     publish: bool = True
     version: str = ""

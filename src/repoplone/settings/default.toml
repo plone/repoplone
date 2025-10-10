@@ -17,6 +17,7 @@ enabled = false
 name = ""
 path = ""
 changelog = ""
+code_path = "src"
 towncrier_settings = ""
 publish = false
 
@@ -24,6 +25,7 @@ publish = false
 enabled = false
 name = ""
 path = ""
-changelog = "f"
+code_path = "src"
+changelog = ""
 towncrier_settings = ""
 publish = false
