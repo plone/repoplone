@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b3 (2025-10-10)
+
+
+### Feature
+
+- Add code_path to backend and frontend package settings. @ericof 
+- Add the command `deps constraints` to update pyproject.toml (if project is managed by uv) with constraints information for the base package. @ericof 
+
 ## 1.0.0b2 (2025-10-10)
 
 
