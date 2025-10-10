@@ -33,6 +33,21 @@ def test_settings_sanity(test_public_project, bust_path_cache):
     assert result.sanity() is True
 
 
+def test_packages_paths(test_internal_project_from_distribution, bust_path_cache):
+    result = settings.get_settings()
+    backend = result.backend
+    assert isinstance(backend.path, Path)
+    assert backend.path.exists() is True
+    assert isinstance(backend.code_path, Path)
+    assert backend.code_path.exists() is True
+
+    frontend = result.frontend
+    assert isinstance(frontend.path, Path)
+    assert frontend.path.exists() is True
+    assert isinstance(frontend.code_path, Path)
+    assert frontend.code_path.exists() is True
+
+
 def test_public_project_packages(test_public_project, bust_path_cache):
     result = settings.get_settings()
     backend = result.backend
