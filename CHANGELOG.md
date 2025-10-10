@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b2 (2025-10-10)
+
+
+### Internal
+
+- Reduce verbosity about Git remote not being set. @ericof 
+
 ## 1.0.0b1 (2025-10-09)
 
 
