@@ -42,7 +42,7 @@ We use `uv` to make the release, please make sure authentication is in place by 
 export UV_PUBLISH_TOKEN=<MYTOKEN>
 ```
 
-or by using the `uv auth` command, as explained [here](https://docs.astral.sh/uv/concepts/authentication/cli/#the-uv-auth-cli).
+or by using the `uv auth login pypi.org` command, as explained [here](https://docs.astral.sh/uv/concepts/authentication/cli/#the-uv-auth-cli).
 
 #### NPM
 
@@ -52,10 +52,10 @@ npm whoami
 
 #### GitHub
 
-To add releases to GitHub, you should have an environment variable `GH_TOKEN` set -- with a valid token -- before running this tool.
+To add releases to GitHub, you should have an environment variable `GITHUB_TOKEN` set -- with a valid token -- before running this tool.
 
 ```sh
-export GH_TOKEN='<token>'
+export GITHUB_TOKEN='<token>'
 ```
 
 ## Usage
