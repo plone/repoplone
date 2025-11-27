@@ -102,6 +102,15 @@ def test_project_root_changelog(monkeypatch, tmp_path) -> Path:
 
 
 @pytest.fixture
+def test_frontend_base_package(monkeypatch, tmp_path) -> Path:
+    src = RESOURCES / "frontend-base-package"
+    dst = tmp_path / "frontend-base-package"
+    shutil.copytree(src, dst)
+    monkeypatch.chdir(dst)
+    return dst
+
+
+@pytest.fixture
 def test_addon(monkeypatch, tmp_path) -> Path:
     src = RESOURCES / "fake-addon"
     dst = tmp_path / "fake-addon"

@@ -168,3 +168,15 @@ class VersionUpgrader(Protocol):
     """Protocol for version upgraders."""
 
     def __call__(self, settings: RepositorySettings, version: str) -> bool: ...
+
+
+class MrsDeveloperEntry(TypedDict):
+    """Definition of a mrs.developer.json entry."""
+
+    package: str
+    url: str
+    https: str
+    tag: str
+    output: NotRequired[str]
+    filterBlobs: bool
+    develop: bool

@@ -1,0 +1,28 @@
+[repository]
+name = "fake-project"
+managed_by_uv = true
+changelog = "CHANGELOG.md"
+version = "version.txt"
+container_images_prefix = "ghcr.io/organization/fake-project"
+compose = "docker-compose.yml"
+
+[backend]
+path = "backend"
+
+[backend.package]
+name = "fake.project"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+publish = false
+
+[frontend]
+path = "frontend"
+
+[frontend.package]
+name = "fake-project"
+path = "frontend/packages/fake-project"
+changelog = "frontend/packages/fake-project/CHANGELOG.md"
+towncrier_settings = "frontend/packages/fake-project/towncrier.toml"
+base_package = "@kitconcept/core"
+publish = false
