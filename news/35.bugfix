@@ -1,1 +1,0 @@
-Rewrite `repoplone.utils.versions.get_backend_version` to use `hatch project metadata` instead of `hatch version`. @ericof

@@ -2,6 +2,18 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b4 (2025-11-27)
+
+
+### Bugfix
+
+- Rewrite `repoplone.utils.versions.get_backend_version` to use `hatch project metadata` instead of `hatch version`. @ericof [#35](https://github.com/plone/repoplone/issues/35)
+
+
+### Documentation
+
+- Improve readme advice on authenticating. @davisagli 
+
 ## 1.0.0b3 (2025-10-10)
 
 
