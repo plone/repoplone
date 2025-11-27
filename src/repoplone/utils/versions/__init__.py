@@ -51,8 +51,12 @@ def get_backend_version(backend_path: Path) -> str:
     """Get the current version used by the backend."""
     hatch = get_hatch()
     with change_cwd(backend_path):
-        result = hatch("version")
-    return result.stdout.strip()
+        result = hatch("project", ("metadata"))
+    if result.exit_code != 0:
+        raise RuntimeError("Error getting backend version")
+    metadata = json.loads(result.stdout.strip())
+    version = metadata["version"]
+    return version
 
 
 def get_frontend_version(frontend_package_path: Path) -> str:
