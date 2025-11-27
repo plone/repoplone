@@ -1,0 +1,17 @@
+{
+  "core": {
+    "output": "./",
+    "package": "@plone/volto",
+    "url": "git@github.com:plone/volto.git",
+    "https": "https://github.com/plone/volto.git",
+    "tag": "18.14.1"
+  },
+  "kitconcept-core": {
+    "develop": true,
+    "output": "packages",
+    "package": "@kitconcept/core",
+    "url": "git@github.com:kitconcept/kitconcept-core.git",
+    "https": "https://github.com/kitconcept/kitconcept-core.git",
+    "tag": "2.0.0a2"
+  }
+}

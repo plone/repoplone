@@ -17,6 +17,18 @@ VERSION_PATTERNS = (
 )
 
 
+def semver_from_tag(tag: str) -> str | None:
+    """Convert a tag into a string with semver version."""
+    if not semver.is_semver(tag):
+        try:
+            version = convert_python_node_version(tag)
+        except Exception:
+            version = None
+    else:
+        version = tag
+    return version
+
+
 def convert_python_node_version(version: str) -> str:
     """Converts a PyPI version into a semver version
 
@@ -39,6 +51,39 @@ def convert_python_node_version(version: str) -> str:
     build = pypi_version.dev if pypi_version.dev else None
     version = str(semver.version_from_parts(major, minor, patch, pre, build))
     return version
+
+
+def convert_node_python_version(version: str) -> str:
+    """Converts a semver version into a PyPI version
+
+    :param version: the semver version
+    :return: a PyPI version
+    """
+    # Parse the semver version
+    parsed = semver.parse(version)
+    major = parsed["major"]
+    minor = parsed["minor"]
+    patch = parsed["patch"]
+    prerelease = parsed.get("prerelease")
+    build = parsed.get("build")
+
+    # Build base version
+    pypi_version = f"{major}.{minor}.{patch}"
+
+    # Convert prerelease back to PyPI format
+    if prerelease:
+        pre_str = str(prerelease)
+        # Reverse the patterns: alpha.X -> aX, beta.X -> bX, rc.X -> rcX
+        pre_str = re.sub(r"alpha\.(\d+)", r"a\1", pre_str)
+        pre_str = re.sub(r"beta\.(\d+)", r"b\1", pre_str)
+        pre_str = re.sub(r"rc\.(\d+)", r"rc\1", pre_str)
+        pypi_version += pre_str
+
+    # Convert build to dev release
+    if build:
+        pypi_version += f".dev{build}"
+
+    return pypi_version
 
 
 def get_repository_version(settings: t.RepositorySettings) -> str:
