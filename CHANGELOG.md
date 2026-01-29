@@ -2,6 +2,27 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b5 (2026-01-29)
+
+
+### Feature
+
+- Handle case where frontend base package version is set on mrs.developer instead of package.json. @ericof [#37](https://github.com/plone/repoplone/issues/37)
+- Support Plone 6.2. @ericof 
+- Support Python 3.10. @ericof 
+- Support Python 3.11. @ericof 
+- Support Python 3.14. @ericof 
+
+
+### Bugfix
+
+- Fix dry-release of frontend packages. @ericof 
+
+
+### Internal
+
+- GHA: Upgrade actions/checkout to v5. @ericof 
+
 ## 1.0.0b4 (2025-11-27)
 
 
