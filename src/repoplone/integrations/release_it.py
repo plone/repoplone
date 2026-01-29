@@ -6,7 +6,11 @@ class ReleaseIt(ExternalCommand):
 
     base_args: tuple[str, ...] = ("--ci", "--no-git", "--no-github.release")
 
-    dry_run: tuple[str, ...] = ("--dry-run", "--npm.skipChecks")
+    dry_run: tuple[str, ...] = (
+        "--dry-run",
+        "--npm.skipChecks",
+        "--release-version",
+    )
     publish_args: tuple[str, ...] = ("--plonePrePublish.publish",)
 
     def _sanity_authenticated(self) -> str:
@@ -29,6 +33,7 @@ class ReleaseIt(ExternalCommand):
             args.extend(list(self.dry_run))
         if publish:
             args.extend(list(self.publish_args))
+
         args.extend([f"-i {version}"])
 
         result = self._run(self.command, args)

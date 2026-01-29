@@ -61,7 +61,7 @@ def _parse_version_from_mrs_developer(
     checkout_entry: t.MrsDeveloperEntry, transform: bool = True
 ) -> str | None:
     """Parse version from mrs.developer.json."""
-    version = checkout_entry.get("tag")
+    version: str | None = checkout_entry.get("tag")
     if transform and version:
         version = v_utils.semver_from_tag(version)
     return version
