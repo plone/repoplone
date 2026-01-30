@@ -1,0 +1,1 @@
+Fix running repoplone --version outside a repository. @ericof

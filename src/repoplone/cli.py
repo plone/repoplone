@@ -23,17 +23,17 @@ def main(
     ] = False,
 ):
     """Welcome to Plone Repository Helper."""
+    if version:
+        typer.echo(f"repoplone {__version__}")
+        return
     try:
         settings = get_settings()
     except RuntimeError:
         typer.echo("Did not find a repository.toml file.")
         raise typer.Exit() from None
-    if version:
-        typer.echo(f"repoplone {__version__}")
-    else:
-        ctx_obj = t.CTLContextObject(settings=settings)
-        ctx.obj = ctx_obj
-        ctx.ensure_object(t.CTLContextObject)
+    ctx_obj = t.CTLContextObject(settings=settings)
+    ctx.obj = ctx_obj
+    ctx.ensure_object(t.CTLContextObject)
 
 
 app.add_typer(
