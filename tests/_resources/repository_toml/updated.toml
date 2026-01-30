@@ -12,6 +12,8 @@ settings = "towncrier.toml"
 [backend.package]
 name = "fake.project"
 path = "backend"
+python_version = "3.12"
+python_versions = ["3.10", "3.11", "3.12"]
 changelog = "backend/CHANGELOG.md"
 towncrier_settings = "backend/pyproject.toml"
 publish = false

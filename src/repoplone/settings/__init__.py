@@ -55,6 +55,16 @@ def _check_deprecations(raw_settings: LazySettings) -> list[str]:
     return deprecations
 
 
+def _get_compose_path(root_path: Path, raw_settings: LazySettings) -> list[Path]:
+    paths = []
+    raw_compose = raw_settings.repository.compose
+    if isinstance(raw_compose, str):
+        raw_compose = [raw_compose]
+    for compose_file in raw_compose:
+        paths.append(root_path / compose_file)
+    return paths
+
+
 def _get_raw_settings(cwd_path: Path) -> LazySettings:
     raw_settings = parse_config(cwd_path)
     try:
@@ -66,19 +76,10 @@ def _get_raw_settings(cwd_path: Path) -> LazySettings:
     return raw_settings
 
 
-def _get_compose_path(root_path: Path, raw_settings: LazySettings) -> list[Path]:
-    paths = []
-    raw_compose = raw_settings.repository.compose
-    if isinstance(raw_compose, str):
-        raw_compose = [raw_compose]
-    for compose_file in raw_compose:
-        paths.append(root_path / compose_file)
-    return paths
+def _get_settings(cwd_path: Path) -> t.RepositorySettings:
+    """Given a path to a repository root or repository.toml
 
-
-def get_settings() -> t.RepositorySettings:
-    """Return base settings."""
-    cwd_path = get_cwd_path()
+    return repository settings."""
     raw_settings = _get_raw_settings(cwd_path)
     repository = raw_settings.repository
     root_path: Path = repository.__root__
@@ -113,3 +114,9 @@ def get_settings() -> t.RepositorySettings:
         changelogs=changelogs,
         remote_origin=remote_origin,
     )
+
+
+def get_settings() -> t.RepositorySettings:
+    """Return base settings."""
+    cwd_path = get_cwd_path()
+    return _get_settings(cwd_path)
