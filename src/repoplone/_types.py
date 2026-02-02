@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from dataclasses import field
 from packaging.requirements import Requirement
 from pathlib import Path
 from typing import NotRequired
@@ -47,6 +48,8 @@ class BackendPackage(Package):
     """Backend package information."""
 
     managed_by_uv: bool = False
+    python_version: str = ""
+    python_versions: list[str] = field(default_factory=list)
 
 
 @dataclass

@@ -33,6 +33,20 @@ def test_settings_sanity(test_public_project, bust_path_cache):
     assert result.sanity() is True
 
 
+@pytest.mark.parametrize(
+    "key,expected_value",
+    [
+        ["python_version", "3.12"],
+        ["python_versions", ["3.10", "3.11", "3.12"]],
+    ],
+)
+def test_backend_package_python_version(
+    test_addon, bust_path_cache, key: str, expected_value: str | list[str]
+):
+    result = settings.get_settings()
+    assert getattr(result.backend, key) == expected_value
+
+
 def test_packages_paths(test_internal_project_from_distribution, bust_path_cache):
     result = settings.get_settings()
     backend = result.backend

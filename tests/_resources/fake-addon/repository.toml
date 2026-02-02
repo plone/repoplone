@@ -5,18 +5,14 @@ version = "version.txt"
 container_images_prefix = "ghcr.io/organization/fake-addon"
 compose = "docker-compose.yml"
 
-[backend]
-path = "backend"
-
 [backend.package]
 name = "fake.addon"
 path = "backend"
+python_version = "3.12"
+python_versions = ["3.10", "3.11", "3.12"]
 changelog = "backend/CHANGELOG.md"
 towncrier_settings = "backend/pyproject.toml"
 publish = true
-
-[frontend]
-path = "frontend"
 
 [frontend.package]
 name = "fake-addon"
