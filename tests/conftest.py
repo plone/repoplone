@@ -50,8 +50,17 @@ def toml_parse():
 def update_pyproject():
     from repoplone.utils.dependencies import update_pyproject
 
-    def func(path: Path, package: str, version: str, constraints: list[str]):
-        update_pyproject(path, package, version, constraints)
+    def func(
+        path: Path,
+        package: str,
+        version: str,
+        constraints: list[str],
+        python_versions: list[str] | None = None,
+        plone_versions: list[str] | None = None,
+    ) -> None:
+        update_pyproject(
+            path, package, version, constraints, python_versions, plone_versions
+        )
 
     return func
 

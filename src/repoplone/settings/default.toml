@@ -18,6 +18,7 @@ name = ""
 path = ""
 python_version = ""
 python_versions = []
+plone_versions = []
 changelog = ""
 code_path = "src"
 towncrier_settings = ""

@@ -8,6 +8,8 @@ from repoplone.utils import versions
 from repoplone.utils.dependencies import frontend as frontend_utils
 from repoplone.utils.dependencies import pyproject as pyproject_utils
 
+import tomlkit
+
 
 PYPROJECT_TOML = "pyproject.toml"
 
@@ -88,6 +90,35 @@ def _get_package_info(
     return payload
 
 
+def _get_python_version(package_settings: DynaBox, data: tomlkit.TOMLDocument) -> str:
+    default = defaults.PYTHON_VERSION
+    versions = package_settings.get("python_version")
+    if not versions:
+        versions = pyproject_utils.python_versions(data)
+        versions = versions[0] if versions else default
+    return versions
+
+
+def _get_python_versions(
+    package_settings: DynaBox, data: tomlkit.TOMLDocument
+) -> list[str]:
+    default = defaults.PYTHON_VERSIONS
+    versions = package_settings.get("python_versions")
+    if not versions:
+        versions = pyproject_utils.python_versions(data) or default
+    return versions
+
+
+def _get_plone_versions(
+    package_settings: DynaBox, data: tomlkit.TOMLDocument
+) -> list[str]:
+    default = defaults.PLONE_VERSIONS
+    versions = package_settings.get("plone_versions")
+    if not versions:
+        versions = pyproject_utils.plone_versions(data) or default
+    return versions
+
+
 def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
     """Return package information for the backend."""
     package_settings = raw_settings.backend.package
@@ -99,12 +130,17 @@ def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
     package_path = package_info["path"]
     version_txt = package_path / "version.txt"
     pyproject_toml = package_path / "pyproject.toml"
+    pyproject_data = pyproject_utils.parse_pyproject(pyproject_toml)
     package_info["managed_by_uv"] = pyproject_utils.managed_by_uv(pyproject_toml)
-    package_info["python_version"] = package_settings.get(
-        "python_version", defaults.PYTHON_VERSION
+    # Python and Plone versions
+    package_info["python_versions"] = _get_python_versions(
+        package_settings, pyproject_data
     )
-    package_info["python_versions"] = package_settings.get(
-        "python_versions", defaults.PYTHON_VERSIONS
+    package_info["python_version"] = _get_python_version(
+        package_settings, pyproject_data
+    )
+    package_info["plone_versions"] = _get_plone_versions(
+        package_settings, pyproject_data
     )
     base_package_version = pyproject_utils.current_base_package(
         pyproject_toml,

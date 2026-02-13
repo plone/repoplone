@@ -59,3 +59,12 @@ def test_addon_settings(bust_path_cache, test_addon, get_settings):
     assert result["container_images_prefix"] == "ghcr.io/organization/fake-addon"
     assert result["version_format"] == "semver"
     assert result["backend"]["base_package_version"] == "6.1.0"
+
+
+def test_addon_settings_python_versions(bust_path_cache, test_addon, get_settings):
+    settings = get_settings()
+    func = utils.settings_to_dict
+    result = func(settings)
+    assert result["backend"]["python_version"] == "3.12"
+    assert result["backend"]["python_versions"] == ["3.10", "3.11", "3.12"]
+    assert result["backend"]["plone_versions"] == ["6.1"]
