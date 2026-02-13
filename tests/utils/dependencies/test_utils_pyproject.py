@@ -116,3 +116,55 @@ def test_pyproject_uv_managed(get_resource_file, path: str, expected: str):
     pyproject_path = get_resource_file(path)
     result = func(pyproject_path)
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "version,expected",
+    [
+        ["3.7", False],
+        ["3.8", False],
+        ["3.9", False],
+        ["3.10", False],
+        ["3.11", True],
+        ["3.12", True],
+        ["3.13", True],
+    ],
+)
+def test_python_versions(pyproject_toml, version: str, expected: bool):
+    func = pyproject_utils.python_versions
+    result = func(pyproject_toml)
+    assert (version in result) is expected
+
+
+@pytest.mark.parametrize(
+    "version,expected",
+    [
+        ["6.0", False],
+        ["6.1", True],
+        ["6.2", False],
+    ],
+)
+def test_plone_versions(pyproject_toml, version: str, expected: bool):
+    func = pyproject_utils.plone_versions
+    result = func(pyproject_toml)
+    assert (version in result) is expected
+
+
+@pytest.mark.parametrize(
+    "python_versions,plone_versions",
+    [
+        (["3.11", "3.12", "3.13", "3.14"], ["6.0", "6.1", "6.2"]),
+        (["3.10", "3.11", "3.12"], ["6.0"]),
+    ],
+)
+def test__update_classifiers(
+    pyproject_toml, python_versions: list[str], plone_versions: list[str]
+):
+    func = pyproject_utils._update_classifiers
+    # Update classifiers in place
+    func(pyproject_toml, python_versions, plone_versions)
+    # Check if classifiers were updated
+    python_versions_in_file = pyproject_utils.python_versions(pyproject_toml)
+    assert set(python_versions_in_file) == set(python_versions)
+    plone_versions_in_file = pyproject_utils.plone_versions(pyproject_toml)
+    assert set(plone_versions_in_file) == set(plone_versions)

@@ -9,16 +9,29 @@ from .versions import check_frontend_base_package
 from .versions import node_latest_package_version
 from .versions import python_latest_package_version
 from pathlib import Path
+from repoplone import _types as t
 
 
 def update_backend_constraints(
-    pyproject_path: Path, package_name: str, version: str
+    settings: t.RepositorySettings,
+    pyproject_path: Path,
+    package_name: str,
+    version: str,
 ) -> bool:
     """Update constraints for a base package in pyproject.toml."""
+    python_versions = settings.backend.python_versions
+    plone_versions = settings.backend.plone_versions
     if pyproject := parse_pyproject(pyproject_path):
         existing_pins = get_all_pinned_dependencies(pyproject)
         constraints = get_package_constraints(package_name, version, existing_pins)
-        update_pyproject(pyproject_path, package_name, version, constraints)
+        update_pyproject(
+            pyproject_path,
+            package_name,
+            version,
+            constraints,
+            python_versions,
+            plone_versions,
+        )
         return True
     return False
 

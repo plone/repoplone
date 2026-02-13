@@ -9,6 +9,10 @@ import re
 import tomlkit
 
 
+PLONE_VERSION_PATTERN = re.compile(r"^Framework :: Plone :: (\d+\.\d+)$")
+PYTHON_VERSION_PATTERN = re.compile(r"^Programming Language :: Python :: (\d+\.\d+)$")
+
+
 def _process_requirements(data: tomlkit.TOMLDocument, key: str) -> list[Requirement]:
     requirements: list[Requirement] = []
     raw_dependencies: items.Table | items.Array = (
@@ -133,6 +137,28 @@ def _update_constraints(data: tomlkit.TOMLDocument, raw_constraints: list[str]) 
     tool_uv.update({"constraint-dependencies": constraints})
 
 
+def _update_classifiers(
+    data: tomlkit.TOMLDocument, python_versions: list[str], plone_versions: list[str]
+) -> None:
+    project = _get_project_table(data)
+    classifiers: list[str] = project.get("classifiers", [])
+    # Remove existing Python and Plone version classifiers
+    for classifier in classifiers:
+        if PYTHON_VERSION_PATTERN.match(classifier) or PLONE_VERSION_PATTERN.match(
+            classifier
+        ):
+            classifiers.remove(classifier)
+    # Add updated Python version classifiers
+    for version in python_versions:
+        classifiers.append(f"Programming Language :: Python :: {version}")
+    # Add updated Plone version classifiers
+    for version in plone_versions:
+        classifiers.append(f"Framework :: Plone :: {version}")
+    classifiers.sort()
+    # Update project classifiers
+    project.update({"classifiers": classifiers})
+
+
 def _parse_pyproject(src: str) -> tomlkit.TOMLDocument:
     return tomlkit.parse(src)
 
@@ -141,8 +167,37 @@ def parse_pyproject(pyproject: Path) -> tomlkit.TOMLDocument:
     return _parse_pyproject(pyproject.read_text())
 
 
+def _parse_classifiers(data: tomlkit.TOMLDocument, pattern: re.Pattern) -> list[str]:
+    """Parse classifiers matching the given pattern and return the captured groups."""
+    project = _get_project_table(data)
+    classifiers = project.get("classifiers", [])
+    result = []
+    for classifier in classifiers:
+        match = pattern.match(classifier)
+        if match:
+            result.append(match.group(1))
+    return result
+
+
+def python_versions(data: tomlkit.TOMLDocument) -> list[str]:
+    """Return the supported Python versions from classifiers."""
+    versions = _parse_classifiers(data, PYTHON_VERSION_PATTERN)
+    return versions
+
+
+def plone_versions(data: tomlkit.TOMLDocument) -> list[str]:
+    """Return the supported Plone versions from classifiers."""
+    versions = _parse_classifiers(data, PLONE_VERSION_PATTERN)
+    return versions
+
+
 def update_pyproject(
-    pyproject: Path, package_name: str, version: str, constraints: list[str]
+    pyproject: Path,
+    package_name: str,
+    version: str,
+    constraints: list[str],
+    python_versions: list[str] | None = None,
+    plone_versions: list[str] | None = None,
 ):
     """Update pyproject.toml with a new version of the package."""
     data: tomlkit.TOMLDocument = tomlkit.parse(pyproject.read_text())
@@ -150,5 +205,8 @@ def update_pyproject(
     _update_dependency(data, package_name, version)
     # Constraints
     _update_constraints(data, constraints)
+    # Update classifiers if Python and Plone versions are provided
+    if python_versions and plone_versions:
+        _update_classifiers(data, python_versions, plone_versions)
     # Update pyproject
     pyproject.write_text(tomlkit.dumps(data))

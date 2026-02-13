@@ -50,6 +50,7 @@ class BackendPackage(Package):
     managed_by_uv: bool = False
     python_version: str = ""
     python_versions: list[str] = field(default_factory=list)
+    plone_versions: list[str] = field(default_factory=list)
 
 
 @dataclass

@@ -81,6 +81,7 @@ name = "fake.distribution"
 path = "backend"
 python_version = "3.13"
 python_versions = ["3.11", "3.12", "3.13"]
+plone_versions = ["6.1", "6.2"]
 changelog = "backend/CHANGELOG.md"
 towncrier_settings = "backend/pyproject.toml"
 base_package = "Products.CMFPlone"

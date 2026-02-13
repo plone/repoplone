@@ -58,7 +58,7 @@ def _upgrade_backend(settings: t.RepositorySettings, version: str) -> bool:
     pyproject_path = utils.get_pyproject(settings)
     if pyproject_path:
         status = dependencies.update_backend_constraints(
-            pyproject_path, package_name, version
+            settings, pyproject_path, package_name, version
         )
         # Update versions.txt if it exists
         backend_path = settings.backend.path
@@ -110,7 +110,9 @@ def constraints(
     if managed_by_uv and pyproject_path:
         info = dependencies.check_backend_base_package(settings)
         package_name, version = info[0:2]
-        dependencies.update_backend_constraints(pyproject_path, package_name, version)
+        dependencies.update_backend_constraints(
+            settings, pyproject_path, package_name, version
+        )
         typer.echo("Updated constraints in pyproject.toml.")
     else:
         typer.echo("Only available in projects managed by uv (pyproject.toml).")
