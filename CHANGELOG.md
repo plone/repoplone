@@ -2,6 +2,30 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b6 (2026-02-13)
+
+
+### Feature
+
+- Running `repoplone release` without a providing a desired version, will now prompt the user to select a possible version. @ericof [#33](https://github.com/plone/repoplone/issues/33)
+- Add python_version and python_versions to the backend.package information. @ericof [#40](https://github.com/plone/repoplone/issues/40)
+- Add plone_versions to the backend.package information. @ericof 
+
+
+### Bugfix
+
+- Fix running repoplone --version outside a repository. @ericof 
+
+
+### Internal
+
+- Implemented `repoplone.utils.versions.suggested_next_versions` returning a list of reasonable next versions. @ericof 
+
+
+### Documentation
+
+- Document all options available for repository.toml. @ericof [#44](https://github.com/plone/repoplone/issues/44)
+
 ## 1.0.0b5 (2026-01-29)
 
 
