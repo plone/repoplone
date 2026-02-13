@@ -88,6 +88,7 @@ def test_update_backend_version(
         ["rc", "1.0.0a0", "1.0.0rc0"],
         ["major", "1.0.0a0", "2.0.0"],
         ["minor", "1.0.0a0", "1.1.0"],
+        ["minor,a", "1.0.0a0", "1.1.0a0"],
         ["major,a", "1.0.0a0", "2.0.0a0"],
         ["1.0.0a1", "1.0.0a0", "1.0.0a1"],
         ["calver", f"{TODAY}.1", f"{TODAY}.2"],
@@ -138,3 +139,32 @@ def test_report_deps_versions(
     raw_sections = result.get("sections", [])
     sections = [(i["title"], i["name"], i["version"]) for i in raw_sections]
     assert (title, name, version) in sections
+
+
+@pytest.mark.parametrize(
+    "current_version,idx,key,value",
+    [
+        ["1.0.0a17", 0, "a", "1.0.0a18"],
+        ["1.0.0a17", 1, "b", "1.0.0b0"],
+        ["1.0.0a17", 2, "release", "1.0.0"],
+        ["1.0.0b1", 0, "b", "1.0.0b2"],
+        ["1.0.0b1", 1, "rc", "1.0.0rc0"],
+        ["1.0.0b1", 2, "release", "1.0.0"],
+        ["1.0.0rc1", 0, "rc", "1.0.0rc2"],
+        ["1.0.0rc1", 1, "release", "1.0.0"],
+        ["1.0.0", 0, "micro", "1.0.1"],
+        ["1.0.0", 1, "minor", "1.1.0"],
+        ["1.0.0", 2, "major", "2.0.0"],
+        ["1.0.0", 3, "minor,a", "1.1.0a0"],
+        ["1.0.0", 4, "major,a", "2.0.0a0"],
+    ],
+)
+def test_suggested_next_versions(
+    current_version: str,
+    idx: int,
+    key: str,
+    value: str,
+):
+    func = versions.suggested_next_versions
+    result = func(current_version)
+    assert result[idx][key] == value

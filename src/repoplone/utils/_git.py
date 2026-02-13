@@ -53,7 +53,7 @@ def commit_pending_changes(repo: Repo, message: str):
 
 def repo_has_version(repo: Repo, version: str) -> bool:
     # Fetch existing tags
-    origin = repo.remote("origin")
+    origin = _get_remote(repo)
     if origin:
         origin.fetch()
     # List tags

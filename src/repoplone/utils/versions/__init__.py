@@ -211,3 +211,33 @@ def report_next_versions(settings: t.RepositorySettings):
             "frontend": nv_semver,
         })
     return versions
+
+
+FILTERED_BUMPS = {
+    "a": ["a", "b", "release"],
+    "b": ["b", "rc", "release"],
+    "rc": ["rc", "release"],
+    "default": ["micro", "minor", "major", "minor,a", "major,a"],
+}
+
+
+def suggested_next_versions(current_version: str) -> list[dict[str, str]]:
+    """Return the possible version bumps for a given version."""
+    select = "default"
+    version = PyPIVersion(current_version)
+    if version.is_prerelease:
+        pre = version.pre
+        if pre and len(pre) == 2:
+            pre_type, _ = pre
+            if pre_type in ("a", "b", "rc"):
+                select = pre_type
+    bumps = (
+        FILTERED_BUMPS[select]
+        if select in FILTERED_BUMPS
+        else FILTERED_BUMPS["default"]
+    )
+    versions = []
+    for bump in bumps:
+        nv = next_version(bump, current_version)
+        versions.append({bump: nv})
+    return versions

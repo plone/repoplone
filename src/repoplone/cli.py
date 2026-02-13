@@ -45,7 +45,7 @@ app.add_typer(
 app.add_typer(
     app_release,
     name="release",
-    no_args_is_help=True,
+    no_args_is_help=False,
     help="Release packages in this repository",
 )
 app.add_typer(

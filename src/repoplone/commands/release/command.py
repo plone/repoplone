@@ -37,6 +37,18 @@ def _preflight_check(settings: t.RepositorySettings) -> bool:
     return status
 
 
+def _prompt_version_semver(original_version: str, total_steps: int) -> str:
+    """Prompt the user for the next version."""
+    step_index = 1
+    prompt_message = (
+        f"\n[bold green]{step_index:02d}/{total_steps:02d}[/bold green] "
+        "[bold]Select the next version[/bold]"
+    )
+    options = utils.options_next_version(original_version)
+    answer = dutils.choice(prompt_message, options)
+    return answer
+
+
 @app.callback(invoke_without_command=True)
 def main(
     ctx: typer.Context,
@@ -48,23 +60,28 @@ def main(
                 "a segment like: a, minor, major, rc"
             ),
         ),
-    ],
+    ] = NO_VERSION,
     dry_run: Annotated[bool, typer.Option(help="Is this a dry run?")] = False,
 ):
     """Release the packages in this repository."""
     settings: t.RepositorySettings = ctx.obj.settings
-    original_version = settings.version
-    version_format = settings.version_format
-    desired_version = desired_version if desired_version != NO_VERSION else ""
-    if version_format == "calver" and not desired_version:
-        desired_version = version_format
-    if not desired_version:
-        dutils.print("You must provide the desired version.")
-        raise typer.Exit(1)
-
     dutils.print(f"\n[bold green]Release {settings.name}[/bold green]")
     if not _preflight_check(settings):
         raise typer.Exit(0)
+
+    steps = get_steps()
+    total_steps = len(steps)
+
+    original_version = settings.version
+    version_format = settings.version_format
+    desired_version = desired_version if desired_version != NO_VERSION else ""
+    start_step = 1
+    if version_format == "calver" and not desired_version:
+        desired_version = version_format
+    elif not desired_version:
+        start_step += 1
+        total_steps += 1
+        desired_version = _prompt_version_semver(original_version, total_steps)
 
     next_version, error = get_next_version(settings, original_version, desired_version)
     if error:
@@ -72,11 +89,9 @@ def main(
         typer.Exit(0)
         return
 
-    steps = get_steps()
-    total_steps = len(steps)
-    for step_index, step in enumerate(steps, start=1):
+    for step_index, step in enumerate(steps, start=start_step):
         dutils.print(
-            f"\n[bold green]{step_index}/{total_steps}[/bold green] "
+            f"\n[bold green]{step_index:02d}/{total_steps:02d}[/bold green] "
             f"[bold]{step.title}[/bold]"
         )
         step.func(

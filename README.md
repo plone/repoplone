@@ -162,8 +162,13 @@ uvx repoplone changelog
 
 The `release` command creates a new release and accepts the following arguments:
 
-#### `version`
-The version argument defines the new version to be used in the release. It can be a specific version number or a version segment. Below is a reference table showing how version segments modify an existing `1.0.0` version:
+#### `desired_version`
+
+The desired_version argument defines the new version to be used in the release. It can be a specific version number or a version segment.
+
+##### Semantic Versioning
+
+For projects using *Semantic Versioning* -- the default for repoplone --, below is a reference table showing how version segments modify an existing `1.0.0` version:
 
 | Segment | New Version |
 |---------|------------|
@@ -176,6 +181,26 @@ The version argument defines the new version to be used in the release. It can b
 | `c` / `rc` / `pre` / `preview` | `1.0.0rc0` |
 | `r` / `rev` / `post` | `1.0.0.post0` |
 | `dev` | `1.0.0.dev0` |
+
+If not provided, you will be prompted to select a version from a list of most probable version options:
+
+```
+01/09 Select the next version
+    1 - 1.0.1 (micro)
+    2 - 1.1.0 (minor)
+    3 - 2.0.0 (release)
+    Choose from [1/2/3] (1):
+```
+
+##### Calendar Versioning
+
+For projects that have the value of `version_format` set as `calver`, the `desired_version`, by default, will compute the next available version.
+
+Examples:
+| Current Version | Date | Next Version |
+|---------|------------|------------|
+| 20250404.1|2026-02-13|20260213.1|
+| 20260213.1|2026-02-13|20260213.2|
 
 #### `--dry-run`
 

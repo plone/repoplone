@@ -5,6 +5,7 @@ from ._path import change_cwd
 from .changelog import update_backend_changelog
 from .changelog import update_frontend_changelog
 from .versions import convert_python_node_version
+from .versions import suggested_next_versions
 from .versions import update_backend_version
 from .versions import update_frontend_version
 from dataclasses import dataclass
@@ -35,11 +36,19 @@ def sanity_check(settings: t.RepositorySettings) -> ReleaseSanityCheckResult:
         release_it = ReleaseIt(frontend_package.path)
         if not release_it.check_authentication():
             errors.append("You are not authenticated to NPM.")
-    if not gh_check_token(settings):
+    try:
+        gh_token = gh_check_token(settings)
+    except ValueError:
         warnings.append(
-            "GITHUB_TOKEN is not present or does not have correct permissions."
+            "Could not find a valid origin pointing to a GitHub repository."
             " GitHub release will be skipped."
         )
+    else:
+        if not gh_token:
+            warnings.append(
+                "GITHUB_TOKEN is not present or does not have correct permissions."
+                " GitHub release will be skipped."
+            )
     return ReleaseSanityCheckResult(errors=errors, warnings=warnings)
 
 
@@ -93,3 +102,13 @@ def valid_next_version(settings: t.RepositorySettings, next_version: str) -> boo
     if repo:
         is_valid = not (repo_has_version(repo, next_version))
     return is_valid
+
+
+def options_next_version(original_version: str) -> list[dict[str, str]]:
+    """Return the list of options for the next version."""
+    raw_options = suggested_next_versions(original_version)
+    options = []
+    for option in raw_options:
+        key, value = next(iter(option.items()))
+        options.append({key: f"{value} ({key})"})
+    return options

@@ -66,3 +66,32 @@ def test_release_frontend(
     else:
         assert f"## {expected} (" in changelog_text
         assert expected == package_version
+
+
+@pytest.mark.parametrize(
+    "current_version,idx,key,value",
+    [
+        ["1.0.0a17", 0, "a", "1.0.0a18 (a)"],
+        ["1.0.0a17", 1, "b", "1.0.0b0 (b)"],
+        ["1.0.0a17", 2, "release", "1.0.0 (release)"],
+        ["1.0.0b1", 0, "b", "1.0.0b2 (b)"],
+        ["1.0.0b1", 1, "rc", "1.0.0rc0 (rc)"],
+        ["1.0.0b1", 2, "release", "1.0.0 (release)"],
+        ["1.0.0rc1", 0, "rc", "1.0.0rc2 (rc)"],
+        ["1.0.0rc1", 1, "release", "1.0.0 (release)"],
+        ["1.0.0", 0, "micro", "1.0.1 (micro)"],
+        ["1.0.0", 1, "minor", "1.1.0 (minor)"],
+        ["1.0.0", 2, "major", "2.0.0 (major)"],
+        ["1.0.0", 3, "minor,a", "1.1.0a0 (minor,a)"],
+        ["1.0.0", 4, "major,a", "2.0.0a0 (major,a)"],
+    ],
+)
+def test_options_next_version(
+    current_version: str,
+    idx: int,
+    key: str,
+    value: str,
+):
+    func = release.options_next_version
+    result = func(current_version)
+    assert result[idx][key] == value

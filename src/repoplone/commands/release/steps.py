@@ -168,7 +168,14 @@ def _step_gh_release(
     if dry_run:
         dutils.indented_print("- Skipping GitHub release creation")
         return True
-    if ghutils.check_token(settings):
+    try:
+        check_token = ghutils.check_token(settings)
+    except ValueError:
+        dutils.indented_print(
+            "- Skipping GitHub release creation as this is not a valid repository."
+        )
+        return False
+    if check_token:
         msg = ghutils.create_release(settings, original_version, next_version)
         dutils.indented_print(msg)
     else:
