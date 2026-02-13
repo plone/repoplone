@@ -1,0 +1,1 @@
+Implemented `repoplone.utils.versions.suggested_next_versions` returning a list of reasonable next versions. @ericof
