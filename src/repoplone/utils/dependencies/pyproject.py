@@ -141,22 +141,22 @@ def _update_classifiers(
     data: tomlkit.TOMLDocument, python_versions: list[str], plone_versions: list[str]
 ) -> None:
     project = _get_project_table(data)
-    classifiers: list[str] = project.get("classifiers", [])
+    classifiers: set[str] = set(project.get("classifiers", []))
     # Remove existing Python and Plone version classifiers
-    for classifier in classifiers:
+    for classifier in list(classifiers):
         if PYTHON_VERSION_PATTERN.match(classifier) or PLONE_VERSION_PATTERN.match(
             classifier
         ):
             classifiers.remove(classifier)
     # Add updated Python version classifiers
     for version in python_versions:
-        classifiers.append(f"Programming Language :: Python :: {version}")
+        classifiers.add(f"Programming Language :: Python :: {version}")
     # Add updated Plone version classifiers
     for version in plone_versions:
-        classifiers.append(f"Framework :: Plone :: {version}")
-    classifiers.sort()
+        classifiers.add(f"Framework :: Plone :: {version}")
+    new_classifiers = sorted(classifiers)
     # Update project classifiers
-    project.update({"classifiers": classifiers})
+    project.update({"classifiers": new_classifiers})
 
 
 def _parse_pyproject(src: str) -> tomlkit.TOMLDocument:

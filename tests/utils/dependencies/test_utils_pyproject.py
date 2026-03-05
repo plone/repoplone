@@ -155,16 +155,25 @@ def test_plone_versions(pyproject_toml, version: str, expected: bool):
     [
         (["3.11", "3.12", "3.13", "3.14"], ["6.0", "6.1", "6.2"]),
         (["3.10", "3.11", "3.12"], ["6.0"]),
+        (["3.10", "3.11", "3.11", "3.12"], ["6.0", "6.0"]),
     ],
 )
 def test__update_classifiers(
     pyproject_toml, python_versions: list[str], plone_versions: list[str]
 ):
+    """Test that classifiers are updated correctly in the pyproject.toml.
+
+    We should never have duplicate classifiers, even if the input contain duplicates.
+    """
     func = pyproject_utils._update_classifiers
     # Update classifiers in place
+    func(pyproject_toml, python_versions, plone_versions)
+    # Updating a second time should not duplicate classifiers
     func(pyproject_toml, python_versions, plone_versions)
     # Check if classifiers were updated
     python_versions_in_file = pyproject_utils.python_versions(pyproject_toml)
     assert set(python_versions_in_file) == set(python_versions)
     plone_versions_in_file = pyproject_utils.plone_versions(pyproject_toml)
     assert set(plone_versions_in_file) == set(plone_versions)
+    assert len(python_versions_in_file) == len(set(python_versions))
+    assert len(plone_versions_in_file) == len(set(plone_versions))
