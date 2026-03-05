@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b7 (2026-03-05)
+
+
+### Bugfix
+
+- Avoid duplicating trove classifiers. @ericof [#47](https://github.com/plone/repoplone/issues/47)
+
 ## 1.0.0b6 (2026-02-13)
 
 
