@@ -2,6 +2,20 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b8 (2026-03-06)
+
+
+### Feature
+
+- Change release order. Now we first present the changelog, then ask for the version. @ericof [#49](https://github.com/plone/repoplone/issues/49)
+
+
+### Internal
+
+- Implement a ReleasePipeline to control how the release is run. @ericof 
+- Move release logic from `repoplone.commands.release` to `repoplone.release`. @ericof 
+- Reorganize typing information. @ericof 
+
 ## 1.0.0b7 (2026-03-05)
 
 

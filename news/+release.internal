@@ -1,1 +1,0 @@
-Move release logic from `repoplone.commands.release` to `repoplone.release`. @ericof
