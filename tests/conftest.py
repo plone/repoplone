@@ -195,3 +195,17 @@ def requests_timeout(monkeypatch):
         raise requests.ConnectTimeout("Connection timed out")
 
     monkeypatch.setattr(requests, "get", mock_get)
+
+
+@pytest.fixture
+def set_environment_variables(monkeypatch):
+    """Remove environment variables that could interfere with the tests."""
+    to_remove = ["GITHUB_TOKEN", "UV_PUBLISH_TOKEN", "NPM_TOKEN"]
+
+    def func(env_vars: dict[str, str]):
+        for var in to_remove:
+            monkeypatch.delenv(var, raising=False)
+        for key, value in env_vars.items():
+            monkeypatch.setenv(key, value)
+
+    return func

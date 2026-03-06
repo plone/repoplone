@@ -5,9 +5,10 @@ from rich.prompt import Prompt
 from rich.table import Table
 
 import textwrap
+import typer
 
 
-__all__ = ["print", "print_json", "table"]
+__all__ = ["check_confirm", "print", "print_json", "table"]
 
 
 def table(title: str, columns: list[dict], rows: list) -> Table:
@@ -58,3 +59,14 @@ def choice(prompt: str, options: list[dict[str, str]], prefix: str = "") -> str:
 
     user_choice = Prompt.ask(prompt, choices=list(choices), default=next(iter(choices)))
     return choice_map[user_choice]
+
+
+def check_confirm(
+    question: str = "[bold yellow]Continue?[/bold yellow]",
+    goodbye: str = "Exiting now",
+) -> bool:
+    status: bool = confirm(question)
+    if not (status):
+        print(goodbye)
+        raise typer.Exit(0)
+    return status

@@ -10,20 +10,6 @@ CACHED_OUTPUT = ""
 
 
 @pytest.fixture
-def set_environment_variables(monkeypatch):
-    """Remove environment variables that could interfere with the tests."""
-    to_remove = ["GITHUB_TOKEN", "UV_PUBLISH_TOKEN", "NPM_TOKEN"]
-
-    def func(env_vars: dict[str, str]):
-        for var in to_remove:
-            monkeypatch.delenv(var, raising=False)
-        for key, value in env_vars.items():
-            monkeypatch.setenv(key, value)
-
-    return func
-
-
-@pytest.fixture
 def complete_release_flow(
     bust_path_cache,
     test_internal_project,
@@ -33,7 +19,7 @@ def complete_release_flow(
     global CACHED_OUTPUT
     if not CACHED_OUTPUT:
         env_vars = {}
-        cli_input = "y\n1\ny\ny\ny\ny\n"
+        cli_input = "y\ny\n1\ny\ny\ny\n"
         set_environment_variables(env_vars)
         # Initialize repository
         initialize_repo(test_internal_project)
@@ -112,43 +98,60 @@ def test_release_sanity(
         ),  # explicit no
         (
             {},
-            "y\n",
+            "y\ny\n",
             1,
             [
                 "- GITHUB_TOKEN is not present or does not have correct permissions",
                 "Do you want to continue the release? [y/n] (y)",
-                "01/09 Select the next version",
+                "01/08 Display Changelog",
+                "   Continue? [y/n] (y)",
+            ],
+        ),  # explicit yes, confirm changelog
+        (
+            {},
+            "y\ny\n",
+            1,
+            [
+                "- GITHUB_TOKEN is not present or does not have correct permissions",
+                "Do you want to continue the release? [y/n] (y)",
+                "01/08 Display Changelog",
+                "02/08 Next version",
                 "1 - 1.0.0a1 (a)",
+                "Aborted.",
             ],
         ),  # explicit yes, no version selected
         (
             {},
-            "y\n1\n",
+            "y\ny\n1\n",
             1,
             [
                 "- GITHUB_TOKEN is not present or does not have correct permissions",
                 "Do you want to continue the release? [y/n] (y)",
-                "01/09 Select the next version",
+                "01/08 Display Changelog",
+                "02/08 Next version",
+                "   Select the next version",
                 "1 - 1.0.0a1 (a)",
-                "- Bump version from 1.0.0a0 to 1.0.0a1",
-                "Aborted",
+                "- Skipping GitHub release creation",
+                "- Completed the release of version 1.0.0a1 from version 1.0.0a0",
+                "Continue? [y/n] (y):",
+                "Aborted.",
             ],
-        ),  # explicit yes, select version
+        ),  # explicit yes, select version, no confirmation for goodbye
         (
             {},
-            "y\n1\ny\ny\n",
-            1,
+            "y\ny\n1\ny\n",
+            0,
             [
                 "- GITHUB_TOKEN is not present or does not have correct permissions",
                 "Do you want to continue the release? [y/n] (y)",
-                "01/09 Select the next version",
+                "01/08 Display Changelog",
+                "02/08 Next version",
+                "   Select the next version",
                 "1 - 1.0.0a1 (a)",
-                "03/09 Display Changelog",
-                "- Initial implementation @plone",
-                "08/09 Create GitHub release",
-                "Aborted",
+                "- Skipping GitHub release creation",
+                "- Completed the release of version 1.0.0a1 from version 1.0.0a0",
             ],
-        ),  # explicit yes, select version, confirm version, confirm changelog
+        ),  # explicit yes, select version, confirm and goodbye
     ],
 )
 def test_release_confirmation(
@@ -177,11 +180,11 @@ def test_release_confirmation(
     [
         "- GITHUB_TOKEN is not present or does not have correct permissions",
         "Do you want to continue the release? [y/n] (y)",
-        "01/09 Select the next version",
-        "1 - 1.0.0a1 (a)",
-        "03/09 Display Changelog",
+        "01/08 Display Changelog",
         "- Initial implementation @plone",
-        "08/09 Create GitHub release",
+        "02/08 Next version",
+        "1 - 1.0.0a1 (a)",
+        "07/08 Create GitHub release",
     ],
 )
 def test_complete_release_flow(complete_release_flow, expected_string: str):
