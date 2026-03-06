@@ -2,9 +2,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from packaging.requirements import Requirement
 from pathlib import Path
-from typing import NotRequired
-from typing import Protocol
-from typing import TypedDict
 
 
 Requirements = dict[str, Requirement]
@@ -124,63 +121,3 @@ class RepositorySettings:
             self.changelogs.sanity(),
         ]
         return all(steps)
-
-
-@dataclass
-class CTLContextObject:
-    """Context object used by cli."""
-
-    settings: RepositorySettings
-
-
-class PackageConstraintInfo(TypedDict):
-    """Definition on a Package constraint information."""
-
-    type: str
-    url: str
-    warning: NotRequired[str]
-
-
-class ReleaseStepFunction(Protocol):
-    def __call__(
-        self,
-        step_id: int,
-        title: str,
-        settings: RepositorySettings,
-        original_version: str,
-        next_version: str,
-        dry_run: bool,
-    ) -> bool: ...
-
-
-@dataclass
-class ReleaseStep:
-    """Definition of a release step."""
-
-    id: str
-    title: str
-    func: ReleaseStepFunction
-
-
-class VersionChecker(Protocol):
-    """Protocol for version checkers."""
-
-    def __call__(self, settings: RepositorySettings) -> tuple[str, str, str]: ...
-
-
-class VersionUpgrader(Protocol):
-    """Protocol for version upgraders."""
-
-    def __call__(self, settings: RepositorySettings, version: str) -> bool: ...
-
-
-class MrsDeveloperEntry(TypedDict):
-    """Definition of a mrs.developer.json entry."""
-
-    package: str
-    url: str
-    https: str
-    tag: str
-    output: NotRequired[str]
-    filterBlobs: bool
-    develop: bool
