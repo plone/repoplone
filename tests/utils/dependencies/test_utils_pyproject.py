@@ -177,3 +177,26 @@ def test__update_classifiers(
     assert set(plone_versions_in_file) == set(plone_versions)
     assert len(python_versions_in_file) == len(set(python_versions))
     assert len(plone_versions_in_file) == len(set(plone_versions))
+
+
+@pytest.mark.parametrize(
+    "python_versions,plone_versions",
+    [
+        (["3.11", "3.12", "3.13", "3.14"], ["6.0", "6.1", "6.2"]),
+        (["3.10", "3.11", "3.12"], ["6.0"]),
+        (["3.10", "3.11", "3.11", "3.12"], ["6.0", "6.0"]),
+    ],
+)
+def test__update_classifiers_cleanup_license(
+    pyproject_toml, python_versions: list[str], plone_versions: list[str]
+):
+    """Test that classifiers remove duplication of license information."""
+    func = pyproject_utils._update_classifiers
+    # Check current
+    assert pyproject_utils.license_from_classifier(pyproject_toml) != []
+    assert pyproject_utils.license_from_project(pyproject_toml) != ""
+    # Update classifiers in place
+    func(pyproject_toml, python_versions, plone_versions)
+    # Check after
+    assert pyproject_utils.license_from_classifier(pyproject_toml) == []
+    assert pyproject_utils.license_from_project(pyproject_toml) != ""

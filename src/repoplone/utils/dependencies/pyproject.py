@@ -2,6 +2,7 @@ from packaging.requirements import Requirement
 from pathlib import Path
 from repoplone import _types as t
 from repoplone.utils._requests import get_remote_data
+from repoplone.utils.toml import multiline_array_from_iter
 from tomlkit import container
 from tomlkit import items
 
@@ -11,6 +12,7 @@ import tomlkit
 
 PLONE_VERSION_PATTERN = re.compile(r"^Framework :: Plone :: (\d+\.\d+)$")
 PYTHON_VERSION_PATTERN = re.compile(r"^Programming Language :: Python :: (\d+\.\d+)$")
+LICENSE_PATTERN = re.compile(r"^License :: (.+)$")
 
 
 def _process_requirements(data: tomlkit.TOMLDocument, key: str) -> list[Requirement]:
@@ -129,12 +131,27 @@ def _update_constraints(data: tomlkit.TOMLDocument, raw_constraints: list[str]) 
     if not tool_uv:
         tool_uv = tomlkit.table(False)
         data.append("tool.uv", tool_uv)
-    constraints = tomlkit.array()
-    constraints.multiline(True)
-    for line in raw_constraints:
-        item = tomlkit.item(line)
-        constraints.append(item)
+    # No need to sort items here
+    constraints = multiline_array_from_iter(raw_constraints, True, False)
     tool_uv.update({"constraint-dependencies": constraints})
+
+
+def _add_versions_to_classifiers(
+    classifiers: set[str], prefix: str, versions: list[str]
+) -> None:
+    prefix = prefix[:-1] if prefix.endswith(" ") else prefix
+    for version in versions:
+        classifiers.add(f"{prefix} {version}")
+
+
+def _handle_license_classifier(project: items.Table, classifiers: set[str]) -> None:
+    """Remove classifier for license IF license is present on the project table."""
+    license_ = project.get("license", None)
+    if not license_:
+        return
+    for classifier in list(classifiers):
+        if LICENSE_PATTERN.match(classifier):
+            classifiers.remove(classifier)
 
 
 def _update_classifiers(
@@ -142,6 +159,8 @@ def _update_classifiers(
 ) -> None:
     project = _get_project_table(data)
     classifiers: set[str] = set(project.get("classifiers", []))
+    # First handle license classifier
+    _handle_license_classifier(project, classifiers)
     # Remove existing Python and Plone version classifiers
     for classifier in list(classifiers):
         if PYTHON_VERSION_PATTERN.match(classifier) or PLONE_VERSION_PATTERN.match(
@@ -149,12 +168,14 @@ def _update_classifiers(
         ):
             classifiers.remove(classifier)
     # Add updated Python version classifiers
-    for version in python_versions:
-        classifiers.add(f"Programming Language :: Python :: {version}")
+    _add_versions_to_classifiers(
+        classifiers, "Programming Language :: Python ::", python_versions
+    )
     # Add updated Plone version classifiers
-    for version in plone_versions:
-        classifiers.add(f"Framework :: Plone :: {version}")
-    new_classifiers = sorted(classifiers)
+    _add_versions_to_classifiers(classifiers, "Framework :: Plone ::", plone_versions)
+
+    # Sorting and deduplicating
+    new_classifiers = multiline_array_from_iter(classifiers, True, True)
     # Update project classifiers
     project.update({"classifiers": new_classifiers})
 
@@ -177,6 +198,19 @@ def _parse_classifiers(data: tomlkit.TOMLDocument, pattern: re.Pattern) -> list[
         if match:
             result.append(match.group(1))
     return result
+
+
+def license_from_project(data: tomlkit.TOMLDocument) -> str:
+    """Return the license listed on the project."""
+    project = _get_project_table(data)
+    license_ = project.get("license")
+    return str(license_) if license_ else ""
+
+
+def license_from_classifier(data: tomlkit.TOMLDocument) -> list[str]:
+    """Return the license listed on the classifier."""
+    versions = _parse_classifiers(data, LICENSE_PATTERN)
+    return versions
 
 
 def python_versions(data: tomlkit.TOMLDocument) -> list[str]:
