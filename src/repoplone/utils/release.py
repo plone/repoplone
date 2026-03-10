@@ -4,6 +4,8 @@ from ._github import check_token as gh_check_token
 from ._path import change_cwd
 from .changelog import update_backend_changelog
 from .changelog import update_frontend_changelog
+from .python_release import list_release_files
+from .python_release import remove_release_files
 from .versions import convert_python_node_version
 from .versions import suggested_next_versions
 from .versions import update_backend_version
@@ -68,10 +70,19 @@ def release_backend(settings: t.RepositorySettings, version: str, dry_run: bool)
         return
     with change_cwd(package_path):
         logger.info(f"Build backend package {package_name}")
+        if not dry_run:
+            # Clean up dist folder
+            existing_files = list_release_files()
+            logger.debug(f"Found {len(existing_files)} files from previous builds")
+            remove_release_files()
+
         # Build package using UV
         uv.build()
         if not dry_run:
+            existing_files = list_release_files(version=version)
             logger.info(f"Publish backend package {package_name}")
+            debug_msg = ", ".join([file.name for file in existing_files])
+            logger.debug(f" - Files to be uploaded {debug_msg}")
             uv.publish()
 
 
