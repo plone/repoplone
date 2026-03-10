@@ -1,7 +1,7 @@
 import logging
 
 
-__version__ = "1.0.0b9"
+__version__ = "1.0.0b10.dev0"
 
 
 PACKAGE_NAME = "repoplone"
