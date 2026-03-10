@@ -2,6 +2,19 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b9 (2026-03-10)
+
+
+### Feature
+
+- Remove license from trove classifiers if it license is present at project table. @ericof [#52](https://github.com/plone/repoplone/issues/52)
+
+
+### Bugfix
+
+- Fix the publish command to only upload to PyPI the release that was just created by repoplone. @ericof [#51](https://github.com/plone/repoplone/issues/51)
+- Fix trove-classifier list not having the linebreaks. @ericof [#52](https://github.com/plone/repoplone/issues/52)
+
 ## 1.0.0b8 (2026-03-06)
 
 
