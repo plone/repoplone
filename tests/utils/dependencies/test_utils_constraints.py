@@ -45,6 +45,34 @@ def test_get_package_constraints(
 
 
 @pytest.mark.parametrize(
+    "lines,existing,expected",
+    [
+        # Sort is by canonical name (case-insensitive, hyphens == underscores == dots)
+        (
+            ["Zope==5.10", "plone==6.0", "Products.CMFPlone==6.1"],
+            [],
+            ["plone==6.0", "Products.CMFPlone==6.1", "Zope==5.10"],
+        ),
+        # Existing value replaces upstream when same package (case-insensitive lookup)
+        (
+            ["zope==5.10"],
+            ["Zope==5.8"],
+            ["Zope==5.8"],
+        ),
+        # Existing extras not in upstream are appended and sorted
+        (
+            ["plone==6.0"],
+            ["zope==5.8", "plone==5.9"],
+            ["plone==5.9", "zope==5.8"],
+        ),
+    ],
+)
+def test_parse_constraints(lines: list, existing: list, expected: list):
+    result = const_utils.parse_constraints(lines, existing)
+    assert result == expected
+
+
+@pytest.mark.parametrize(
     "core_package,raises",
     [
         ["Plone", False],

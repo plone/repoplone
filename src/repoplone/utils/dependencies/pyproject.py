@@ -131,8 +131,8 @@ def _update_constraints(data: tomlkit.TOMLDocument, raw_constraints: list[str]) 
     if not tool_uv:
         tool_uv = tomlkit.table(False)
         data.append("tool.uv", tool_uv)
-    # No need to sort items here
-    constraints = multiline_array_from_iter(raw_constraints, True, False)
+    # We should sort items here to maintain consistency
+    constraints = multiline_array_from_iter(raw_constraints, True, True)
     tool_uv.update({"constraint-dependencies": constraints})
 
 
