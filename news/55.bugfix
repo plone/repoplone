@@ -1,1 +1,0 @@
-Fixed ordering of `constraint-dependencies` in `pyproject.toml` to be consistent (sorted) when updated. @ericof

@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b10 (2026-03-11)
+
+
+### Bugfix
+
+- Fixed ordering of `constraint-dependencies` in `pyproject.toml` to be consistent (sorted) when updated. @ericof [#55](https://github.com/plone/repoplone/issues/55)
+
 ## 1.0.0b9 (2026-03-10)
 
 
