@@ -2,6 +2,7 @@ from .pyproject import get_remote_uv_dependencies
 from .versions import pypi_package_versions
 from mxdev.processing import resolve_dependencies
 from packaging.requirements import Requirement
+from packaging.utils import canonicalize_name
 from repoplone import _types as t
 from repoplone import exceptions
 from repoplone.distributions import PACKAGE_CONSTRAINTS
@@ -27,7 +28,7 @@ def _get_pip_constraints(url: str, package_name: str, version: str) -> list[str]
 
 def _process_constraint(src: str) -> tuple[str, str]:
     req = Requirement(src)
-    return req.name, str(req)
+    return canonicalize_name(req.name), str(req)
 
 
 def parse_constraints(lines: list[str], existing: list[str]) -> list[str]:
@@ -41,7 +42,7 @@ def parse_constraints(lines: list[str], existing: list[str]) -> list[str]:
         constraints.append(existing_.pop(req_name, line))
     if existing_:
         constraints.extend(existing_.values())
-    return sorted(constraints, key=lambda x: x.lower())
+    return sorted(constraints, key=lambda x: canonicalize_name(Requirement(x).name))
 
 
 def get_constraint_info(package_name: str) -> t.PackageConstraintInfo:
