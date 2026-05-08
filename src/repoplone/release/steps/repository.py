@@ -1,10 +1,15 @@
 from repoplone.release import _types as t
 from repoplone.utils import changelog as chgutils
 from repoplone.utils import display as dutils
+from typing import Any
 
 
 def step_update_repository(
-    step_id: str, title: str, settings: t.RepositorySettings, state: t.PipelineState
+    step_id: str,
+    title: str,
+    settings: t.RepositorySettings,
+    state: t.PipelineState,
+    **kwargs: Any,
 ) -> bool:
     """Update repository files for the new version.
 

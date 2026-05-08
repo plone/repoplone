@@ -47,7 +47,7 @@ class ReleasePipeline:
                 f"\n[bold green]{step_index:02d}/{state.steps_total:02d}[/bold green] "
                 f"[bold]{step.title}[/bold]"
             )
-            if not step.func(step.id, step.title, settings, state):
+            if not step.func(step.id, step.title, settings, state, **step.kwargs):
                 raise RuntimeError(f"Release step {step.id} failed.")
 
         return True
