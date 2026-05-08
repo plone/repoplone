@@ -1,0 +1,1 @@
+Refactored the release pipeline to load steps from a registry of built-in step functions, paving the way for configurable release pipelines defined in `repository.toml`. Step functions now share a uniform contract `(step_id, title, settings, state, **kwargs) -> bool`. @ericof
