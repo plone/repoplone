@@ -1,7 +1,14 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from dataclasses import field
 from packaging.requirements import Requirement
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from repoplone._types.pipeline import PipelineReleaseStep
 
 
 Requirements = dict[str, Requirement]
@@ -103,6 +110,7 @@ class RepositorySettings:
     compose_path: list[Path]
     towncrier: TowncrierSettings
     changelogs: Changelogs
+    release_steps: list[PipelineReleaseStep] = field(default_factory=list)
     remote_origin: str = ""
     _tmp_changelog: str = ""
 

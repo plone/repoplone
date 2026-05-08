@@ -1,10 +1,15 @@
 from repoplone.release import _types as t
 from repoplone.utils import _github as ghutils
 from repoplone.utils import display as dutils
+from typing import Any
 
 
 def step_gh_release(
-    step_id: str, title: str, settings: t.RepositorySettings, state: t.PipelineState
+    step_id: str,
+    title: str,
+    settings: t.RepositorySettings,
+    state: t.PipelineState,
+    **kwargs: Any,
 ) -> bool:
     if state.dry_run:
         dutils.indented_print("- Skipping GitHub release creation")

@@ -12,6 +12,26 @@ enabled = false
 section = ""
 settings = ""
 
+# Optional release pipeline configuration. When omitted, the default
+# pipeline order shipped with repoplone is used.
+#
+# [repository.release]
+# steps = [
+#     "changelog",
+#     "version",
+#     "repository",
+#     "release_backend",
+#     "git",
+#     "notify_slack",
+#     "gh_release",
+#     "bye",
+# ]
+#
+# [repository.release.registry.notify_slack]
+# title = "Notify internal Slack"
+# function = "local_step"
+# args = { entrypoint = "scripts.notify:hook", channel = "#releases" }
+
 [backend.package]
 enabled = false
 name = ""

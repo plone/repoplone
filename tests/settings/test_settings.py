@@ -178,3 +178,50 @@ def test_default_container_images_prefix(test_project_root_changelog, bust_path_
     assert isinstance(result, t.RepositorySettings)
     value = result.container_images_prefix
     assert value == ""
+
+
+def test_release_steps_default_when_section_absent(
+    test_public_project, bust_path_cache
+):
+    result = settings.get_settings()
+    from repoplone.release.steps import DEFAULT_STEPS
+
+    assert [s.id for s in result.release_steps] == list(DEFAULT_STEPS)
+
+
+def test_release_steps_custom_order_via_repository_toml(
+    test_public_project, bust_path_cache
+):
+    toml = test_public_project / "repository.toml"
+    toml.write_text(
+        toml.read_text()
+        + "\n"
+        + "[repository.release]\n"
+        + 'steps = ["changelog", "version", "bye"]\n'
+    )
+    result = settings.get_settings()
+    assert [s.id for s in result.release_steps] == ["changelog", "version", "bye"]
+
+
+def test_release_steps_with_local_step_alias(test_public_project, bust_path_cache):
+    toml = test_public_project / "repository.toml"
+    toml.write_text(
+        toml.read_text()
+        + "\n"
+        + "[repository.release]\n"
+        + 'steps = ["changelog", "notify_slack", "bye"]\n'
+        + "\n"
+        + "[repository.release.registry.notify_slack]\n"
+        + 'title = "Notify Slack"\n'
+        + 'function = "local_step"\n'
+        + 'args = { entrypoint = "scripts.notify:hook", channel = "#releases" }\n'
+    )
+    result = settings.get_settings()
+    ids = [s.id for s in result.release_steps]
+    assert ids == ["changelog", "notify_slack", "bye"]
+    notify = next(s for s in result.release_steps if s.id == "notify_slack")
+    assert notify.title == "Notify Slack"
+    assert notify.kwargs == {
+        "entrypoint": "scripts.notify:hook",
+        "channel": "#releases",
+    }

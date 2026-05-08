@@ -214,6 +214,84 @@ uvx repoplone release a
 
 This will create an `alpha` release.
 
+### Configuring the release pipeline
+
+By default, repoplone runs a fixed sequence of steps when releasing. Projects
+can override that sequence in `repository.toml` under `[repository.release]`.
+
+Built-in step ids: `changelog`, `version`, `repository`, `release_backend`,
+`release_frontend`, `git`, `gh_release`, `bye`. The default order matches
+that list.
+
+#### Reordering or omitting built-in steps
+
+```toml
+[repository.release]
+steps = [
+    "changelog",
+    "version",
+    "repository",
+    "release_backend",
+    "git",
+    "bye",
+]
+```
+
+The example above skips `release_frontend` and `gh_release`.
+
+#### Running a project-local hook
+
+The `local_step` built-in imports a callable from the project root and runs
+it under the standard step contract:
+
+```python
+def step(step_id, title, settings, state, **kwargs) -> bool:
+    ...
+```
+
+Wire it via a registry alias. The alias id is what you put in `steps`:
+
+```toml
+[repository.release]
+steps = ["changelog", "version", "repository", "notify_slack", "git", "bye"]
+
+[repository.release.registry.notify_slack]
+title = "Notify internal Slack"
+function = "local_step"
+args = { entrypoint = "scripts.notify:hook", channel = "#releases" }
+```
+
+Repoplone adds the project root to `sys.path` before resolving the
+entrypoint, so a hook at `scripts/notify.py` is reachable as
+`scripts.notify:hook`. Any keys in `args` other than `entrypoint` are
+forwarded to the hook as keyword arguments.
+
+> **uvx caveat.** Because `uvx repoplone` runs in an isolated environment,
+> a local hook may only use the standard library plus packages repoplone
+> itself depends on. Third-party packages installed in the project's own
+> environment are *not* available to the hook.
+
+`local_step` cannot appear in `steps` directly — it must be wrapped in a
+registry alias that supplies `args.entrypoint`.
+
+#### Validating the configuration
+
+Before committing a `[repository.release]` change, validate it:
+
+```bash
+uvx repoplone settings sanity-check
+```
+
+This loads the settings and resolves every `local_step` entrypoint. It
+exits non-zero with a precise message if anything fails.
+
+To inspect the resolved pipeline:
+
+```bash
+uvx repoplone settings release-steps          # human-readable table
+uvx repoplone settings release-steps --json   # machine-readable
+```
+
 ---
 
 ## Dependencies

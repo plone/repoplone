@@ -2,6 +2,7 @@ from repoplone.release import _types as t
 from repoplone.utils import display as dutils
 from repoplone.utils import release as utils
 from repoplone.utils import versions as vutils
+from typing import Any
 
 
 def _get_next_version(
@@ -30,7 +31,11 @@ def _prompt_version_semver(original_version: str, state: t.PipelineState) -> str
 
 
 def step_next_version(
-    step_id: str, title: str, settings: t.RepositorySettings, state: t.PipelineState
+    step_id: str,
+    title: str,
+    settings: t.RepositorySettings,
+    state: t.PipelineState,
+    **kwargs: Any,
 ) -> bool:
     prompted: bool = False
     version_format = state.version_format

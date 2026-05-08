@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+from dataclasses import field
 from repoplone._types.repository import RepositorySettings
+from typing import Any
 from typing import Protocol
 
 
@@ -21,7 +23,8 @@ class PipelineReleaseStepFunction(Protocol):
         step_id: str,
         title: str,
         settings: RepositorySettings,
-        run: PipelineState,
+        state: PipelineState,
+        **kwargs: Any,
     ) -> bool: ...
 
 
@@ -32,3 +35,4 @@ class PipelineReleaseStep:
     id: str
     title: str
     func: PipelineReleaseStepFunction
+    kwargs: dict[str, Any] = field(default_factory=dict)

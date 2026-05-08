@@ -1,9 +1,14 @@
 from repoplone.release import _types as t
 from repoplone.utils import display as dutils
+from typing import Any
 
 
 def step_summary(
-    step_id: str, title: str, settings: t.RepositorySettings, state: t.PipelineState
+    step_id: str,
+    title: str,
+    settings: t.RepositorySettings,
+    state: t.PipelineState,
+    **kwargs: Any,
 ) -> bool:
     dutils.indented_print(
         f"- Completed the release of version {state.next_version}"

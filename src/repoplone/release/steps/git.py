@@ -1,10 +1,15 @@
 from repoplone.release import _types as t
 from repoplone.utils import _git as gitutils
 from repoplone.utils import display as dutils
+from typing import Any
 
 
 def step_update_git(
-    step_id: str, title: str, settings: t.RepositorySettings, state: t.PipelineState
+    step_id: str,
+    title: str,
+    settings: t.RepositorySettings,
+    state: t.PipelineState,
+    **kwargs: Any,
 ) -> bool:
     if not state.dry_run:
         repo = gitutils.repo_for_project(settings.root_path)

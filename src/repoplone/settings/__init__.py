@@ -3,6 +3,7 @@ from dynaconf.base import LazySettings
 from pathlib import Path
 from repoplone import _types as t
 from repoplone import utils
+from repoplone.release.config import build_release_steps
 from repoplone.utils import _git as git_utils
 from repoplone.utils._path import get_cwd_path
 from typing import Any
@@ -99,6 +100,10 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
     )
     changelogs = utils.get_changelogs(root_changelog, backend, frontend)
     remote_origin = git_utils.remote_origin(root_path)
+    raw_release = repository.get("release", None)
+    if hasattr(raw_release, "to_dict"):
+        raw_release = raw_release.to_dict()
+    release_steps = build_release_steps(raw_release)
     return t.RepositorySettings(
         name=name,
         managed_by_uv=managed_by_uv,
@@ -112,6 +117,7 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
         compose_path=compose_path,
         towncrier=towncrier,
         changelogs=changelogs,
+        release_steps=release_steps,
         remote_origin=remote_origin,
     )
 

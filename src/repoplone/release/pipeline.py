@@ -1,6 +1,5 @@
 from repoplone._types import RepositorySettings
 from repoplone.release import _types as t
-from repoplone.release.steps import get_steps
 from repoplone.utils import display as dutils
 
 
@@ -19,8 +18,8 @@ class ReleasePipeline:
         dry_run: bool = False,
         desired_version: str = "",
     ) -> None:
-        # Populate steps
-        self.steps = get_steps()
+        # Populate steps from settings (parsed from [repository.release])
+        self.steps = list(settings.release_steps)
         # Repository settings
         self.settings = settings
         # Version information
@@ -47,7 +46,7 @@ class ReleasePipeline:
                 f"\n[bold green]{step_index:02d}/{state.steps_total:02d}[/bold green] "
                 f"[bold]{step.title}[/bold]"
             )
-            if not step.func(step.id, step.title, settings, state):
+            if not step.func(step.id, step.title, settings, state, **step.kwargs):
                 raise RuntimeError(f"Release step {step.id} failed.")
 
         return True
