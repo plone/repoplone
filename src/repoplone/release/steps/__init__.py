@@ -5,6 +5,7 @@ from repoplone.release.steps.changelog import step_prepare_changelog
 from repoplone.release.steps.frontend import step_release_frontend
 from repoplone.release.steps.git import step_update_git
 from repoplone.release.steps.github import step_gh_release
+from repoplone.release.steps.local_step import local_step
 from repoplone.release.steps.repository import step_update_repository
 from repoplone.release.steps.summary import step_summary
 from repoplone.release.steps.version import step_next_version
@@ -31,6 +32,7 @@ BUILTIN_STEPS: dict[str, BuiltinStep] = {
     "git": BuiltinStep("Commit changes, create tag", step_update_git),
     "gh_release": BuiltinStep("Create GitHub release", step_gh_release),
     "bye": BuiltinStep("Summary and goodbye", step_summary),
+    "local_step": BuiltinStep("Run local step", local_step),
 }
 
 
