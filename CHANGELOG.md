@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0b11 (2026-05-08)
+
+
+### Feature
+
+- Made the release pipeline configurable through the new `[repository.release]` section of `repository.toml`. Projects can now omit, add, or reorder built-in steps via `steps = [...]` and declare custom step aliases under `[repository.release.registry.<id>]`. The `local_step` built-in lets a project run its own callable (referenced as `entrypoint = "module:callable"`) under the standard step contract `(step_id, title, settings, state, **kwargs) -> bool`. Two new commands help inspect and validate the configuration: `uvx repoplone settings sanity-check` and `uvx repoplone settings release-steps` (with `--json` for scripting). @ericof [#60](https://github.com/plone/repoplone/issues/60)
+
 ## 1.0.0b10 (2026-03-11)
 
 
