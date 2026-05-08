@@ -17,6 +17,10 @@ def _serialize_value(value: Any) -> Any:
         value = [_serialize_value(v) for v in value]
     elif isinstance(value, Path | PosixPath):
         value = str(value)
+    elif callable(value):
+        module = getattr(value, "__module__", "")
+        qualname = getattr(value, "__qualname__", repr(value))
+        value = f"{module}.{qualname}" if module else qualname
     return value
 
 
