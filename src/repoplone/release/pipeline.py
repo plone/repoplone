@@ -19,7 +19,14 @@ class ReleasePipeline:
         desired_version: str = "",
     ) -> None:
         # Populate steps from settings (parsed from [repository.release])
-        self.steps = list(settings.release_steps)
+        self.steps = []
+        for step in settings.release_steps:
+            if step.id == "release_backend" and not settings.backend.enabled:
+                continue
+            if step.id == "release_frontend" and not settings.frontend.enabled:
+                continue
+            self.steps.append(step)
+
         # Repository settings
         self.settings = settings
         # Version information
