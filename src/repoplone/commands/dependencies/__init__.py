@@ -143,6 +143,11 @@ def sync(
         if settings.frontend.enabled:
             components.append("frontend")
     else:
+        # Check if component is enabled
+        section = getattr(settings, component)
+        if not section.enabled:
+            typer.echo(f"Error: {component.title()} component is not enabled in repository.toml")
+            raise typer.Exit(1)
         components = [component]
 
     for component_ in components:
