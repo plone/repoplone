@@ -50,17 +50,21 @@ def next_version(ctx: typer.Context):
         {"header": "Desired Version"},
         {"header": "Repository"},
         {"header": "Backend"},
-        {"header": "Frontend"},
     ]
-    rows = [
-        (
+    if settings.frontend.enabled:
+        cols.append({"header": "Frontend"})
+
+    rows = []
+    for version in versions:
+        row = [
             settings.version,
             version["bump"],
             version["repository"],
             version["backend"],
-            version["frontend"],
-        )
-        for version in versions
-    ]
+        ]
+        if settings.frontend.enabled:
+            row.append(version["frontend"])
+        rows.append(tuple(row))
+
     table = dutils.table(title, cols, rows)
     dutils.print(table)
