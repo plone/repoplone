@@ -149,11 +149,12 @@ def report_cur_versions(settings: t.RepositorySettings) -> dict:
         ("Backend", settings.backend),
         ("Frontend", settings.frontend),
     ):
-        sections.append({
-            "title": title,
-            "name": section.name,
-            "version": section.version,
-        })
+        if section.enabled if hasattr(section, "enabled") else True:
+            sections.append({
+                "title": title,
+                "name": section.name,
+                "version": section.version,
+            })
     return cur_versions
 
 
@@ -163,24 +164,25 @@ def report_deps_versions(settings: t.RepositorySettings) -> dict:
         "repository": {"title": "Repository", "version": settings.version},
         "sections": sections,
     }
-    rows = [
-        (
+    rows = []
+    if settings.backend.enabled:
+        rows.append((
             "Backend",
             settings.backend.base_package,
             settings.backend.base_package_version,
-        ),
-        (
+        ))
+    if settings.frontend.enabled:
+        rows.append((
             "Frontend",
             settings.frontend.base_package,
             settings.frontend.base_package_version,
-        ),
-    ]
-    if settings.frontend.base_package != "@plone/volto":
-        rows.append((
-            "Frontend",
-            "@plone/volto",
-            settings.frontend.volto_version,
         ))
+        if settings.frontend.base_package != "@plone/volto":
+            rows.append((
+                "Frontend",
+                "@plone/volto",
+                settings.frontend.volto_version,
+            ))
 
     for title, package, version in rows:
         sections.append({
