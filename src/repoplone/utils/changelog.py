@@ -102,6 +102,8 @@ def _update_project_changelog(
 def update_backend_changelog(
     settings: t.RepositorySettings, draft: bool = True, version: str = ""
 ) -> str:
+    if not settings.backend.enabled:
+        return ""
     config_path = settings.towncrier.backend.path
     package_name = settings.backend.name
     result = _run_towncrier(
@@ -115,6 +117,8 @@ def update_backend_changelog(
 def update_frontend_changelog(
     settings: t.RepositorySettings, draft: bool = True, version: str = ""
 ) -> str:
+    if not settings.frontend.enabled:
+        return ""
     config_path = settings.towncrier.frontend.path
     package_name = settings.frontend.name
     result = _run_towncrier(
