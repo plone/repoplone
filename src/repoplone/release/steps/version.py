@@ -57,9 +57,10 @@ def step_next_version(
         dutils.print(error)
         status = False
     elif not prompted:
+        next_version = next_version or state.next_version
         # Confirm the version if it was not prompted
         dutils.indented_print(
-            f"- Bump version from {settings.version} to {state.next_version}"
+            f"- Bump version from {settings.version} to {next_version}"
         )
         status = dutils.check_confirm()
     else:
