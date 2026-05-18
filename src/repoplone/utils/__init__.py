@@ -17,17 +17,21 @@ PYPROJECT_TOML = "pyproject.toml"
 def get_changelogs(
     root_changelog: Path, backend: t.Package, frontend: t.Package
 ) -> t.Changelogs:
-    return t.Changelogs(root_changelog, backend.changelog, frontend.changelog)
+    backend_changelog = backend.changelog if backend.enabled else root_changelog
+    frontend_changelog = frontend.changelog if frontend.enabled else root_changelog
+    return t.Changelogs(root_changelog, backend_changelog, frontend_changelog)
 
 
 def get_towncrier_settings(
     root_path: Path, backend: t.Package, frontend: t.Package, repository: dict
 ) -> t.TowncrierSettings:
     sections = []
-    raw_sections = [
-        ("backend", "Backend", root_path / backend.towncrier),
-        ("frontend", "Frontend", root_path / frontend.towncrier),
-    ]
+    raw_sections = []
+    if backend.enabled:
+        raw_sections.append(("backend", "Backend", root_path / backend.towncrier))
+    if frontend.enabled:
+        raw_sections.append(("frontend", "Frontend", root_path / frontend.towncrier))
+
     if repository and (towncrier := repository.get("settings", "")):
         path: Path = root_path / towncrier
         section = (
@@ -72,12 +76,13 @@ def _get_package_info(
     towncrier = (root_path / str(package_settings.towncrier_settings)).resolve()
     raw_code_path = package_settings.get("code_path", "src")
     code_path = (path / str(raw_code_path)).resolve()
-    version = version_func(path)
+    package_name = package_settings.name
+    enabled = bool(package_name)
+    version = version_func(path) if enabled else ""
     publish = bool(package_settings.get("publish", True))
     base_package = package_settings.get("base_package", default_base_package)
-    package_name = package_settings.name
     payload = {
-        "enabled": bool(package_name),
+        "enabled": enabled,
         "name": package_name,
         "path": path,
         "code_path": code_path,
@@ -127,29 +132,37 @@ def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
     package_info = _get_package_info(
         root_path, package_settings, default_base_package, version_func
     )
-    package_path = package_info["path"]
-    version_txt = package_path / "version.txt"
-    pyproject_toml = package_path / "pyproject.toml"
-    pyproject_data = pyproject_utils.parse_pyproject(pyproject_toml)
-    package_info["managed_by_uv"] = pyproject_utils.managed_by_uv(pyproject_toml)
-    # Python and Plone versions
-    package_info["python_versions"] = _get_python_versions(
-        package_settings, pyproject_data
-    )
-    package_info["python_version"] = _get_python_version(
-        package_settings, pyproject_data
-    )
-    package_info["plone_versions"] = _get_plone_versions(
-        package_settings, pyproject_data
-    )
-    base_package_version = pyproject_utils.current_base_package(
-        pyproject_toml,
-        package_info["base_package"],
-    )
-    if not base_package_version and version_txt.exists():
-        # Get the version from the `version.txt` file as a fallback
-        base_package_version = version_txt.read_text().strip()
-    package_info["base_package_version"] = base_package_version
+    if package_info["enabled"]:
+        package_path = package_info["path"]
+        version_txt = package_path / "version.txt"
+        pyproject_toml = package_path / "pyproject.toml"
+        pyproject_data = pyproject_utils.parse_pyproject(pyproject_toml)
+        package_info["managed_by_uv"] = pyproject_utils.managed_by_uv(pyproject_toml)
+        # Python and Plone versions
+        package_info["python_versions"] = _get_python_versions(
+            package_settings, pyproject_data
+        )
+        package_info["python_version"] = _get_python_version(
+            package_settings, pyproject_data
+        )
+        package_info["plone_versions"] = _get_plone_versions(
+            package_settings, pyproject_data
+        )
+        base_package_version = pyproject_utils.current_base_package(
+            pyproject_toml,
+            package_info["base_package"],
+        )
+        if not base_package_version and version_txt.exists():
+            # Get the version from the `version.txt` file as a fallback
+            base_package_version = version_txt.read_text().strip()
+        package_info["base_package_version"] = base_package_version
+    else:
+        package_info["managed_by_uv"] = False
+        package_info["python_versions"] = []
+        package_info["python_version"] = ""
+        package_info["plone_versions"] = []
+        package_info["base_package_version"] = ""
+
     return t.BackendPackage(**package_info)
 
 
@@ -161,13 +174,18 @@ def get_frontend(root_path: Path, raw_settings: Dynaconf) -> t.FrontendPackage:
     package_info = _get_package_info(
         root_path, package_settings, default_base_package, version_func
     )
-    path = root_path / "frontend"
-    package_info["base_package_version"] = frontend_utils.package_version(
-        path,
-        package_info["base_package"],
-    )
-    package_info["volto_version"] = frontend_utils.package_version(
-        path,
-        "@plone/volto",
-    )
+    if package_info["enabled"]:
+        path = root_path / "frontend"
+        package_info["base_package_version"] = frontend_utils.package_version(
+            path,
+            package_info["base_package"],
+        )
+        package_info["volto_version"] = frontend_utils.package_version(
+            path,
+            "@plone/volto",
+        )
+    else:
+        package_info["base_package_version"] = ""
+        package_info["volto_version"] = ""
+
     return t.FrontendPackage(**package_info)
