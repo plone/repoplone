@@ -23,7 +23,9 @@ class Changelogs:
     frontend: Path
 
     def sanity(self) -> bool:
-        return self.root.exists() and self.backend.exists() and self.frontend.exists()
+        return (
+            self.root.exists() and self.backend.exists() and self.frontend.exists()
+        )
 
 
 @dataclass
@@ -42,7 +44,7 @@ class Package:
     version: str = ""
 
     def sanity(self) -> bool:
-        return self.enabled and (
+        return not self.enabled or (
             self.path.exists() and self.changelog.exists() and self.towncrier.exists()
         )
 
