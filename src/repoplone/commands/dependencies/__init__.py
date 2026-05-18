@@ -22,10 +22,11 @@ def info(ctx: typer.Context):
         {"header": "Component"},
         {"header": "Package Name"},
     ]
-    rows = [
-        ["Backend", settings.backend.base_package],
-        ["Frontend", settings.frontend.base_package],
-    ]
+    rows = []
+    if settings.backend.enabled:
+        rows.append(["Backend", settings.backend.base_package])
+    if settings.frontend.enabled:
+        rows.append(["Frontend", settings.frontend.base_package])
     table = dutils.table(title, cols, rows)
     dutils.print(table)
 
@@ -34,8 +35,6 @@ def info(ctx: typer.Context):
 def check(ctx: typer.Context):
     """Check latest version of base package and compare it to our current pinning."""
     settings: t.RepositorySettings = ctx.obj.settings
-    backend_versions = dependencies.check_backend_base_package(settings)
-    frontend_versions = dependencies.check_frontend_base_package(settings)
     title = "Base packages versions"
     cols = [
         {"header": "Component"},
@@ -43,10 +42,13 @@ def check(ctx: typer.Context):
         {"header": "Current Version"},
         {"header": "Latest Version"},
     ]
-    rows = [
-        ["Backend", *backend_versions],
-        ["Frontend", *frontend_versions],
-    ]
+    rows = []
+    if settings.backend.enabled:
+        backend_versions = dependencies.check_backend_base_package(settings)
+        rows.append(["Backend", *backend_versions])
+    if settings.frontend.enabled:
+        frontend_versions = dependencies.check_frontend_base_package(settings)
+        rows.append(["Frontend", *frontend_versions])
     table = dutils.table(title, cols, rows)
     dutils.print(table)
 
@@ -134,7 +136,15 @@ def sync(
         typer.echo("Component must be either 'backend' or 'frontend'.")
         raise typer.Exit(1)
 
-    components = [component] if component != "both" else ["backend", "frontend"]
+    components = []
+    if component == "both":
+        if settings.backend.enabled:
+            components.append("backend")
+        if settings.frontend.enabled:
+            components.append("frontend")
+    else:
+        components = [component]
+
     for component_ in components:
         _sync_dependencies(settings, component_)
         typer.echo("\n")
@@ -161,6 +171,13 @@ def upgrade(
     if component not in ("backend", "frontend"):
         typer.echo("Component must be either 'backend' or 'frontend'.")
         raise typer.Exit(1)
+
+    # Check if component is enabled
+    section = getattr(settings, component)
+    if not section.enabled:
+        typer.echo(f"Error: {component.title()} component is not enabled in repository.toml")
+        raise typer.Exit(1)
+
     info_func, upgrade_func = UPGRADE_FUNC[component]
 
     try:
