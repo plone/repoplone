@@ -30,11 +30,11 @@ def sanity_check(settings: t.RepositorySettings) -> ReleaseSanityCheckResult:
     warnings: list[str] = []
     backend_package = settings.backend
     frontend_package = settings.frontend
-    if backend_package.publish:
+    if backend_package.enabled and backend_package.publish:
         uv = UV(backend_package.path)
         if not uv.check_authentication():
             errors.append("You are not authenticated to PyPi using UV.")
-    if frontend_package.publish:
+    if frontend_package.enabled and frontend_package.publish:
         release_it = ReleaseIt(frontend_package.path)
         if not release_it.check_authentication():
             errors.append("You are not authenticated to NPM.")
