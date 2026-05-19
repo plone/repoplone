@@ -146,7 +146,9 @@ def sync(
         # Check if component is enabled
         section = getattr(settings, component)
         if not section.enabled:
-            typer.echo(f"Error: {component.title()} component is not enabled in repository.toml")
+            typer.echo(
+                f"Error: {component.title()} component is not enabled in repository.toml"
+            )
             raise typer.Exit(1)
         components = [component]
 
@@ -180,7 +182,9 @@ def upgrade(
     # Check if component is enabled
     section = getattr(settings, component)
     if not section.enabled:
-        typer.echo(f"Error: {component.title()} component is not enabled in repository.toml")
+        typer.echo(
+            f"Error: {component.title()} component is not enabled in repository.toml"
+        )
         raise typer.Exit(1)
 
     info_func, upgrade_func = UPGRADE_FUNC[component]

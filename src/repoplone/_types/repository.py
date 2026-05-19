@@ -44,7 +44,9 @@ class Package:
     def sanity(self) -> bool:
         if not self.enabled:
             return True
-        return self.path.exists() and self.changelog.exists() and self.towncrier.exists()
+        return (
+            self.path.exists() and self.changelog.exists() and self.towncrier.exists()
+        )
 
 
 @dataclass
