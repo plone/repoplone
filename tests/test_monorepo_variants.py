@@ -1,4 +1,3 @@
-from repoplone import _types as t
 from repoplone import settings
 from repoplone.cli import app
 from repoplone.release.pipeline import ReleasePipeline
