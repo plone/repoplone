@@ -112,6 +112,7 @@ class RepositorySettings:
     changelogs: Changelogs
     release_steps: list[PipelineReleaseStep] = field(default_factory=list)
     remote_origin: str = ""
+    issues_url: str = ""
     _tmp_changelog: str = ""
 
     @property

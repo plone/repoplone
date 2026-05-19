@@ -180,6 +180,36 @@ def test_default_container_images_prefix(test_project_root_changelog, bust_path_
     assert value == ""
 
 
+def test_issues_url_explicit(test_public_project, bust_path_cache):
+    toml = test_public_project / "repository.toml"
+    toml.write_text(
+        toml.read_text().replace(
+            "[backend.package]",
+            'issues_url = "https://gitlab.example.com/team/proj/-/issues"\n'
+            "\n[backend.package]",
+        )
+    )
+    result = settings.get_settings()
+    assert result.issues_url == "https://gitlab.example.com/team/proj/-/issues"
+
+
+def test_issues_url_fallback_github_remote(
+    test_public_project, bust_path_cache, monkeypatch
+):
+    from repoplone.utils import _git as git_utils
+
+    monkeypatch.setattr(
+        git_utils, "remote_origin", lambda _: "git@github.com:plone/repoplone.git"
+    )
+    result = settings.get_settings()
+    assert result.issues_url == "https://github.com/plone/repoplone/issues"
+
+
+def test_issues_url_fallback_no_remote(test_public_project, bust_path_cache):
+    result = settings.get_settings()
+    assert result.issues_url == ""
+
+
 def test_release_steps_default_when_section_absent(
     test_public_project, bust_path_cache
 ):

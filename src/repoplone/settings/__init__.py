@@ -5,6 +5,7 @@ from repoplone import _types as t
 from repoplone import utils
 from repoplone.release.config import build_release_steps
 from repoplone.utils import _git as git_utils
+from repoplone.utils._github import derive_issues_url
 from repoplone.utils._path import get_cwd_path
 from typing import Any
 
@@ -100,6 +101,9 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
     )
     changelogs = utils.get_changelogs(root_changelog, backend, frontend)
     remote_origin = git_utils.remote_origin(root_path)
+    issues_url: str = repository.get("issues_url", "") or ""
+    if not issues_url:
+        issues_url = derive_issues_url(remote_origin)
     raw_release = repository.get("release", None)
     if hasattr(raw_release, "to_dict"):
         raw_release = raw_release.to_dict()
@@ -119,6 +123,7 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
         changelogs=changelogs,
         release_steps=release_steps,
         remote_origin=remote_origin,
+        issues_url=issues_url,
     )
 
 
