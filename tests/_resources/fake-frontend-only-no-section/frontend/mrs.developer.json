@@ -1,0 +1,6 @@
+{
+  "volto": {
+    "package": "@plone/volto",
+    "tag": "18.14.1"
+  }
+}

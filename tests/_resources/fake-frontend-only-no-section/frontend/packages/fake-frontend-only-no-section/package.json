@@ -1,0 +1,8 @@
+{
+  "name": "fake-frontend-only",
+  "version": "1.0.0",
+  "description": "Fake frontend only",
+  "dependencies": {
+    "@plone/volto": "18.14.1"
+  }
+}
