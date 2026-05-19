@@ -1,0 +1,13 @@
+[repository]
+name = "fake-frontend-only-no-section"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+container_images_prefix = "ghcr.io/organization/fake-frontend-only"
+compose = ["docker-compose.yml"]
+
+[frontend.package]
+name = "fake-frontend-only"
+path = "frontend/packages/fake-frontend-only-no-section"
+changelog = "frontend/packages/fake-frontend-only-no-section/CHANGELOG.md"
+towncrier_settings = "frontend/packages/fake-frontend-only-no-section/package.json"
+publish = true

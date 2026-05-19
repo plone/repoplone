@@ -1,0 +1,13 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "testpkg"
+version = "1.0.0"
+description = "Fake backend only"
+
+[tool.towncrier]
+package = "testpkg"
+filename = "CHANGELOG.md"
+directory = "news"
