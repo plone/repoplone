@@ -37,6 +37,20 @@ def _get_owner_repo(remote_origin: str) -> str:
     return f"{owner}/{repo}"
 
 
+def derive_issues_url(remote_origin: str) -> str:
+    """Return the GitHub issues URL for ``remote_origin``, or an empty string.
+
+    :param remote_origin: Git remote URL (HTTPS or SSH).
+    :returns: ``https://github.com/<owner>/<repo>/issues`` when ``remote_origin``
+        points at GitHub, otherwise an empty string.
+    """
+    try:
+        owner_repo = _get_owner_repo(remote_origin)
+    except ValueError:
+        return ""
+    return f"https://github.com/{owner_repo}/issues"
+
+
 def check_token(settings: t.RepositorySettings) -> bool:
     """Check if this environment has the GITHUB_TOKEN set."""
     token = get_token()
