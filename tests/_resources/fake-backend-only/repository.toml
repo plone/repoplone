@@ -1,0 +1,20 @@
+[repository]
+name = "fake_backend_only"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+container_images_prefix = "ghcr.io/organization/fake-backend-only"
+compose = ["docker-compose.yml"]
+
+[backend.package]
+name = "testpkg"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+publish = true
+
+[frontend.package]
+name = ""
+path = "frontend"
+changelog = "frontend/CHANGELOG.md"
+towncrier_settings = "frontend/package.json"
+publish = true

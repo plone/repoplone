@@ -129,6 +129,24 @@ def test_addon(monkeypatch, tmp_path) -> Path:
 
 
 @pytest.fixture
+def test_backend_only_project(monkeypatch, tmp_path) -> Path:
+    src = RESOURCES / "fake-backend-only"
+    dst = tmp_path / "fake-backend-only"
+    shutil.copytree(src, dst)
+    monkeypatch.chdir(dst)
+    return dst
+
+
+@pytest.fixture
+def test_frontend_only_project(monkeypatch, tmp_path) -> Path:
+    src = RESOURCES / "fake-frontend-only"
+    dst = tmp_path / "fake-frontend-only"
+    shutil.copytree(src, dst)
+    monkeypatch.chdir(dst)
+    return dst
+
+
+@pytest.fixture
 def bust_path_cache():
     from repoplone.utils import _path
 

@@ -49,8 +49,9 @@ def next_version(ctx: typer.Context):
         {"header": "Current Version"},
         {"header": "Desired Version"},
         {"header": "Repository"},
-        {"header": "Backend"},
     ]
+    if settings.backend.enabled:
+        cols.append({"header": "Backend"})
     if settings.frontend.enabled:
         cols.append({"header": "Frontend"})
 
@@ -60,8 +61,9 @@ def next_version(ctx: typer.Context):
             settings.version,
             version["bump"],
             version["repository"],
-            version["backend"],
         ]
+        if settings.backend.enabled:
+            row.append(version["backend"])
         if settings.frontend.enabled:
             row.append(version["frontend"])
         rows.append(tuple(row))
