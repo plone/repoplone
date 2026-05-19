@@ -1,1 +1,0 @@
-Fixed the bump confirmation in the `next_version` release step to display the resolved target version instead of the raw user input — previously a segment like `a` or an empty string (for calver) would leak into the confirmation prompt. @ericof

@@ -1,1 +1,0 @@
-Added support for an optional `issues_url` key under `[repository]` in `repository.toml`. When omitted, the value is derived from the git `origin` for GitHub remotes; otherwise it remains empty. @ericof

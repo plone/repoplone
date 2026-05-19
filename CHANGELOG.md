@@ -2,6 +2,19 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.0 (2026-05-19)
+
+
+### Feature
+
+- Added support for an optional `issues_url` key under `[repository]` in `repository.toml`. When omitted, the value is derived from the git `origin` for GitHub remotes; otherwise it remains empty. @ericof [#65](https://github.com/plone/repoplone/issues/65)
+- Implement support for single-stack projects (backend-only or frontend-only) by making CLI commands and release pipelines architecture-aware. [#67](https://github.com/plone/repoplone/issues/67)
+
+
+### Bugfix
+
+- Fixed the bump confirmation in the `next_version` release step to display the resolved target version instead of the raw user input — previously a segment like `a` or an empty string (for calver) would leak into the confirmation prompt. @ericof [#62](https://github.com/plone/repoplone/issues/62)
+
 ## 1.0.0b11 (2026-05-08)
 
 
