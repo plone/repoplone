@@ -24,12 +24,21 @@ def existing_pins(pyproject_toml) -> t.Requirements:
 
 
 @pytest.mark.parametrize(
-    "core_package,core_package_version,constraint",
+    "core_package,core_package_version,constraint,is_present",
     [
-        ["Products.CMFPlone", "6.1.0", "Products.CMFPlone==6.1.0"],
-        ["Products.CMFPlone", "6.1.0", "pytest-plone>=1.0.0a1"],
-        ["kitconcept.intranet", "1.0.0a17", "kitconcept.voltolighttheme==6.0.0a21"],
-        ["kitconcept.intranet", "1.0.0a17", "pytest-plone>=1.0.0a1"],
+        # Package being upgraded — kept (filtered out of existing_pins)
+        ["Products.CMFPlone", "6.1.0", "Products.CMFPlone==6.1.0", True],
+        # Already pinned in dependency-groups locally — excluded
+        ["Products.CMFPlone", "6.1.0", "pytest-plone>=1.0.0a1", False],
+        # Upstream-pinned, not locally pinned — kept
+        [
+            "kitconcept.intranet",
+            "1.0.0a17",
+            "kitconcept.voltolighttheme==6.0.0a21",
+            True,
+        ],
+        # Already pinned in dependency-groups locally — excluded
+        ["kitconcept.intranet", "1.0.0a17", "pytest-plone>=1.0.0a1", False],
     ],
 )
 @pytest.mark.vcr()
@@ -38,10 +47,55 @@ def test_get_package_constraints(
     core_package: str,
     core_package_version: str,
     constraint: str,
+    is_present: bool,
 ):
     func = const_utils.get_package_constraints
     result = func(core_package, core_package_version, existing_pins)
-    assert constraint in result
+    assert (constraint in result) is is_present
+
+
+def test_get_package_constraints_excludes_existing_pins(monkeypatch):
+    """Existing pins (including override-dependencies) must not appear in output."""
+    from repoplone.utils.dependencies import pyproject as pyproject_utils
+
+    src = """
+[project]
+name = "demo"
+version = "0.0.0"
+dependencies = ["Products.CMFPlone==6.1.0"]
+
+[tool.uv]
+override-dependencies = ["urllib3==2.0.0"]
+"""
+    data = tomlkit.parse(src)
+    existing_pins = pyproject_utils.get_all_pinned_dependencies(data)
+
+    monkeypatch.setattr(
+        const_utils,
+        "pypi_package_versions",
+        lambda name: ["6.1.0"],
+    )
+    monkeypatch.setattr(
+        const_utils,
+        "get_base_constraints",
+        lambda name, version: [
+            "Products.CMFPlone==6.1.0",
+            "urllib3==1.9.0",
+            "requests==2.32.3",
+        ],
+    )
+
+    result = const_utils.get_package_constraints(
+        "Products.CMFPlone", "6.1.0", existing_pins
+    )
+
+    # Excluded — present in override-dependencies
+    assert "urllib3==1.9.0" not in result
+    assert not any(line.startswith("urllib3") for line in result)
+    # Kept — the package being upgraded
+    assert "Products.CMFPlone==6.1.0" in result
+    # Kept — not pinned anywhere locally
+    assert "requests==2.32.3" in result
 
 
 @pytest.mark.parametrize(

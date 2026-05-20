@@ -73,13 +73,26 @@ def get_base_constraints(package_name: str, version: str) -> list[str]:
 def get_package_constraints(
     package_name: str, version: str, existing_pins: t.Requirements
 ) -> list[str]:
-    """Return plone constraints for a version."""
+    """Return package constraints for a version, excluding packages already pinned.
+
+    Packages declared in ``project.dependencies``,
+    ``project.optional-dependencies``, ``dependency-groups`` or
+    ``tool.uv.override-dependencies`` are skipped so each package appears only
+    once in the final ``pyproject.toml``.
+    """
     versions = pypi_package_versions(package_name)
-    existing_constraints = [
-        str(v) for k, v in existing_pins.items() if k != package_name
-    ]
     if version not in versions:
         raise RuntimeError(f"{package_name} {version} not available.")
-
+    excluded = {
+        canonicalize_name(name) for name in existing_pins if name != package_name
+    }
     constraints = get_base_constraints(package_name, version)
-    return parse_constraints(constraints, existing_constraints)
+    filtered: list[str] = []
+    for line in constraints:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if canonicalize_name(Requirement(stripped).name) in excluded:
+            continue
+        filtered.append(stripped)
+    return sorted(filtered, key=lambda line: canonicalize_name(Requirement(line).name))
