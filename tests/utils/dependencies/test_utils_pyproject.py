@@ -16,6 +16,12 @@ def pyproject_toml(pyproject_path) -> tomlkit.TOMLDocument:
     return tomlkit.parse(pyproject_path.read_text())
 
 
+@pytest.fixture
+def pyproject_overrides(get_resource_file) -> tomlkit.TOMLDocument:
+    pyproject_path = get_resource_file("pyproject/overrides.toml")
+    return tomlkit.parse(pyproject_path.read_text())
+
+
 @pytest.mark.parametrize(
     "key,total_items",
     [
@@ -33,6 +39,22 @@ def test__process_requirements(pyproject_toml, key: str, total_items: int):
         assert {isinstance(item, Requirement) for item in result} == {True}
 
 
+def test__process_requirements_tool_uv_override_dependencies(pyproject_overrides):
+    result = pyproject_utils._process_requirements(
+        pyproject_overrides, "tool.uv.override-dependencies"
+    )
+    assert len(result) == 2
+    assert {req.name for req in result} == {"urllib3", "pytest-plone"}
+
+
+def test__process_requirements_missing_path_returns_empty():
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    result = pyproject_utils._process_requirements(
+        data, "tool.uv.override-dependencies"
+    )
+    assert result == []
+
+
 @pytest.mark.parametrize(
     "package,expected",
     [
@@ -45,6 +67,16 @@ def test_get_all_pinned_dependencies(pyproject_toml, package: str, expected: str
     result = func(pyproject_toml)
     assert package in result
     assert result[package].specifier == expected
+
+
+def test_get_all_pinned_dependencies_includes_override_dependencies(
+    pyproject_overrides,
+):
+    result = pyproject_utils.get_all_pinned_dependencies(pyproject_overrides)
+    assert "urllib3" in result
+    assert str(result["urllib3"].specifier) == "==2.0.0"
+    assert "pytest-plone" in result
+    assert str(result["pytest-plone"].specifier) == "==1.0.0"
 
 
 @pytest.mark.parametrize(

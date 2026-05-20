@@ -15,13 +15,30 @@ PYTHON_VERSION_PATTERN = re.compile(r"^Programming Language :: Python :: (\d+\.\
 LICENSE_PATTERN = re.compile(r"^License :: (.+)$")
 
 
+def _get_table(data: tomlkit.TOMLDocument | items.Table, key: str) -> items.Table:
+    """Return the current project information."""
+    table = data[key]
+    if not isinstance(table, items.Table | container.OutOfOrderTableProxy):
+        raise ValueError("Invalid data")
+    return table
+
+
+def _get_project_table(data: tomlkit.TOMLDocument) -> items.Table:
+    """Return the current project information."""
+    return _get_table(data, "project")
+
+
 def _process_requirements(data: tomlkit.TOMLDocument, key: str) -> list[Requirement]:
     requirements: list[Requirement] = []
-    raw_dependencies: items.Table | items.Array = (
-        _get_project_table(data).get(key.split(".")[-1])
-        if key.startswith("project")
-        else data.get(key)
-    ) or tomlkit.table()
+    base_table = data
+    try:
+        for part in key.split(".")[:-1]:
+            base_table = base_table.get(part, {})
+        raw_dependencies: items.Table | items.Array = (
+            base_table.get(key.split(".")[-1])
+        ) or tomlkit.table()
+    except (KeyError, ValueError):
+        raw_dependencies = tomlkit.array()
     if isinstance(raw_dependencies, items.Array):
         tmp_table = tomlkit.table()
         tmp_table.add(key, raw_dependencies)
@@ -31,14 +48,6 @@ def _process_requirements(data: tomlkit.TOMLDocument, key: str) -> list[Requirem
             for value in group_values:
                 requirements.append(Requirement(value))
     return requirements
-
-
-def _get_project_table(data: tomlkit.TOMLDocument) -> items.Table:
-    """Return the current project information."""
-    project = data["project"]
-    if not isinstance(project, items.Table | container.OutOfOrderTableProxy):
-        raise ValueError("Invalid data")
-    return project
 
 
 def _get_uv_table(data: tomlkit.TOMLDocument) -> items.Table:
@@ -64,6 +73,7 @@ def get_all_pinned_dependencies(data: tomlkit.TOMLDocument) -> t.Requirements:
         "project.dependencies",
         "project.optional-dependencies",
         "dependency-groups",
+        "tool.uv.override-dependencies",
     ):
         raw_dependencies.extend(_process_requirements(data, key))
     dependencies: t.Requirements = {
