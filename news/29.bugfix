@@ -1,0 +1,1 @@
+Fixed `release --dry-run` so it no longer mutates `version.txt` or `docker-compose.yml`. The repository step now respects the dry-run flag for all on-disk writes and reports the planned actions as "Would update …". @ericof
