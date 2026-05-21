@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.2 (2026-05-21)
+
+
+### Bugfix
+
+- Fixed `release --dry-run` so it no longer mutates `version.txt` or `docker-compose.yml`. The repository step now respects the dry-run flag for all on-disk writes and reports the planned actions as "Would update …". @ericof [#29](https://github.com/plone/repoplone/issues/29)
+
 ## 1.0.1 (2026-05-21)
 
 
