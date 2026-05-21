@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.1 (2026-05-21)
+
+
+### Bugfix
+
+- Fixed `tool.uv.constraint-dependencies` regeneration so packages already pinned in `project.dependencies`, `project.optional-dependencies`, `dependency-groups`, or `tool.uv.override-dependencies` are no longer duplicated in the constraints list — each package now appears in a single location. @ericof [#68](https://github.com/plone/repoplone/issues/68)
+
 ## 1.0.0 (2026-05-19)
 
 

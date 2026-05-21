@@ -1,1 +1,0 @@
-Fixed `tool.uv.constraint-dependencies` regeneration so packages already pinned in `project.dependencies`, `project.optional-dependencies`, `dependency-groups`, or `tool.uv.override-dependencies` are no longer duplicated in the constraints list — each package now appears in a single location. @ericof
