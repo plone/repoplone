@@ -37,7 +37,7 @@ dependencies = [
     "semver>=3.0.4",
     "tomlkit>=0.13.2",
     "towncrier>=24.8.0",
-    "typer>=0.19.2",
+    "typer==0.26.5",
     "zest.pocompile>=2.0.0",
 ]
 
