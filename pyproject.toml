@@ -26,18 +26,18 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "dynaconf>=3.2.10",
+    "dynaconf>=3.2.13",
     "gitpython>=3.1.44",
     "hatch>=1.14.0",
     "hatchling>=1.27.0",
     "mxdev>=4.0.3",
-    "packaging>=24.2",
+    "packaging>=26.2",
     "pyyaml>=6.0.2",
     "requests>=2.32.3",
     "semver>=3.0.4",
     "tomlkit>=0.13.2",
     "towncrier>=24.8.0",
-    "typer>=0.19.2",
+    "typer==0.26.5",
     "zest.pocompile>=2.0.0",
 ]
 
