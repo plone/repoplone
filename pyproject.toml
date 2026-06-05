@@ -35,7 +35,7 @@ dependencies = [
     "pyyaml>=6.0.2",
     "requests>=2.32.3",
     "semver>=3.0.4",
-    "tomlkit>=0.13.2",
+    "tomlkit>=0.15.0",
     "towncrier>=25.8.0",
     "typer==0.26.5",
     "zest.pocompile>=2.0.0",
