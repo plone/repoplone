@@ -1,1 +1,0 @@
-Fixed the wheel build target so the ``repoplone`` package is correctly included after the hatchling 1.30 upgrade. @ericof

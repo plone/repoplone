@@ -2,6 +2,31 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0.3 (2026-06-05)
+
+
+### Internal
+
+- Pinned Typer to 0.26.5. @ericof [#71](https://github.com/plone/repoplone/issues/71)
+- Replaced the deprecated ``semver.parse`` with ``semver.Version.parse``. @ericof [#73](https://github.com/plone/repoplone/issues/73)
+- Updated hatch to 1.17.0 and hatchling to 1.30.1, removing the ``Version._version is private`` deprecation warning. @ericof [#74](https://github.com/plone/repoplone/issues/74)
+- Add a .github/CODEOWNERS file. @ericof 
+- Fixed the wheel build target so the ``repoplone`` package is correctly included after the hatchling 1.30 upgrade. @ericof 
+- Updated dynaconf to 3.2.13. @ericof 
+- Updated gitpython to 3.1.50. @ericof 
+- Updated mxdev to 5.4.0 and enabled its ``uv`` extra. @ericof 
+- Updated mypy to 2.1.0. @ericof 
+- Updated packaging to 26.2. @ericof 
+- Updated pytest to 9.0.2. @ericof 
+- Updated pytest-cov to 7.1.0. @ericof 
+- Updated pytest-recording to 0.13.4. @ericof 
+- Updated ruff to 0.15.16. @ericof 
+- Updated tomlkit to 0.15.0. @ericof 
+- Updated towncrier to 25.8.0. @ericof 
+- Updated types-requests to 2.33.0.20260518. @ericof 
+- Updated zest.releaser to 9.9.1. @ericof 
+- Upgrade actions/checkout and astral-sh/setup-uv. @ericof 
+
 ## 1.0.2 (2026-05-21)
 
 
