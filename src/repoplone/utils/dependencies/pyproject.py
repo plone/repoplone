@@ -15,7 +15,9 @@ PYTHON_VERSION_PATTERN = re.compile(r"^Programming Language :: Python :: (\d+\.\
 LICENSE_PATTERN = re.compile(r"^License :: (.+)$")
 
 
-def _get_table(data: tomlkit.TOMLDocument | items.Table, key: str) -> items.Table:
+def _get_table(
+    data: tomlkit.TOMLDocument | items.Table, key: str
+) -> items.Table | container.OutOfOrderTableProxy:
     """Return the current project information."""
     table = data[key]
     if not isinstance(table, items.Table | container.OutOfOrderTableProxy):
@@ -23,7 +25,9 @@ def _get_table(data: tomlkit.TOMLDocument | items.Table, key: str) -> items.Tabl
     return table
 
 
-def _get_project_table(data: tomlkit.TOMLDocument) -> items.Table:
+def _get_project_table(
+    data: tomlkit.TOMLDocument,
+) -> items.Table | container.OutOfOrderTableProxy:
     """Return the current project information."""
     return _get_table(data, "project")
 
@@ -154,7 +158,9 @@ def _add_versions_to_classifiers(
         classifiers.add(f"{prefix} {version}")
 
 
-def _handle_license_classifier(project: items.Table, classifiers: set[str]) -> None:
+def _handle_license_classifier(
+    project: items.Table | container.OutOfOrderTableProxy, classifiers: set[str]
+) -> None:
     """Remove classifier for license IF license is present on the project table."""
     license_ = project.get("license", None)
     if not license_:
