@@ -60,12 +60,12 @@ def convert_node_python_version(version: str) -> str:
     :return: a PyPI version
     """
     # Parse the semver version
-    parsed = semver.parse(version)
-    major = parsed["major"]
-    minor = parsed["minor"]
-    patch = parsed["patch"]
-    prerelease = parsed.get("prerelease")
-    build = parsed.get("build")
+    parsed = semver.Version.parse(version)
+    major = parsed.major
+    minor = parsed.minor
+    patch = parsed.patch
+    prerelease = parsed.prerelease
+    build = parsed.build
 
     # Build base version
     pypi_version = f"{major}.{minor}.{patch}"

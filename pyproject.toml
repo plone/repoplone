@@ -27,16 +27,16 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "dynaconf>=3.2.13",
-    "gitpython>=3.1.44",
-    "hatch>=1.14.0",
-    "hatchling>=1.27.0",
-    "mxdev>=4.0.3",
+    "gitpython>=3.1.50",
+    "hatch>=1.17.0",
+    "hatchling>=1.30.1",
+    "mxdev[uv]>=5.4.0",
     "packaging>=26.2",
     "pyyaml>=6.0.2",
     "requests>=2.32.3",
     "semver>=3.0.4",
-    "tomlkit>=0.13.2",
-    "towncrier>=24.8.0",
+    "tomlkit>=0.15.0",
+    "towncrier>=25.8.0",
     "typer==0.26.5",
     "zest.pocompile>=2.0.0",
 ]
@@ -60,22 +60,21 @@ path = "src/repoplone/__init__.py"
 strict-naming = true
 
 [tool.hatch.build.targets.wheel]
-sources = ["src"]
+packages = ["src/repoplone"]
 
 [tool.hatch.build.targets.sdist]
 only-include = ["src", "tests", "*.md", "Makefile", "uv.lock"]
 
 [dependency-groups]
 test = [
-    "pytest>8.0.0",
-    "ruff>=0.9.5",
-    "towncrier>=24.8.0",
-    "pytest-cov>=6.0.0",
-    "mypy>=1.15.0",
-    "pytest-recording>=0.13.2",
+    "pytest>9.0.2",
+    "pytest-cov>=7.1.0",
+    "pytest-recording>=0.13.4",
+    "ruff>=0.15.16",
+    "mypy>=2.1.0",
     "types-PyYAML>=6.0.12.20250402",
-    "types-requests>=2.32.0.20250306",
-    "zest-releaser[recommended]>=9.5.0",
+    "types-requests>=2.33.0.20260518",
+    "zest-releaser[recommended]>=9.9.1",
     "zestreleaser-towncrier>=1.3.0",
 ]
 
