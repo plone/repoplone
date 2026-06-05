@@ -1,6 +1,5 @@
 from hatchling.version.scheme import standard
 from semver import Version
-from semver import parse
 
 
 BUMPS = [
@@ -47,7 +46,7 @@ def version_from_parts(
 def is_semver(version: str) -> bool:
     """Check if value is a valid semantic version."""
     try:
-        parsed = parse(version)
-        return parsed is not None
+        Version.parse(version)
+        return True
     except ValueError:
         return False
