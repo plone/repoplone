@@ -36,7 +36,7 @@ dependencies = [
     "requests>=2.32.3",
     "semver>=3.0.4",
     "tomlkit>=0.13.2",
-    "towncrier>=24.8.0",
+    "towncrier>=25.8.0",
     "typer==0.26.5",
     "zest.pocompile>=2.0.0",
 ]
@@ -69,7 +69,6 @@ only-include = ["src", "tests", "*.md", "Makefile", "uv.lock"]
 test = [
     "pytest>8.0.0",
     "ruff>=0.9.5",
-    "towncrier>=24.8.0",
     "pytest-cov>=6.0.0",
     "mypy>=1.15.0",
     "pytest-recording>=0.13.2",
