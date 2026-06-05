@@ -1059,14 +1059,19 @@ wheels = [
 
 [[package]]
 name = "mxdev"
-version = "5.1.0"
+version = "5.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b6/86/9d9e57449d01a2cec0e1fa21ac509067276213c765961469e662ffbaa24f/mxdev-5.1.0.tar.gz", hash = "sha256:4ca8e9dd3f302d076f9cf150314c32426c4c21b365b8d25d533764585645270b", size = 76640, upload-time = "2025-11-03T14:28:44.441Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a1/5f/13134b69162d83901834c14a1eab3121e86f494aa3f16c2e8cb17411e0f3/mxdev-5.4.0.tar.gz", hash = "sha256:792fa7c677538400e9aa02c092f13683f89bb2cb4a99a7c035420f1d8c011322", size = 89489, upload-time = "2026-05-31T22:29:53.393Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1e/09/e18fb80097004e36b6a8a62038d11ce5661f087132c02dd2aff751e2832f/mxdev-5.1.0-py3-none-any.whl", hash = "sha256:ed98e960bd23cb5c6ad99e807693cc915bc4f3f1a0d46291a813550e22e16113", size = 42377, upload-time = "2025-11-03T14:28:43.232Z" },
+    { url = "https://files.pythonhosted.org/packages/fa/50/11c8ab101e3b4d16210746e15aa15bab2716addbe7c38743eb722a952b36/mxdev-5.4.0-py3-none-any.whl", hash = "sha256:09ea4d91d224354e6ccebcfe83f71b1ba62bad189b96ee64fd8131208c3923e6", size = 48596, upload-time = "2026-05-31T22:29:51.919Z" },
+]
+
+[package.optional-dependencies]
+uv = [
+    { name = "tomlkit" },
 ]
 
 [[package]]
@@ -1435,7 +1440,7 @@ dependencies = [
     { name = "gitpython" },
     { name = "hatch" },
     { name = "hatchling" },
-    { name = "mxdev" },
+    { name = "mxdev", extra = ["uv"] },
     { name = "packaging" },
     { name = "pyyaml" },
     { name = "requests" },
@@ -1465,7 +1470,7 @@ requires-dist = [
     { name = "gitpython", specifier = ">=3.1.50" },
     { name = "hatch", specifier = ">=1.17.0" },
     { name = "hatchling", specifier = ">=1.30.1" },
-    { name = "mxdev", specifier = ">=4.0.3" },
+    { name = "mxdev", extras = ["uv"], specifier = ">=5.4.0" },
     { name = "packaging", specifier = ">=26.2" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "requests", specifier = ">=2.32.3" },
