@@ -22,6 +22,31 @@ def _get_next_version(
     return next_version, error
 
 
+def resolve_skipped_version(
+    settings: t.RepositorySettings, original_version: str, desired_version: str
+) -> str:
+    """Resolve and validate the next version when the ``version`` step is skipped.
+
+    Mirrors the non-interactive resolution of :func:`step_next_version` so a
+    restart that skips the version step still validates the supplied version,
+    rejecting invalid values and versions already tagged in Git.
+
+    :param settings: repository settings.
+    :param original_version: current version of the repository.
+    :param desired_version: version supplied on the command line.
+    :returns: the validated next version.
+    :raises ValueError: if no version was supplied or it is invalid.
+    """
+    if not desired_version:
+        raise ValueError(
+            "A concrete version is required when restarting past the 'version' step."
+        )
+    next_version, error = _get_next_version(settings, original_version, desired_version)
+    if error:
+        raise ValueError(error)
+    return next_version
+
+
 def _prompt_version_semver(original_version: str, state: t.PipelineState) -> str:
     """Prompt the user for the next version."""
     prompt_message = "\n   [bold]Select the next version[/bold]"

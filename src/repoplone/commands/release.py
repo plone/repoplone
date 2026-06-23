@@ -48,13 +48,27 @@ def main(
         ),
     ] = NO_VERSION,
     dry_run: Annotated[bool, typer.Option(help="Is this a dry run?")] = False,
+    start_step: Annotated[
+        str,
+        typer.Option(
+            "--start-step",
+            help=(
+                "Restart the release from this step id, skipping earlier steps. "
+                "Requires a concrete version when the version step is skipped."
+            ),
+        ),
+    ] = "",
 ):
     """Release the packages in this repository."""
     settings: t.RepositorySettings = ctx.obj.settings
     dutils.print(f"\n[bold green]Release {settings.name}[/bold green]")
     if not _preflight_check(settings):
         raise typer.Exit(0)
-    pipeline = ReleasePipeline(settings, dry_run, desired_version)
+    try:
+        pipeline = ReleasePipeline(settings, dry_run, desired_version, start_step)
+    except ValueError as e:
+        dutils.print(f"\n[bold red]{e}[/bold red]")
+        raise typer.Exit(1) from e
     try:
         pipeline()
     except RuntimeError as e:

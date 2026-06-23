@@ -34,6 +34,7 @@ def test_release_help(bust_path_cache, test_public_project):
     output = result.stdout
     assert "release [OPTIONS] [DESIRED_VERSION] COMMAND" in output
     assert "Could be the version" in output
+    assert "--start-step" in output
 
 
 @pytest.mark.parametrize(

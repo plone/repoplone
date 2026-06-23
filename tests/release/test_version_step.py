@@ -8,6 +8,7 @@ contains the resolved version.
 """
 
 from repoplone.release import _types as t
+from repoplone.release.steps.version import resolve_skipped_version
 from repoplone.release.steps.version import step_next_version
 from types import SimpleNamespace
 
@@ -102,3 +103,40 @@ def test_state_is_updated_with_resolved_version_after_confirmation(
     step_next_version("version", "Next version", fake_settings, state)
 
     assert state.next_version == "1.0.0a0"
+
+
+def test_resolve_skipped_version_returns_validated(fake_settings, stub_resolution):
+    """A segment input is resolved and returned when the step is skipped."""
+    stub_resolution("1.0.0a0")
+    assert resolve_skipped_version(fake_settings, "1.0.0b11", "a") == "1.0.0a0"
+
+
+def test_resolve_skipped_version_requires_version(fake_settings):
+    """An empty version is rejected with a clear message."""
+    with pytest.raises(ValueError, match="concrete version is required"):
+        resolve_skipped_version(fake_settings, "1.0.0b11", "")
+
+
+def test_resolve_skipped_version_rejects_invalid(fake_settings, monkeypatch):
+    """An unparseable version surfaces the resolution error."""
+
+    def _raise(desired, current):
+        raise ValueError("bad")
+
+    monkeypatch.setattr("repoplone.release.steps.version.vutils.next_version", _raise)
+    with pytest.raises(ValueError, match="Invalid version"):
+        resolve_skipped_version(fake_settings, "1.0.0b11", "bogus")
+
+
+def test_resolve_skipped_version_rejects_existing_tag(fake_settings, monkeypatch):
+    """A version already tagged in Git is rejected."""
+    monkeypatch.setattr(
+        "repoplone.release.steps.version.vutils.next_version",
+        lambda desired, current: "1.0.0",
+    )
+    monkeypatch.setattr(
+        "repoplone.release.steps.version.utils.valid_next_version",
+        lambda settings, version: False,
+    )
+    with pytest.raises(ValueError, match="already exists as a tag"):
+        resolve_skipped_version(fake_settings, "1.0.0b11", "1.0.0")
