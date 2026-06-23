@@ -18,7 +18,7 @@ LICENSE_PATTERN = re.compile(r"^License :: (.+)$")
 def _get_table(
     data: tomlkit.TOMLDocument | items.Table, key: str
 ) -> items.Table | container.OutOfOrderTableProxy:
-    """Return the current project information."""
+    """Return a table from the given data."""
     table = data[key]
     if not isinstance(table, items.Table | container.OutOfOrderTableProxy):
         raise ValueError("Invalid data")
@@ -28,11 +28,20 @@ def _get_table(
 def _get_project_table(
     data: tomlkit.TOMLDocument,
 ) -> items.Table | container.OutOfOrderTableProxy:
-    """Return the current project information."""
+    """Return the project table from the given data."""
     return _get_table(data, "project")
 
 
 def _process_requirements(data: tomlkit.TOMLDocument, key: str) -> list[Requirement]:
+    """Return requirements found under a dotted ``pyproject.toml`` key.
+
+    Handles both array tables (e.g. ``project.dependencies``) and grouped
+    tables (e.g. ``dependency-groups``).
+
+    :param data: Parsed ``pyproject.toml`` document.
+    :param key: Dotted path to the dependency table or array.
+    :returns: List of parsed requirements.
+    """
     requirements: list[Requirement] = []
     base_table = data
     try:
@@ -55,11 +64,42 @@ def _process_requirements(data: tomlkit.TOMLDocument, key: str) -> list[Requirem
 
 
 def _get_uv_table(data: tomlkit.TOMLDocument) -> items.Table:
-    """Return the current project information."""
+    """Return the uv information in pyproject.toml."""
     tool: items.Table | None = data.get("tool")
     uv_config: items.Table | None = tool.get("uv") if tool else None
     if not uv_config:
         uv_config = tomlkit.table()
+    return uv_config
+
+
+def _get_uv_sources_table(data: tomlkit.TOMLDocument) -> items.Table:
+    """Return the ``[tool.uv.sources]`` table, or a fresh detached one.
+
+    A returned detached table is not attached to ``data``; callers that mutate
+    it must reattach it (see :func:`_ensure_uv_table`).
+
+    :param data: Parsed ``pyproject.toml`` document.
+    :returns: The existing sources table or a new empty table.
+    """
+    uv_config = _get_uv_table(data)
+    sources_table: items.Table | None = uv_config.get("sources") if uv_config else None
+    return sources_table if sources_table else tomlkit.table()
+
+
+def _ensure_uv_table(data: tomlkit.TOMLDocument) -> items.Table:
+    """Return the ``[tool.uv]`` table, creating and attaching it when absent.
+
+    :param data: Parsed ``pyproject.toml`` document to mutate.
+    :returns: The ``[tool.uv]`` table attached to ``data``.
+    """
+    tool = data.get("tool")
+    if tool is None:
+        tool = tomlkit.table(True)
+        data["tool"] = tool
+    uv_config = tool.get("uv")
+    if uv_config is None:
+        uv_config = tomlkit.table()
+        tool["uv"] = uv_config
     return uv_config
 
 
@@ -125,14 +165,72 @@ def current_base_package(pyproject: Path, package_name: str) -> str | None:
     return None
 
 
+def _uv_add_source_package(
+    data: tomlkit.TOMLDocument, package: str, version: str
+) -> None:
+    """Pin a base package to a Git branch via ``[tool.uv.sources]``.
+
+    :param data: Parsed ``pyproject.toml`` document to mutate.
+    :param package: Name of the base package.
+    :param version: Branch reference in ``@branch`` form.
+    :raises RuntimeError: If the package has no repository information.
+    """
+    from repoplone.utils.dependencies.constraints import get_constraint_info
+
+    pkg_config = get_constraint_info(package)
+    if not (repository_info := pkg_config.get("repository")):
+        raise RuntimeError(
+            f"Package {package} does not have repository information, "
+            "cannot use branch installation."
+        )
+    branch = version[1:]
+    sources_table = _get_uv_sources_table(data)
+    package_info = tomlkit.inline_table()
+    # Pad the inline table so it renders as ``{ git = "...", branch = "..." }``.
+    package_info.add(tomlkit.ws(" "))
+    package_info.add("git", repository_info["url"])
+    package_info.add("branch", branch)
+    if subdir := repository_info.get("subdirectory"):
+        package_info.add("subdirectory", subdir)
+    package_info.add(tomlkit.ws(" "))
+    sources_table.add(package, package_info)
+    # Reattach the sources table in case it was created detached.
+    _ensure_uv_table(data)["sources"] = sources_table
+
+
+def _uv_remove_source_package(data: tomlkit.TOMLDocument, package: str) -> None:
+    """Remove a source package from the ``[tool.uv.sources]`` table.
+
+    :param data: Parsed ``pyproject.toml`` document to mutate.
+    :param package: Name of the package to remove.
+    """
+    sources_table = _get_uv_sources_table(data)
+    sources_table.pop(package, None)
+
+
 def _update_dependency(data: tomlkit.TOMLDocument, package: str, version: str) -> None:
+    """Update the base package pin in ``project.dependencies``.
+
+    For a regular version the dependency is pinned with ``==``. For a branch
+    (``@branch``) the version pin is dropped and the package is wired to a Git
+    source via ``[tool.uv.sources]``.
+
+    :param data: Parsed ``pyproject.toml`` document to mutate.
+    :param package: Name of the base package.
+    :param version: Version to pin, or ``@branch`` to install from a branch.
+    """
+    if from_branch := version.startswith("@"):
+        _uv_add_source_package(data, package, version)
+    else:
+        # Removing a non-existent source is a no-op, so this is always safe.
+        _uv_remove_source_package(data, package)
     project = _get_project_table(data)
     deps = tomlkit.array()
     deps.multiline(True)
     project_dependencies = _get_project_dependencies(data)
     for dep_name in project_dependencies:
-        if re.match(f"^{package}$", dep_name):
-            dep = f"{package}=={version}"
+        if dep_name == package:
+            dep = package if from_branch else f"{package}=={version}"
         else:
             # Keep dependency as stated before
             dep = str(project_dependencies[dep_name])
@@ -141,10 +239,12 @@ def _update_dependency(data: tomlkit.TOMLDocument, package: str, version: str) -
 
 
 def _update_constraints(data: tomlkit.TOMLDocument, raw_constraints: list[str]) -> None:
-    tool_uv = data.get("tool", {}).get("uv", {})
-    if not tool_uv:
-        tool_uv = tomlkit.table(False)
-        data.append("tool.uv", tool_uv)
+    """Write resolved constraints into ``[tool.uv] constraint-dependencies``.
+
+    :param data: Parsed ``pyproject.toml`` document to mutate.
+    :param raw_constraints: Constraint specifiers to write (sorted on output).
+    """
+    tool_uv = _ensure_uv_table(data)
     # We should sort items here to maintain consistency
     constraints = multiline_array_from_iter(raw_constraints, True, True)
     tool_uv.update({"constraint-dependencies": constraints})
@@ -153,6 +253,12 @@ def _update_constraints(data: tomlkit.TOMLDocument, raw_constraints: list[str]) 
 def _add_versions_to_classifiers(
     classifiers: set[str], prefix: str, versions: list[str]
 ) -> None:
+    """Add ``<prefix> <version>`` trove classifiers to a classifier set.
+
+    :param classifiers: Set of classifiers to update in place.
+    :param prefix: Classifier prefix (e.g. ``Framework :: Plone ::``).
+    :param versions: Versions to append to the prefix.
+    """
     prefix = prefix[:-1] if prefix.endswith(" ") else prefix
     for version in versions:
         classifiers.add(f"{prefix} {version}")
@@ -173,6 +279,16 @@ def _handle_license_classifier(
 def _update_classifiers(
     data: tomlkit.TOMLDocument, python_versions: list[str], plone_versions: list[str]
 ) -> None:
+    """Refresh the Python, Plone and license trove classifiers in place.
+
+    Existing Python and Plone version classifiers are removed and replaced with
+    the supplied versions; the license classifier is dropped when the project
+    declares an explicit ``license``.
+
+    :param data: Parsed ``pyproject.toml`` document to mutate.
+    :param python_versions: Supported Python versions.
+    :param plone_versions: Supported Plone versions.
+    """
     project = _get_project_table(data)
     classifiers: set[str] = set(project.get("classifiers", []))
     # First handle license classifier
@@ -197,10 +313,20 @@ def _update_classifiers(
 
 
 def _parse_pyproject(src: str) -> tomlkit.TOMLDocument:
+    """Parse ``pyproject.toml`` content into a TOML document.
+
+    :param src: Raw ``pyproject.toml`` text.
+    :returns: Parsed TOML document.
+    """
     return tomlkit.parse(src)
 
 
 def parse_pyproject(pyproject: Path) -> tomlkit.TOMLDocument:
+    """Parse a ``pyproject.toml`` file into a TOML document.
+
+    :param pyproject: Path to the ``pyproject.toml`` file.
+    :returns: Parsed TOML document.
+    """
     return _parse_pyproject(pyproject.read_text())
 
 

@@ -8,11 +8,19 @@ from typing import TypedDict
 Requirements = dict[str, Requirement]
 
 
+class RepositoryInfo(TypedDict):
+    """Definition of a repository information."""
+
+    url: str
+    subdirectory: NotRequired[str]
+
+
 class PackageConstraintInfo(TypedDict):
     """Definition on a Package constraint information."""
 
     type: str
     url: str
+    repository: NotRequired[RepositoryInfo]
     warning: NotRequired[str]
 
 

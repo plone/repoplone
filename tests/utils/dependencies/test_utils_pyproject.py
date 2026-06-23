@@ -232,3 +232,202 @@ def test__update_classifiers_cleanup_license(
     # Check after
     assert pyproject_utils.license_from_classifier(pyproject_toml) == []
     assert pyproject_utils.license_from_project(pyproject_toml) != ""
+
+
+def test__get_table_invalid_raises():
+    """A key pointing at a scalar (not a table) raises ``ValueError``."""
+    data = tomlkit.parse('project = "scalar"')
+    with pytest.raises(ValueError, match="Invalid data"):
+        pyproject_utils._get_table(data, "project")
+
+
+def test__process_requirements_handles_navigation_error():
+    """A navigation error while walking the dotted key yields an empty list."""
+
+    class Boom(dict):
+        def get(self, *args, **kwargs):
+            raise ValueError("boom")
+
+    result = pyproject_utils._process_requirements(Boom(), "project.dependencies")
+    assert result == []
+
+
+def test__get_uv_table_missing_returns_empty():
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    result = pyproject_utils._get_uv_table(data)
+    assert not result
+
+
+def test__get_uv_sources_table_existing():
+    data = tomlkit.parse('[tool.uv.sources]\nfoo = { git = "http://x" }\n')
+    result = pyproject_utils._get_uv_sources_table(data)
+    assert "foo" in result
+
+
+def test__get_uv_sources_table_missing():
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    result = pyproject_utils._get_uv_sources_table(data)
+    assert not result
+
+
+def test__ensure_uv_table_creates_when_missing():
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    table = pyproject_utils._ensure_uv_table(data)
+    table["foo"] = "bar"
+    # The created table is attached to the document.
+    assert data["tool"]["uv"]["foo"] == "bar"
+
+
+def test__ensure_uv_table_returns_existing():
+    data = tomlkit.parse("[tool.uv]\nmanaged = false\n")
+    table = pyproject_utils._ensure_uv_table(data)
+    assert table.get("managed") is False
+
+
+def test_get_remote_uv_dependencies_mocked(monkeypatch):
+    """Pinned dependencies and constraints are read from a remote pyproject."""
+    src = """
+[project]
+name = "demo"
+dependencies = ["plone.api==1.0", "requests"]
+
+[tool.uv]
+constraint-dependencies = ["Zope==5.10"]
+"""
+
+    class Resp:
+        content = src.encode("utf-8")
+
+    monkeypatch.setattr(pyproject_utils, "get_remote_data", lambda url: Resp())
+    deps, constraints = pyproject_utils.get_remote_uv_dependencies("http://example.com")
+    # Only pinned dependencies are returned.
+    assert deps == ["plone.api==1.0"]
+    assert constraints == ["Zope==5.10"]
+
+
+def test_current_base_package_missing(pyproject_path):
+    result = pyproject_utils.current_base_package(pyproject_path, "does.not.exist")
+    assert result is None
+
+
+def test__uv_add_source_package_with_repository():
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    pyproject_utils._uv_add_source_package(data, "kitconcept.core", "@main")
+    source = data["tool"]["uv"]["sources"]["kitconcept.core"]
+    assert source["git"] == "https://github.com/kitconcept/kitconcept-core"
+    assert source["branch"] == "main"
+    assert source["subdirectory"] == "backend"
+
+
+def test__uv_add_source_package_without_subdirectory(monkeypatch):
+    from repoplone.utils.dependencies import constraints as const_utils
+
+    monkeypatch.setitem(
+        const_utils.PACKAGE_CONSTRAINTS,
+        "fake.repo",
+        {
+            "type": "uv",
+            "url": "http://example.com",
+            "repository": {"url": "https://github.com/x/y"},
+        },
+    )
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    pyproject_utils._uv_add_source_package(data, "fake.repo", "@dev")
+    source = data["tool"]["uv"]["sources"]["fake.repo"]
+    assert source["git"] == "https://github.com/x/y"
+    assert source["branch"] == "dev"
+    assert "subdirectory" not in source
+
+
+def test__uv_add_source_package_without_repository():
+    """A package with no repository info cannot be installed from a branch."""
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    with pytest.raises(RuntimeError, match="repository information"):
+        pyproject_utils._uv_add_source_package(data, "Products.CMFPlone", "@main")
+
+
+def test__uv_remove_source_package():
+    data = tomlkit.parse('[tool.uv.sources]\nfoo = { git = "http://x" }\n')
+    pyproject_utils._uv_remove_source_package(data, "foo")
+    assert "foo" not in data["tool"]["uv"]["sources"]
+    # Removing a missing package is a no-op.
+    pyproject_utils._uv_remove_source_package(data, "missing")
+
+
+def test__update_dependency_version(pyproject_toml):
+    """A regular version pins the package with ``==`` and removes any source."""
+    pyproject_utils._update_dependency(pyproject_toml, "Products.CMFPlone", "6.1.1")
+    deps = pyproject_utils._get_project_dependencies(pyproject_toml)
+    assert str(deps["Products.CMFPlone"].specifier) == "==6.1.1"
+
+
+def test__update_dependency_branch():
+    """A ``@branch`` drops the pin and wires a Git source, keeping other deps."""
+    data = tomlkit.parse(
+        '[project]\nname = "demo"\n'
+        'dependencies = ["kitconcept.core==1.0.0", "plone.api"]\n'
+    )
+    pyproject_utils._update_dependency(data, "kitconcept.core", "@main")
+    deps = pyproject_utils._get_project_dependencies(data)
+    assert str(deps["kitconcept.core"].specifier) == ""
+    assert "kitconcept.core" in data["tool"]["uv"]["sources"]
+    # Unrelated dependencies are preserved untouched.
+    assert "plone.api" in deps
+
+
+def test__update_constraints_creates_table():
+    data = tomlkit.parse('[project]\nname = "demo"\n')
+    pyproject_utils._update_constraints(data, ["Zope==5.10", "plone==6.0"])
+    constraints = list(data["tool"]["uv"]["constraint-dependencies"])
+    assert "Zope==5.10" in constraints
+    assert "plone==6.0" in constraints
+
+
+def test__handle_license_classifier_no_license():
+    """Without a project license, the license classifiers are left untouched."""
+    data = tomlkit.parse('[project]\nname = "demo"\nclassifiers = ["License :: OSI"]\n')
+    project = pyproject_utils._get_project_table(data)
+    classifiers = {"License :: OSI"}
+    pyproject_utils._handle_license_classifier(project, classifiers)
+    assert classifiers == {"License :: OSI"}
+
+
+def test__parse_pyproject():
+    result = pyproject_utils._parse_pyproject('[project]\nname = "demo"\n')
+    assert result["project"]["name"] == "demo"
+
+
+def test_parse_pyproject(pyproject_path):
+    result = pyproject_utils.parse_pyproject(pyproject_path)
+    assert "project" in result
+
+
+def test_update_pyproject(pyproject_path):
+    pyproject_utils.update_pyproject(
+        pyproject_path,
+        "Products.CMFPlone",
+        "6.1.1",
+        ["Zope==5.10"],
+        python_versions=["3.12", "3.13"],
+        plone_versions=["6.1"],
+    )
+    data = pyproject_utils.parse_pyproject(pyproject_path)
+    deps = pyproject_utils._get_project_dependencies(data)
+    assert str(deps["Products.CMFPlone"].specifier) == "==6.1.1"
+    constraints = list(data["tool"]["uv"]["constraint-dependencies"])
+    assert "Zope==5.10" in constraints
+    assert "3.13" in pyproject_utils.python_versions(data)
+
+
+def test_update_pyproject_without_versions(pyproject_path):
+    """Classifiers are left untouched when versions are not provided."""
+    before = pyproject_utils.python_versions(
+        pyproject_utils.parse_pyproject(pyproject_path)
+    )
+    pyproject_utils.update_pyproject(
+        pyproject_path, "Products.CMFPlone", "6.1.1", ["Zope==5.10"]
+    )
+    data = pyproject_utils.parse_pyproject(pyproject_path)
+    constraints = list(data["tool"]["uv"]["constraint-dependencies"])
+    assert "Zope==5.10" in constraints
+    assert pyproject_utils.python_versions(data) == before
