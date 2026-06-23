@@ -43,12 +43,10 @@ def check(ctx: typer.Context):
         {"header": "Latest Version"},
     ]
     rows = []
-    if settings.backend.enabled:
-        backend_versions = dependencies.check_backend_base_package(settings)
-        rows.append(["Backend", *backend_versions])
-    if settings.frontend.enabled:
-        frontend_versions = dependencies.check_frontend_base_package(settings)
-        rows.append(["Frontend", *frontend_versions])
+    for name, (check_func, _) in UPGRADE_FUNC.items():
+        if getattr(settings, name).enabled:
+            versions = check_func(settings)
+            rows.append([name.title(), *versions])
     table = dutils.table(title, cols, rows)
     dutils.print(table)
 
@@ -104,7 +102,8 @@ def constraints(
 ):
     """Update constraints for a specific component."""
     settings: t.RepositorySettings = ctx.obj.settings
-    if component not in ("backend"):
+    component = component.lower()
+    if component != "backend":
         typer.echo("Component must be 'backend'.")
         raise typer.Exit(1)
     managed_by_uv = settings.backend.managed_by_uv
@@ -132,6 +131,7 @@ def sync(
 ):
     """Sync the lockfile for a specific component."""
     settings: t.RepositorySettings = ctx.obj.settings
+    component = component.lower()
     if component not in ("backend", "frontend", "both"):
         typer.echo("Component must be either 'backend' or 'frontend'.")
         raise typer.Exit(1)
@@ -176,6 +176,8 @@ def upgrade(
 ):
     """Upgrade a base dependency to a newer version."""
     settings: t.RepositorySettings = ctx.obj.settings
+    # Accept both lowercase and uppercase component names
+    component = component.lower()
     if component not in ("backend", "frontend"):
         typer.echo("Component must be either 'backend' or 'frontend'.")
         raise typer.Exit(1)
