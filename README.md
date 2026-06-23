@@ -319,8 +319,22 @@ uvx repoplone deps check
 To upgrade the base package to a specific version, use:
 
 ```bash
-uvx repoplone deps upgrade 6.1.1
+uvx repoplone deps upgrade backend 6.1.1
 ```
+
+#### Install from a Git branch
+
+To track an unreleased branch of the base package, pass the branch name prefixed
+with `@`:
+
+```bash
+uvx repoplone deps upgrade backend @main
+```
+
+This resolves the constraints from the branch's `pyproject.toml` and pins the
+base package to the branch through a `[tool.uv.sources]` entry instead of a
+version specifier. The base package must declare repository information to be
+installable this way.
 
 ## `repository.toml` Specification
 

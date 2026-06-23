@@ -9,14 +9,32 @@ from repoplone.distributions import PACKAGE_CONSTRAINTS
 
 
 def _get_uv_constraints(url: str, package_name: str, version: str) -> list[str]:
-    """Parse constraints inside a remote pyproject.toml file."""
+    """Parse constraints from a remote ``pyproject.toml`` managed by uv.
+
+    :param url: Constraints URL already formatted with the requested version.
+    :param package_name: Name of the base package.
+    :param version: Version to pin, or ``@branch`` to install from a branch.
+    :returns: Sorted list of constraint specifiers.
+    """
+    if from_branch := version.startswith("@"):
+        # Fetch the branch's pyproject.toml instead of a tagged release.
+        url = url.replace(f"/tags/{version}", f"/heads/{version[1:]}")
     dependencies, constraints = get_remote_uv_dependencies(url)
-    constraints.append(f"{package_name}=={version}")
+    if not from_branch:
+        # A branch install is pinned via [tool.uv.sources], not a == constraint.
+        constraints.append(f"{package_name}=={version}")
     return parse_constraints(constraints, dependencies)
 
 
 def _get_pip_constraints(url: str, package_name: str, version: str) -> list[str]:
-    """Get constraints using pip."""
+    """Resolve constraints from a remote source using pip.
+
+    :param url: URL of the remote constraints source.
+    :param package_name: Name of the base package.
+    :param version: Version being resolved.
+    :returns: List of constraint specifiers.
+    :raises exceptions.RepoPloneExternalException: If fetching or resolution fails.
+    """
     try:
         _, constraints = resolve_dependencies(url, [], [], [], "c")
     except Exception as exc:
@@ -27,11 +45,26 @@ def _get_pip_constraints(url: str, package_name: str, version: str) -> list[str]
 
 
 def _process_constraint(src: str) -> tuple[str, str]:
+    """Return the canonical name and normalized form of a constraint line.
+
+    :param src: A single requirement/constraint specifier.
+    :returns: Tuple of ``(canonical_name, normalized_requirement)``.
+    """
     req = Requirement(src)
     return canonicalize_name(req.name), str(req)
 
 
 def parse_constraints(lines: list[str], existing: list[str]) -> list[str]:
+    """Merge constraint lines with existing pins, preferring the existing ones.
+
+    Comment and blank lines are skipped. When a package appears in both
+    ``lines`` and ``existing``, the ``existing`` specifier wins; any leftover
+    ``existing`` entries are appended.
+
+    :param lines: Constraint specifiers parsed from the remote source.
+    :param existing: Constraint specifiers already present locally.
+    :returns: Sorted, de-duplicated list of constraint specifiers.
+    """
     constraints = []
     existing_ = dict([_process_constraint(line) for line in existing])
     for line in lines:
@@ -46,6 +79,12 @@ def parse_constraints(lines: list[str], existing: list[str]) -> list[str]:
 
 
 def get_constraint_info(package_name: str) -> t.PackageConstraintInfo:
+    """Return the constraint configuration for a supported base package.
+
+    :param package_name: Name of the base package.
+    :returns: The package's constraint configuration.
+    :raises AttributeError: If the package is not supported.
+    """
     pkg_config = PACKAGE_CONSTRAINTS.get(package_name)
     if not pkg_config:
         raise AttributeError(f"{package_name} is not supported at the moment.")
@@ -55,6 +94,13 @@ def get_constraint_info(package_name: str) -> t.PackageConstraintInfo:
 
 
 def get_base_constraints(package_name: str, version: str) -> list[str]:
+    """Return the constraints for a base package at a given version or branch.
+
+    :param package_name: Name of the base package.
+    :param version: Version to pin, or ``@branch`` to install from a branch.
+    :returns: List of constraint specifiers.
+    :raises AttributeError: If the package has an invalid constraints type.
+    """
     pkg_config = get_constraint_info(package_name)
     constraints_type = pkg_config["type"]
     constraints_url = pkg_config["url"].format(version=version)
@@ -80,8 +126,8 @@ def get_package_constraints(
     ``tool.uv.override-dependencies`` are skipped so each package appears only
     once in the final ``pyproject.toml``.
     """
-    versions = pypi_package_versions(package_name)
-    if version not in versions:
+    from_branch = version.startswith("@")
+    if not from_branch and version not in pypi_package_versions(package_name):
         raise RuntimeError(f"{package_name} {version} not available.")
     excluded = {
         canonicalize_name(name) for name in existing_pins if name != package_name

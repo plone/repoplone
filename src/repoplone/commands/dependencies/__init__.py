@@ -56,9 +56,9 @@ def check(ctx: typer.Context):
 def _upgrade_backend(settings: t.RepositorySettings, version: str) -> bool:
     """Upgrade a base dependency to a newer version."""
     package_name: str = settings.backend.base_package
-    logger.info(f"Getting {package_name} constraints for version {version}")
-    pyproject_path = utils.get_pyproject(settings)
-    if pyproject_path:
+    install_type = "branch" if version.startswith("@") else "version"
+    logger.info(f"Getting {package_name} constraints for {install_type} {version}")
+    if pyproject_path := utils.get_pyproject(settings):
         status = dependencies.update_backend_constraints(
             settings, pyproject_path, package_name, version
         )
