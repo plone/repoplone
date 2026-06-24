@@ -35,3 +35,105 @@ def test_pipeline_state(settings, dry_run: bool, desired_version: str):
     assert state.version_format == settings.version_format
     assert state.steps_current == 0
     assert state.steps_total == 8
+
+
+STEP_IDS = [
+    "changelog",
+    "version",
+    "repository",
+    "release_backend",
+    "release_frontend",
+    "git",
+    "gh_release",
+    "bye",
+]
+
+
+def _step(step_id: str) -> t.PipelineReleaseStep:
+    return t.PipelineReleaseStep(id=step_id, title=step_id, func=lambda *a, **k: True)
+
+
+def _recording_steps(
+    steps: list[t.PipelineReleaseStep], calls: list[str]
+) -> list[t.PipelineReleaseStep]:
+    """Clone ``steps`` replacing each func with one that records its id."""
+
+    def make(step_id: str):
+        def func(sid, title, settings, state, **kwargs):
+            calls.append(sid)
+            return True
+
+        return func
+
+    return [
+        t.PipelineReleaseStep(id=s.id, title=s.title, func=make(s.id)) for s in steps
+    ]
+
+
+def test_resolve_start_empty_returns_zero():
+    assert pipeline.resolve_start([_step(i) for i in STEP_IDS], "") == 0
+
+
+@pytest.mark.parametrize(
+    "start_step,expected", [("changelog", 0), ("version", 1), ("git", 5), ("bye", 7)]
+)
+def test_resolve_start_returns_index(start_step: str, expected: int):
+    assert pipeline.resolve_start([_step(i) for i in STEP_IDS], start_step) == expected
+
+
+def test_resolve_start_unknown_raises():
+    steps = [_step(i) for i in STEP_IDS]
+    with pytest.raises(ValueError, match="Unknown start step 'nope'"):
+        pipeline.resolve_start(steps, "nope")
+    # The error lists the valid ids to guide the user.
+    with pytest.raises(ValueError, match="changelog"):
+        pipeline.resolve_start(steps, "nope")
+
+
+def test_pipeline_skips_steps_before_start(settings, monkeypatch):
+    """Steps before ``start_step`` are skipped but the pipeline still succeeds."""
+    captured: list[str] = []
+    monkeypatch.setattr(
+        pipeline.dutils, "print", lambda *a, **k: captured.append(a[0] if a else "")
+    )
+    p = pipeline.ReleasePipeline(settings=settings, start_step="version")
+    calls: list[str] = []
+    p.steps = _recording_steps(p.steps, calls)
+
+    assert p() is True
+    assert "changelog" not in calls
+    assert calls == STEP_IDS[1:]
+    # steps_total stays the full pipeline length; skipped step is marked as such.
+    assert p.state.steps_total == 8
+    skipped = [line for line in captured if "(skipped)" in line]
+    assert len(skipped) == 1
+    assert "Display Changelog" in skipped[0]
+
+
+def test_pipeline_skips_version_with_supplied_version(settings, monkeypatch):
+    """Restarting past ``version`` resolves the supplied version in its place."""
+    monkeypatch.setattr(
+        "repoplone.release.steps.version.vutils.next_version",
+        lambda desired, current: "1.0.0a1",
+    )
+    monkeypatch.setattr(
+        "repoplone.release.steps.version.utils.valid_next_version",
+        lambda settings, version: True,
+    )
+    monkeypatch.setattr(pipeline.dutils, "print", lambda *a, **k: None)
+
+    p = pipeline.ReleasePipeline(
+        settings=settings, desired_version="1.0.0a1", start_step="git"
+    )
+    assert p.state.next_version == "1.0.0a1"
+
+    calls: list[str] = []
+    p.steps = _recording_steps(p.steps, calls)
+    assert p() is True
+    assert calls == ["git", "gh_release", "bye"]
+
+
+def test_pipeline_skip_version_requires_version(settings):
+    """Skipping ``version`` without a concrete version is rejected."""
+    with pytest.raises(ValueError, match="concrete version"):
+        pipeline.ReleasePipeline(settings=settings, start_step="git")
