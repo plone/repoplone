@@ -2,6 +2,19 @@
 
 <!-- towncrier release notes start -->
 
+## 1.1.0 (2026-06-24)
+
+
+### Feature
+
+- Added support for installing the backend base package from a Git branch with `repoplone deps upgrade backend @branch-name`. @ericof [#76](https://github.com/plone/repoplone/issues/76)
+- Add a `--start-step` option to `repoplone release` to restart a release from a given step, skipping the earlier (already completed) ones. @ericof [#79](https://github.com/plone/repoplone/issues/79)
+
+
+### Bugfix
+
+- Accept component names case-insensitively in `deps upgrade`, `deps sync` and `deps constraints`. @ericof [#78](https://github.com/plone/repoplone/issues/78)
+
 ## 1.0.3 (2026-06-05)
 
 

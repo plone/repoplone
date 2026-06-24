@@ -1,1 +1,0 @@
-Accept component names case-insensitively in `deps upgrade`, `deps sync` and `deps constraints`. @ericof
