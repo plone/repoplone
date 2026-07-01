@@ -25,6 +25,33 @@ def resolve_start(steps: list[t.PipelineReleaseStep], start_step: str) -> int:
     return ids.index(start_step)
 
 
+def process_steps(settings: RepositorySettings) -> list[t.PipelineReleaseStep]:
+    """Return the list of release steps to execute for the repository."""
+    steps = []
+    for step in settings.release_steps:
+        if step.id == "release_backend" and not settings.backend.enabled:
+            continue
+        if step.id == "release_frontend" and not settings.frontend.enabled:
+            continue
+        steps.append(step)
+    return steps
+
+
+def process_desired_version(
+    settings: RepositorySettings, desired_version: str, skipped_ids: set[str]
+) -> str:
+    """Process desired_version and return the version to use for the release."""
+    original_version = settings.version
+    desired_version = desired_version if desired_version != NO_VERSION else ""
+    if "version" in skipped_ids and (desired_version != original_version):
+        # The version step is skipped, so resolve and validate the version
+        # supplied on the command line in its place.
+        desired_version = resolve_skipped_version(
+            settings, original_version, desired_version
+        )
+    return desired_version
+
+
 class ReleasePipeline:
     """Pipeline to release a project."""
 
@@ -39,29 +66,19 @@ class ReleasePipeline:
         start_step: str = "",
     ) -> None:
         # Populate steps from settings (parsed from [repository.release])
-        self.steps = []
-        for step in settings.release_steps:
-            if step.id == "release_backend" and not settings.backend.enabled:
-                continue
-            if step.id == "release_frontend" and not settings.frontend.enabled:
-                continue
-            self.steps.append(step)
+        self.steps = process_steps(settings)
 
         # Repository settings
         self.settings = settings
         # Version information
         original_version = settings.version
         version_format = settings.version_format
-        desired_version = desired_version if desired_version != NO_VERSION else ""
         # Restart support: skip every step before ``start_step``
         self.start_index = resolve_start(self.steps, start_step)
         skipped_ids = {step.id for step in self.steps[: self.start_index]}
-        if "version" in skipped_ids:
-            # The version step is skipped, so resolve and validate the version
-            # supplied on the command line in its place.
-            desired_version = resolve_skipped_version(
-                settings, original_version, desired_version
-            )
+        desired_version = process_desired_version(
+            settings, desired_version, skipped_ids
+        )
         # State
         self.state = t.PipelineState(
             dry_run=dry_run,
