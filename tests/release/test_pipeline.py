@@ -137,3 +137,62 @@ def test_pipeline_skip_version_requires_version(settings):
     """Skipping ``version`` without a concrete version is rejected."""
     with pytest.raises(ValueError, match="concrete version"):
         pipeline.ReleasePipeline(settings=settings, start_step="git")
+
+
+def test_process_steps_returns_all_when_both_enabled(settings):
+    """With backend and frontend enabled every configured step is returned."""
+    steps = pipeline.process_steps(settings)
+    assert [step.id for step in steps] == STEP_IDS
+
+
+def test_process_steps_drops_backend_when_disabled(settings):
+    """A disabled backend excludes the ``release_backend`` step."""
+    settings.backend.enabled = False
+    ids = [step.id for step in pipeline.process_steps(settings)]
+    assert "release_backend" not in ids
+    assert "release_frontend" in ids
+
+
+def test_process_steps_drops_frontend_when_disabled(settings):
+    """A disabled frontend excludes the ``release_frontend`` step."""
+    settings.frontend.enabled = False
+    ids = [step.id for step in pipeline.process_steps(settings)]
+    assert "release_frontend" not in ids
+    assert "release_backend" in ids
+
+
+def test_process_desired_version_maps_next_to_empty(settings):
+    """The ``next`` sentinel is normalised to an empty string."""
+    assert pipeline.process_desired_version(settings, pipeline.NO_VERSION, set()) == ""
+
+
+def test_process_desired_version_kept_when_version_not_skipped(settings):
+    """When the ``version`` step runs the supplied version is returned as-is."""
+    assert pipeline.process_desired_version(settings, "1.0.0", set()) == "1.0.0"
+
+
+def test_process_desired_version_resolves_when_skipped(settings, monkeypatch):
+    """Skipping ``version`` with a new version defers to ``resolve_skipped_version``."""
+    monkeypatch.setattr(
+        pipeline, "resolve_skipped_version", lambda *a, **k: "resolved-version"
+    )
+    result = pipeline.process_desired_version(settings, "1.0.0a5", {"version"})
+    assert result == "resolved-version"
+
+
+def test_process_desired_version_skips_resolution_when_version_unchanged(
+    settings, monkeypatch
+):
+    """Restarting past ``version`` with the current version skips re-resolution.
+
+    Regression test for #81: on a restart the repository version is already the
+    target version, so passing it again must not run ``resolve_skipped_version``
+    (which would reject it as an already-existing tag).
+    """
+
+    def _boom(*args, **kwargs):
+        raise AssertionError("resolve_skipped_version must not be called")
+
+    monkeypatch.setattr(pipeline, "resolve_skipped_version", _boom)
+    result = pipeline.process_desired_version(settings, settings.version, {"version"})
+    assert result == settings.version
