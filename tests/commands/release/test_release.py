@@ -42,9 +42,9 @@ def test_release_defines_start_step_option():
     Introspect the command parameters rather than the rendered ``--help`` text,
     which Rich wraps/colours differently depending on terminal width.
     """
-    import typer
-
     from repoplone.commands.release import app as release_app
+
+    import typer
 
     cmd = typer.main.get_command(release_app)
     flags = [opt for param in cmd.params for opt in getattr(param, "opts", [])]
