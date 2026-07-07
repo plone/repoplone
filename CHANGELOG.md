@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.1.2 (2026-07-07)
+
+
+### Bugfix
+
+- Fix handling of `desired_version` when `start_step` is provided. @ericof [#81](https://github.com/plone/repoplone/issues/81)
+
 ## 1.1.1 (2026-07-01)
 
 No significant changes.
