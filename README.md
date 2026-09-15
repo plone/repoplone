@@ -245,8 +245,7 @@ The `local_step` built-in imports a callable from the project root and runs
 it under the standard step contract:
 
 ```python
-def step(step_id, title, settings, state, **kwargs) -> bool:
-    ...
+def step(step_id, title, settings, state, **kwargs) -> bool: ...
 ```
 
 Wire it via a registry alias. The alias id is what you put in `steps`:
