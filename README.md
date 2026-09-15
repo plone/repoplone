@@ -322,6 +322,58 @@ To upgrade the base package to a specific version, use:
 uvx repoplone deps upgrade backend 6.1.1
 ```
 
+#### Upgrade a frontend distribution
+
+Repoplone can take care of upgrading a frontend distribution and ensuring that all frontend package versions in the project remain consistent with the distribution.
+It reads the base_package set in the `[frontend.package]` section of repository.toml.
+
+```bash
+uvx repoplone deps upgrade frontend 3.0.0
+```
+
+you can also use `latest` to upgrade to the most recent version of the frontend distribution.
+
+```bash
+uvx repoplone deps upgrade frontend latest
+```
+
+When you have a project that is based on a distribution, we need to make sure that the versions of the frontend packages in the project are consistent with the versions in the distribution and that these versions are all in sync across all the build.
+When creating a distribution, make sure to stamp the Volto version as described in the next section.
+Then repoplone can use that stamped Volto version to enforce consistency across all frontend packages in the project.
+When the distribution has the `volto_version` field stamped in `package.json`, repoplone also fetches its enforced `dependencies` and `volto_version` from the npm registry and writes them to `frontend/distribution.json`.
+That file is consumed by the project's `.pnpmfile.cjs` hook, which overrides those versions across the whole
+workspace at install time.
+The `@plone/volto` tag in the project's `mrs.developer.json` is aligned to the distribution's `volto_version` as well.
+
+#### Stamp the Volto version when releasing a distribution
+
+The `volto_version` field described above is what identifies a package as a Volto
+distribution. When you *release* a distribution, stamp that field from the Volto
+core tag checked out via `mrs.developer.json`:
+
+```bash
+uvx repoplone deps stamp-volto-version
+```
+
+This reads the `@plone/volto` tag from `mrs.developer.json` and writes it verbatim
+to the frontend package's `package.json` `volto_version` field. It is typically
+wired into a `release-it` hook so the published package advertises the Volto core
+it targets. For example, in the distribution package's `.release-it.json`:
+
+```json
+{
+  "hooks": {
+    "after:bump": [
+      "uvx repoplone deps stamp-volto-version",
+      "git add package.json"
+    ]
+  }
+}
+```
+
+The command is cwd-independent inside the repository (it locates `repository.toml`
+by walking up), so it works from the package directory where `release-it` runs.
+
 #### Install from a Git branch
 
 To track an unreleased branch of the base package, pass the branch name prefixed
@@ -369,6 +421,7 @@ This section outlines the format and available options for the `repository.toml`
 |                       | `changelog`               | Path to the changelog for the frontend.                                                                                         | `"frontend/CHANGELOG.md"`                       |                                                                                                                                                              |
 |                       | `towncrier_settings`      | Path to Towncrier settings for frontend.                                                                                        | `"frontend/packages/volto-addon/towncrier.toml"`|                                                                                                                                                              |
 |                       | `publish`                 | Whether to publish the frontend package to npm.                                                                                 | `true` or `false`                               |                                                                                                                                                              |
+|                       | `base_package`            | Name of the frontend base package (e.g. a Volto distribution).                                                                  | `"@kitconcept/intranet"`                        | Defaults to `"@plone/volto"`.                                                                                                                                 |
 
 ## Contribute 🤝
 

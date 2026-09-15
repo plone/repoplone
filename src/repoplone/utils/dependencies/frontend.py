@@ -76,6 +76,20 @@ def _get_version_from_mrs_developer(
     return _parse_version_from_mrs_developer(checkout_entry, transform=transform)
 
 
+def get_core_tag(frontend_path: Path) -> str | None:
+    """Return the raw ``@plone/volto`` checkout tag from mrs.developer.json.
+
+    Unlike :func:`package_version`, the tag is returned verbatim (no semver
+    normalization), as it is meant to be recorded as-is.
+    """
+    try:
+        return _get_version_from_mrs_developer(
+            frontend_path, package_name="@plone/volto", transform=False
+        )
+    except ValueError:
+        return None
+
+
 def package_version(frontend_path: Path, package_name: str) -> str | None:
     """Return the version of a package."""
     if package_name == "@plone/volto":
@@ -120,6 +134,25 @@ def _update_version_mrs_developer(
             version = v_utils.convert_node_python_version(version)
         checkout_entry["tag"] = version
         _save_mrs_developer(frontend_root_path, data)
+        return True
+    return False
+
+
+def update_core_tag_mrs_developer(frontend_root: Path, volto_version: str) -> bool:
+    """Update the ``@plone/volto`` checkout tag in mrs.developer.json.
+
+    Used to keep the Volto core checked out by mrs-developer aligned with the
+    ``volto_version`` enforced by the distribution. Returns True when the file
+    was changed.
+    """
+    data = _load_mrs_developer(frontend_path=frontend_root)
+    try:
+        entry = _get_entry_mrs_developer(data, "@plone/volto")
+    except ValueError:
+        return False
+    if entry.get("tag") != volto_version:
+        entry["tag"] = volto_version
+        _save_mrs_developer(frontend_root, data)
         return True
     return False
 

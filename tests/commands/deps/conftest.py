@@ -45,6 +45,9 @@ def in_patch_sync(monkeypatch):
         return None
 
     monkeypatch.setattr(dependencies, "_sync_dependencies", func)
+    # Frontend upgrades also refresh the distribution enforcement, which reaches
+    # out to the npm registry; skip it in the generic upgrade tests.
+    monkeypatch.setattr(dependencies.dependencies, "sync_distribution", func)
 
 
 @pytest.fixture
