@@ -2,6 +2,14 @@
 
 <!-- towncrier release notes start -->
 
+## 1.1.3 (2026-09-15)
+
+
+### Feature
+
+- New ``deps stamp-volto-version`` command. It reads the ``@plone/volto`` tag from ``mrs.developer.json`` and records it in the frontend package's ``package.json`` ``volto_version`` field. Meant to be run when releasing a Volto distribution (e.g. from a release-it ``after:bump`` hook), so the published package advertises the Volto core version it targets. 
+- ``deps upgrade frontend`` now manages Volto distributions automatically. When the frontend base package is a distribution (recognized by the custom ``volto_version`` field it publishes), upgrading it also fetches the distribution's enforced dependencies and ``volto_version`` from npm, writes them to ``frontend/distribution.json`` (consumed by ``.pnpmfile.cjs``), and aligns the ``@plone/volto`` tag in ``mrs.developer.json``. Plain Volto and non-distribution base packages are unaffected. 
+
 ## 1.1.2 (2026-07-07)
 
 

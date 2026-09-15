@@ -1,1 +1,0 @@
-New ``deps stamp-volto-version`` command. It reads the ``@plone/volto`` tag from ``mrs.developer.json`` and records it in the frontend package's ``package.json`` ``volto_version`` field. Meant to be run when releasing a Volto distribution (e.g. from a release-it ``after:bump`` hook), so the published package advertises the Volto core version it targets.
