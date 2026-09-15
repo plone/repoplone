@@ -1,4 +1,6 @@
 from .constraints import get_package_constraints
+from .distribution import stamp_volto_version
+from .distribution import sync_distribution
 from .frontend import update_base_package as update_frontend_base_package
 from .pyproject import current_base_package
 from .pyproject import get_all_pinned_dependencies
@@ -45,6 +47,8 @@ __all__ = [
     "node_latest_package_version",
     "parse_pyproject",
     "python_latest_package_version",
+    "stamp_volto_version",
+    "sync_distribution",
     "update_backend_constraints",
     "update_frontend_base_package",
     "update_pyproject",

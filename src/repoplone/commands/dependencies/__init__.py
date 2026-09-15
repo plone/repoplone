@@ -73,7 +73,13 @@ def _upgrade_backend(settings: t.RepositorySettings, version: str) -> bool:
 def _upgrade_frontend(settings: t.RepositorySettings, version: str) -> bool:
     """Upgrade a base dependency to a newer version."""
     package_name: str = settings.frontend.base_package
-    return dependencies.update_frontend_base_package(settings, package_name, version)
+    status = dependencies.update_frontend_base_package(settings, package_name, version)
+    if status and dependencies.sync_distribution(settings, version):
+        # The base package is a Volto distribution: distribution.json and the
+        # Volto core tag were refreshed before 'make frontend-install' syncs the
+        # lockfile.
+        logger.info(f"Refreshed distribution enforcement for {package_name}@{version}")
+    return status
 
 
 def _sync_dependencies(settings: t.RepositorySettings, component: str):
@@ -156,6 +162,29 @@ def sync(
     for component_ in components:
         _sync_dependencies(settings, component_)
         typer.echo("\n")
+
+
+@app.command(name="stamp-volto-version")
+def stamp_volto_version(ctx: typer.Context):
+    """Stamp the Volto core version into the frontend package.json.
+
+    Reads the ``@plone/volto`` tag from ``mrs.developer.json`` and records it as
+    the ``volto_version`` field of the frontend package. Meant to be run when
+    releasing a Volto distribution (e.g. from a release-it hook), so the published
+    package advertises the Volto core version it targets.
+    """
+    settings: t.RepositorySettings = ctx.obj.settings
+    if not settings.frontend.enabled:
+        typer.echo("Error: Frontend component is not enabled in repository.toml")
+        raise typer.Exit(1)
+    try:
+        version = dependencies.stamp_volto_version(settings)
+    except ValueError as e:
+        typer.echo(f"Error: {e}")
+        raise typer.Exit(1) from e
+    typer.echo(
+        f"Stamped volto_version {version} into {settings.frontend.name} package.json."
+    )
 
 
 UPGRADE_FUNC: dict[str, tuple[t.VersionChecker, t.VersionUpgrader]] = {
