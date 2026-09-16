@@ -129,9 +129,18 @@ class TowncrierSection:
     section_id: str
     name: str
     path: Path
+    changelog: Path | None = None
 
     def sanity(self) -> bool:
         return self.path.exists() if self.path else False
+
+
+#: Spec 1 names for the two family sections, still accepted as attributes so
+#: ``settings.towncrier.backend`` keeps working.
+TOWNCRIER_SECTION_ALIASES: dict[str, str] = {
+    "backend": FAMILY_PYTHON,
+    "frontend": FAMILY_NODE,
+}
 
 
 @dataclass
@@ -140,11 +149,26 @@ class TowncrierSettings:
 
     sections: list[TowncrierSection]
 
-    def __getattr__(self, name: str):
+    def get(self, section_id: str) -> TowncrierSection | None:
+        """Return a section by id, or ``None``.
+
+        Non-primary packages get ids such as ``python:acme.theme``, which are
+        not attribute names, so they are reached through here.
+
+        :param section_id: Id of the section.
+        :returns: The section, or ``None`` when no section has that id.
+        """
+        section_id = TOWNCRIER_SECTION_ALIASES.get(section_id, section_id)
         for section in self.sections:
-            if section.section_id == name:
+            if section.section_id == section_id:
                 return section
-        raise AttributeError(f"{name} not found")
+        return None
+
+    def __getattr__(self, name: str):
+        section = self.get(name)
+        if section is None:
+            raise AttributeError(f"{name} not found")
+        return section
 
     def sanity(self) -> bool:
         sections = self.sections

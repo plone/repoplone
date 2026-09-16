@@ -23,25 +23,75 @@ def get_changelogs(
     return t.Changelogs(root_changelog, backend_changelog, frontend_changelog)
 
 
-def get_towncrier_settings(
-    root_path: Path, backend: t.Package, frontend: t.Package, repository: dict
-) -> t.TowncrierSettings:
-    sections = []
-    raw_sections = []
-    if backend.enabled:
-        raw_sections.append(("backend", "Backend", root_path / backend.towncrier))
-    if frontend.enabled:
-        raw_sections.append(("frontend", "Frontend", root_path / frontend.towncrier))
+#: Headings spec 1 gives the two family sections. Spec 2 uses the package name.
+LEGACY_SECTION_NAMES: dict[str, str] = {
+    t.FAMILY_PYTHON: "Backend",
+    t.FAMILY_NODE: "Frontend",
+}
 
+
+def _section_id(package: t.Package) -> str:
+    """Return the towncrier section id of a package.
+
+    The primary package of a family keeps the family's own id, so
+    ``settings.towncrier.backend`` resolves the way it always has.
+
+    :param package: The package.
+    :returns: The section id.
+    """
+    if package.primary:
+        return package.family
+    return f"{package.family}:{package.name}"
+
+
+def _section_name(package: t.Package, spec_version: int) -> str:
+    """Return the heading a package gets in the repository changelog.
+
+    An explicit ``section`` always wins. Otherwise spec 2 uses the package
+    name, which is the only thing that reads well once a family holds several
+    packages, while spec 1 keeps ``Backend`` and ``Frontend`` so upgrading
+    repoplone never rewrites a project's changelog headings.
+
+    :param package: The package.
+    :param spec_version: Spec version of the file.
+    :returns: The heading.
+    """
+    if package.section:
+        return package.section
+    if spec_version == 1:
+        return LEGACY_SECTION_NAMES.get(package.family, package.name)
+    return package.name
+
+
+def get_towncrier_settings(
+    root_path: Path,
+    packages: list[t.Package],
+    repository: dict,
+    spec_version: int = 1,
+) -> t.TowncrierSettings:
+    """Return the towncrier sections of a repository, in document order.
+
+    :param root_path: Repository root.
+    :param packages: Every package declared in the file.
+    :param repository: The ``[repository.towncrier]`` table.
+    :param spec_version: Spec version of the file.
+    :returns: The towncrier settings.
+    """
+    sections = [
+        t.TowncrierSection(
+            _section_id(package),
+            _section_name(package, spec_version),
+            package.towncrier,
+            package.changelog,
+        )
+        for package in packages
+        if package.enabled
+    ]
     if repository and (towncrier := repository.get("settings", "")):
         path: Path = root_path / towncrier
-        section = (
-            "repository",
-            repository["section"],
-            path.resolve(),
+        sections.append(
+            t.TowncrierSection("repository", repository["section"], path.resolve())
         )
-        raw_sections.append(section)
-    sections = [t.TowncrierSection(*info) for info in raw_sections]
     return t.TowncrierSettings(sections=sections)
 
 

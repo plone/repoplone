@@ -68,6 +68,24 @@ def _cleanup_news(path: Path, towncrier_settings: Path):
         fragment_path.unlink()
 
 
+def _sections_owning_root(settings: t.RepositorySettings) -> set[str]:
+    """Return the ids of sections whose package owns the repository changelog.
+
+    A package declared at the repository root points its ``changelog`` at the
+    repository changelog, so its own towncrier build writes that file. The
+    aggregated entry must then leave it alone.
+
+    :param settings: Repository settings.
+    :returns: Section ids to skip when writing the repository changelog.
+    """
+    root = settings.changelogs.root
+    return {
+        section.section_id
+        for section in settings.towncrier.sections
+        if section.section_id != "repository" and section.changelog == root
+    }
+
+
 # Update Changelog at root
 def _update_project_changelog(
     settings: t.RepositorySettings,
@@ -80,9 +98,17 @@ def _update_project_changelog(
     header = f"## {version} ({datetime.now():%Y-%m-%d})"
     new_entry = f"{header}\n"
     has_root = False
+    owns_root = _sections_owning_root(settings)
+    written_sections = 0
     for section_id, section_data in sections.items():
         if section_id == "repository":
             has_root = True
+        if not draft and section_id in owns_root:
+            # This package's changelog *is* the repository changelog, and its
+            # own towncrier build writes it. Adding a section here too would
+            # report every change twice, under two different headings.
+            continue
+        written_sections += 1
         section_name = section_data["name"]
         text = section_data["changes"]
         new_entry = f"{new_entry}\n### {section_name}\n{text}"
@@ -90,7 +116,7 @@ def _update_project_changelog(
     text = f"{changelog_text}".replace(
         CHANGELOG_PLACEHOLDER, f"{CHANGELOG_PLACEHOLDER}\n{new_entry}"
     )
-    if not draft:
+    if not draft and written_sections:
         root_changelog.write_text(text)
         if has_root:
             # Cleanup top-level news folder
@@ -147,8 +173,10 @@ def update_frontend_changelog(
     )
     if draft:
         result = _cleanup_draft(result, True)
-    else:
-        # Copy result to the frontend changelog file
+    elif package.primary:
+        # Copy result to the frontend-wide changelog. Only the primary package
+        # does this: with several node packages the last one would win, and the
+        # file would report whichever ran last rather than the component.
         package_path = package.path
         package_changelog = Path(package_path) / "CHANGELOG.md"
         frontend_path = utils.frontend_root(settings.root_path, package_path)

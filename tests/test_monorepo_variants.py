@@ -68,16 +68,16 @@ def test_backend_only_pipeline_steps(test_backend_only_project, bust_path_cache)
     res_settings = settings.get_settings()
     pipeline = ReleasePipeline(res_settings)
     step_ids = [s.id for s in pipeline.steps]
-    assert "release_backend" in step_ids
-    assert "release_frontend" not in step_ids
+    assert "release_python" in step_ids
+    assert "release_node" not in step_ids
 
 
 def test_frontend_only_pipeline_steps(test_frontend_only_project, bust_path_cache):
     res_settings = settings.get_settings()
     pipeline = ReleasePipeline(res_settings)
     step_ids = [s.id for s in pipeline.steps]
-    assert "release_frontend" in step_ids
-    assert "release_backend" not in step_ids
+    assert "release_node" in step_ids
+    assert "release_python" not in step_ids
 
 
 def test_backend_only_changelog_utils(test_backend_only_project, bust_path_cache):

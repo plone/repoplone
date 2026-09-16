@@ -28,14 +28,24 @@ def sanity_check(settings: t.RepositorySettings) -> ReleaseSanityCheckResult:
     """Check if components needed for release are propertly configured."""
     errors: list[str] = []
     warnings: list[str] = []
-    backend_package = settings.backend
-    frontend_package = settings.frontend
-    if backend_package.enabled and backend_package.publish:
-        uv = UV(backend_package.path)
+    # Authentication is per registry, not per package: check it once for each
+    # family that publishes anything.
+    python_packages = [
+        package
+        for package in settings.packages_for(t.FAMILY_PYTHON)
+        if package.enabled and package.publish
+    ]
+    node_packages = [
+        package
+        for package in settings.packages_for(t.FAMILY_NODE)
+        if package.enabled and package.publish
+    ]
+    if python_packages:
+        uv = UV(python_packages[0].path)
         if not uv.check_authentication():
             errors.append("You are not authenticated to PyPi using UV.")
-    if frontend_package.enabled and frontend_package.publish:
-        release_it = ReleaseIt(frontend_package.path)
+    if node_packages:
+        release_it = ReleaseIt(node_packages[0].path)
         if not release_it.check_authentication():
             errors.append("You are not authenticated to NPM.")
     try:
@@ -56,7 +66,7 @@ def sanity_check(settings: t.RepositorySettings) -> ReleaseSanityCheckResult:
 
 def release_backend(
     settings: t.RepositorySettings,
-    package: t.BackendPackage,
+    package: t.Package,
     version: str,
     dry_run: bool,
 ):
@@ -99,7 +109,7 @@ def release_backend(
 
 def release_frontend(
     settings: t.RepositorySettings,
-    package: t.FrontendPackage,
+    package: t.Package,
     project_version: str,
     dry_run: bool,
 ):

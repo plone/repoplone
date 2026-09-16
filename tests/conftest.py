@@ -217,7 +217,9 @@ def vcr_cassette_dir(request):
 
 
 @pytest.fixture
-def settings(test_public_project):
+def settings(test_public_project, bust_path_cache):
+    # get_cwd_path is cached, so without busting it this answers with whichever
+    # project a test earlier in the session chdir-ed into.
     from repoplone import settings
 
     return settings.get_settings()

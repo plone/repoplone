@@ -167,7 +167,7 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
     managed_by_uv = backend.managed_by_uv
     frontend = _family_primary(root_path, raw_settings, packages, t.FAMILY_NODE)
     towncrier = utils.get_towncrier_settings(
-        root_path, backend, frontend, repository_towncrier
+        root_path, packages, repository_towncrier, spec_version
     )
     changelogs = utils.get_changelogs(root_changelog, backend, frontend)
     remote_origin = git_utils.remote_origin(root_path)
@@ -177,7 +177,7 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
     raw_release = repository.get("release", None)
     if hasattr(raw_release, "to_dict"):
         raw_release = raw_release.to_dict()
-    release_steps = build_release_steps(raw_release)
+    release_steps = build_release_steps(raw_release, spec_version)
     return t.RepositorySettings(
         name=name,
         managed_by_uv=managed_by_uv,
