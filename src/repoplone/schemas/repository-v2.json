@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/plone/repoplone/main/src/repoplone/schemas/repository-v2.json",
+  "title": "repoplone repository.toml (spec 2)",
+  "description": "Specification 2 of the repository.toml file read by repoplone. Selected by spec_version = \"2\". Packages are declared as a flat [[package]] array, each entry carrying a type. The [backend] and [frontend] component tables are gone, as are the keys spec 1 deprecated. Run `repoplone settings migrate` to convert a spec 1 file.",
+  "type": "object",
+  "required": ["spec_version", "repository"],
+  "properties": {
+    "spec_version": {
+      "description": "Version of the repository.toml specification, as a string. Write \"2\", not 2.",
+      "enum": ["2", "2.0"]
+    },
+    "repository": { "$ref": "#/$defs/repository" },
+    "package": {
+      "description": "Every package the repository releases, in document order.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/package" }
+    },
+    "backend": false,
+    "frontend": false
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "repository": {
+      "type": "object",
+      "description": "Repository-wide settings.",
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "description": "Name of the repository.",
+          "type": "string",
+          "minLength": 1
+        },
+        "changelog": {
+          "description": "Path to the repository changelog, relative to the repository root.",
+          "type": "string"
+        },
+        "version": {
+          "description": "Path to the file holding the repository version.",
+          "type": "string"
+        },
+        "container_images_prefix": {
+          "description": "Prefix for container images. The -backend and -frontend suffixes are appended.",
+          "type": "string"
+        },
+        "compose": {
+          "description": "Docker Compose files. Spec 2 requires a list.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "version_format": {
+          "description": "Versioning scheme used by the repository.",
+          "enum": ["semver", "calver"]
+        },
+        "issues_url": {
+          "description": "URL where issues are tracked. Derived from the git origin when unset.",
+          "type": "string"
+        },
+        "managed_by_uv": false,
+        "towncrier": { "$ref": "#/$defs/repositoryTowncrier" },
+        "release": { "$ref": "#/$defs/release" }
+      },
+      "additionalProperties": true
+    },
+    "repositoryTowncrier": {
+      "type": "object",
+      "description": "Repository-level towncrier settings.",
+      "properties": {
+        "enabled": {
+          "description": "Whether the repository-level towncrier is enabled. Derived from the presence of this table.",
+          "type": "boolean"
+        },
+        "section": {
+          "description": "Heading used for this section in the repository changelog.",
+          "type": "string"
+        },
+        "settings": {
+          "description": "Path to the towncrier settings file.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": true
+    },
+    "release": {
+      "type": "object",
+      "description": "Optional release pipeline configuration. When omitted, the default pipeline is used.",
+      "properties": {
+        "steps": {
+          "description": "Ordered step ids. Each is a built-in id or a key of the registry table. Spec 2 uses release_python and release_node; the spec 1 names release_backend and release_frontend are rejected.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "not": { "enum": ["release_backend", "release_frontend"] }
+          },
+          "uniqueItems": true
+        },
+        "registry": {
+          "description": "User-defined steps, keyed by step id.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/releaseRegistryEntry" }
+        }
+      },
+      "additionalProperties": true
+    },
+    "releaseRegistryEntry": {
+      "type": "object",
+      "description": "A user-defined release step bound to a built-in function.",
+      "required": ["function"],
+      "properties": {
+        "function": {
+          "description": "Built-in step function this entry runs.",
+          "enum": [
+            "changelog",
+            "version",
+            "repository",
+            "release_python",
+            "release_node",
+            "git",
+            "gh_release",
+            "bye",
+            "local_step"
+          ]
+        },
+        "title": {
+          "description": "Title shown while the step runs. Defaults to the built-in title.",
+          "type": "string"
+        },
+        "args": {
+          "description": "Keyword arguments passed to the step function. local_step requires entrypoint.",
+          "type": "object"
+        }
+      },
+      "additionalProperties": true,
+      "allOf": [
+        {
+          "if": {
+            "properties": { "function": { "const": "local_step" } },
+            "required": ["function"]
+          },
+          "then": {
+            "required": ["args"],
+            "properties": {
+              "args": {
+                "required": ["entrypoint"],
+                "properties": {
+                  "entrypoint": {
+                    "description": "Importable callable, as module:callable.",
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "package": {
+      "type": "object",
+      "description": "One package released from this repository. The language prefix of `type` decides how the package is built and published; the ecosystem suffix decides which extra keys apply.",
+      "required": ["type", "name", "path", "changelog", "towncrier_settings"],
+      "properties": {
+        "type": {
+          "description": "Kind of package. `backend` and `frontend` are deprecated aliases for python-plone and node-volto, accepted so a hand-migrated file still loads; `repoplone settings migrate` writes the canonical names.",
+          "enum": [
+            "python-plone",
+            "python",
+            "node-volto",
+            "node-aurora",
+            "node",
+            "backend",
+            "frontend"
+          ]
+        },
+        "name": {
+          "description": "Package name, as published to PyPI or npm.",
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "description": "Path to the package, relative to the repository root. Use \".\" when the package is the repository itself.",
+          "type": "string",
+          "minLength": 1
+        },
+        "changelog": {
+          "description": "Path to the package changelog, relative to the repository root.",
+          "type": "string",
+          "minLength": 1
+        },
+        "towncrier_settings": {
+          "description": "Path to the package towncrier settings, relative to the repository root.",
+          "type": "string",
+          "minLength": 1
+        },
+        "code_path": {
+          "description": "Path to the source code, relative to the package path.",
+          "type": "string"
+        },
+        "publish": {
+          "description": "Whether to publish this package to its registry.",
+          "type": "boolean"
+        },
+        "primary": {
+          "description": "Marks this package as the primary one of its family. At most one per family; the first in document order is primary when none is marked.",
+          "type": "boolean"
+        },
+        "section": {
+          "description": "Heading used for this package in the repository changelog. Defaults to the package name.",
+          "type": "string",
+          "minLength": 1
+        },
+        "base_package": {
+          "description": "Package this one builds on, whose version repoplone tracks. Only meaningful on the primary package of a family.",
+          "type": "string",
+          "minLength": 1
+        },
+        "python_version": {
+          "description": "Base Python version. Read from the package classifiers when unset.",
+          "type": "string"
+        },
+        "python_versions": {
+          "description": "Supported Python versions. Read from the package classifiers when unset.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "plone_versions": {
+          "description": "Supported Plone versions. Read from the package classifiers when unset.",
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "$comment": "Node packages carry no Python or Plone version keys.",
+          "if": {
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "enum": ["node-volto", "node-aurora", "node", "frontend"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "python_version": false,
+              "python_versions": false,
+              "plone_versions": false
+            }
+          }
+        },
+        {
+          "$comment": "Generic packages have no ecosystem: no base package, no Plone versions.",
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "enum": ["python", "node"] } }
+          },
+          "then": {
+            "properties": {
+              "base_package": false,
+              "plone_versions": false
+            }
+          }
+        },
+        {
+          "$comment": "node-aurora has no built-in base package default, so it must be declared.",
+          "if": {
+            "required": ["type"],
+            "properties": { "type": { "const": "node-aurora" } }
+          },
+          "then": {
+            "required": ["base_package"]
+          }
+        }
+      ]
+    }
+  }
+}

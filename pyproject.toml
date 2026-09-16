@@ -67,6 +67,7 @@ only-include = ["src", "tests", "*.md", "Makefile", "uv.lock"]
 
 [dependency-groups]
 test = [
+    "jsonschema>=4.26.0",
     "pytest>9.0.2",
     "pytest-cov>=7.1.0",
     "pytest-recording>=0.13.4",

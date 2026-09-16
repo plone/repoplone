@@ -1,0 +1,10 @@
+# [repository] must declare a name.
+[repository]
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[backend.package]
+name = "fake.project"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"

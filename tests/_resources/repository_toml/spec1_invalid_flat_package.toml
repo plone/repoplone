@@ -1,0 +1,12 @@
+# The flat [[package]] array requires spec_version = "2".
+[repository]
+name = "fake-project"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python-plone"
+name = "fake.project"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"

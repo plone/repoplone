@@ -1,0 +1,8 @@
+# compose must be a list in spec 2.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+compose = "docker-compose.yml"

@@ -1,0 +1,30 @@
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[repository.release]
+steps = [
+    "changelog",
+    "version",
+    "repository",
+    "release_python",
+    "release_node",
+    "notify_slack",
+    "git",
+    "bye",
+]
+
+[repository.release.registry.notify_slack]
+title = "Notify internal Slack"
+function = "local_step"
+args = { entrypoint = "scripts.notify:hook", channel = "#releases" }
+
+[[package]]
+type = "python-plone"
+name = "acme.core"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"

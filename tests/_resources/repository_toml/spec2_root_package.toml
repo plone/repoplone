@@ -1,0 +1,16 @@
+# A single Python package living at the repository root, with no frontend.
+spec_version = "2"
+
+[repository]
+name = "repoplone"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python"
+name = "repoplone"
+path = "."
+code_path = "src/repoplone"
+changelog = "CHANGELOG.md"
+towncrier_settings = "pyproject.toml"
+publish = true

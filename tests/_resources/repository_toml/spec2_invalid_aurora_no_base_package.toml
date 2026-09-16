@@ -1,0 +1,14 @@
+# node-aurora has no built-in base package default, so it must be declared.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "node-aurora"
+name = "@acme/aurora-core"
+path = "frontend/packages/aurora-core"
+changelog = "frontend/packages/aurora-core/CHANGELOG.md"
+towncrier_settings = "frontend/packages/aurora-core/towncrier.toml"

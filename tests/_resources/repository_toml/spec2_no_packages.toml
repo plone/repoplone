@@ -1,0 +1,11 @@
+# A spec 2 file may declare no packages at all.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[repository.towncrier]
+section = "Project"
+settings = "towncrier.toml"
