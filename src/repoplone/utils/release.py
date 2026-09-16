@@ -13,9 +13,11 @@ from .versions import update_frontend_version
 from dataclasses import dataclass
 from repoplone import _types as t
 from repoplone import logger
+from repoplone.exceptions import RepoPloneExternalException
 from repoplone.integrations.pocompile import PoCompile
 from repoplone.integrations.release_it import ReleaseIt
 from repoplone.integrations.uv import UV
+from repoplone.utils.dependencies import versions as dep_versions
 
 
 @dataclass
@@ -64,6 +66,35 @@ def sanity_check(settings: t.RepositorySettings) -> ReleaseSanityCheckResult:
     return ReleaseSanityCheckResult(errors=errors, warnings=warnings)
 
 
+def already_published(package: t.Package, version: str) -> bool:
+    """Report whether a registry already carries a version of a package.
+
+    Restarting a release with ``--start-step`` re-runs a whole step, and a
+    step now covers every package of its family. Without this check the
+    packages that reached their registry before the failure would be uploaded
+    again, and fail -- turning a restart into a second failure rather than a
+    resumption.
+
+    A registry that cannot be reached answers ``False``: publishing and
+    letting the registry reject a duplicate is a better failure than skipping
+    a package that was never published.
+
+    :param package: Package about to be published.
+    :param version: Version about to be published.
+    :returns: Whether that version is already on the registry.
+    """
+    lookup = (
+        dep_versions.pypi_package_versions
+        if package.family == t.FAMILY_PYTHON
+        else dep_versions.npm_package_versions
+    )
+    try:
+        published = lookup(package.name)
+    except RepoPloneExternalException:
+        return False
+    return version in published
+
+
 def release_backend(
     settings: t.RepositorySettings,
     package: t.Package,
@@ -79,6 +110,9 @@ def release_backend(
     """
     package_name = package.name
     package_path = package.path
+    if package.publish and not dry_run and already_published(package, version):
+        logger.info(f"Skip {package_name} {version}: already published to PyPI")
+        return
     # Compile .po files to .mo files
     pocompile = PoCompile(package_path)
     pocompile.run()
@@ -126,6 +160,12 @@ def release_frontend(
     package_path = package.path
     action = "dry-release" if dry_run else "release"
     logger.debug(f"Frontend: {action} for package {volto_addon_name} ({version})")
+    if should_publish and not dry_run and already_published(package, version):
+        # Skip the package whole: release-it would re-tag it, and rebuilding
+        # the changelog with its news fragments already consumed would add a
+        # second, empty entry.
+        logger.info(f"Skip {volto_addon_name} {version}: already published to npm")
+        return
     if not should_publish and not dry_run:
         # Just update version and changelog
         update_frontend_version(package_path, version)
