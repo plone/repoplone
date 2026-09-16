@@ -10,6 +10,7 @@ must be accepted. Adding a fixture is therefore enough to cover it.
 """
 
 from pathlib import Path
+from pytest_jsonschema import schemas as plugin_schemas
 from repoplone import schemas
 
 import jsonschema
@@ -158,3 +159,32 @@ def test_load_unknown_schema_raises():
 def test_load_for_unknown_spec_raises():
     with pytest.raises(KeyError):
         schemas.load_for_spec(99)
+
+
+@pytest.mark.parametrize("spec_version", [1, 2])
+def test_shipped_schema_matches_pytest_jsonschema(spec_version: int):
+    """The schemas here and the ones pytest-jsonschema publishes are the same.
+
+    Both copies exist on purpose: repoplone reads its own at runtime, and
+    pytest-jsonschema serves the published one to other projects. This fails
+    the moment someone edits one without the other, which is the only way
+    they can silently diverge.
+    """
+    name = schemas.SPEC_SCHEMAS[spec_version]
+    assert schemas.load(name) == plugin_schemas.load(name)
+
+
+@pytest.mark.parametrize("path", VALID_SPEC1_FILES, ids=_ids(VALID_SPEC1_FILES))
+def test_valid_spec1_file_through_plugin(schema_validate_file, path: Path):
+    """The published schema works through pytest-jsonschema's own code path."""
+    assert schema_validate_file(path=path, schema_name="repository-v1") is True
+
+
+@pytest.mark.parametrize("path", VALID_SPEC2_FILES, ids=_ids(VALID_SPEC2_FILES))
+def test_valid_spec2_file_through_plugin(schema_validate_file, path: Path):
+    assert schema_validate_file(path=path, schema_name="repository-v2") is True
+
+
+@pytest.mark.parametrize("path", INVALID_SPEC2_FILES, ids=_ids(INVALID_SPEC2_FILES))
+def test_invalid_spec2_file_through_plugin(schema_validate_file, path: Path):
+    assert schema_validate_file(path=path, schema_name="repository-v2") is False
