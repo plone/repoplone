@@ -54,8 +54,19 @@ def sanity_check(settings: t.RepositorySettings) -> ReleaseSanityCheckResult:
     return ReleaseSanityCheckResult(errors=errors, warnings=warnings)
 
 
-def release_backend(settings: t.RepositorySettings, version: str, dry_run: bool):
-    package = settings.backend
+def release_backend(
+    settings: t.RepositorySettings,
+    package: t.BackendPackage,
+    version: str,
+    dry_run: bool,
+):
+    """Release one backend package.
+
+    :param settings: Repository settings.
+    :param package: Backend package to release.
+    :param version: Version to release.
+    :param dry_run: Whether to skip every write and upload.
+    """
     package_name = package.name
     package_path = package.path
     # Compile .po files to .mo files
@@ -65,7 +76,7 @@ def release_backend(settings: t.RepositorySettings, version: str, dry_run: bool)
     uv = UV(package_path)
     if not dry_run:
         update_backend_version(package_path, version)
-        update_backend_changelog(settings, dry_run, version)
+        update_backend_changelog(settings, package, dry_run, version)
     if not package.publish:
         return
     with change_cwd(package_path):
@@ -87,11 +98,20 @@ def release_backend(settings: t.RepositorySettings, version: str, dry_run: bool)
 
 
 def release_frontend(
-    settings: t.RepositorySettings, project_version: str, dry_run: bool
+    settings: t.RepositorySettings,
+    package: t.FrontendPackage,
+    project_version: str,
+    dry_run: bool,
 ):
+    """Release one frontend package.
+
+    :param settings: Repository settings.
+    :param package: Frontend package to release.
+    :param project_version: Repository version, converted to a node version.
+    :param dry_run: Whether to skip every write and upload.
+    """
     version = convert_python_node_version(project_version)
-    should_publish = settings.frontend.publish
-    package = settings.frontend
+    should_publish = package.publish
     volto_addon_name = package.name
     package_path = package.path
     action = "dry-release" if dry_run else "release"
@@ -99,7 +119,7 @@ def release_frontend(
     if not should_publish and not dry_run:
         # Just update version and changelog
         update_frontend_version(package_path, version)
-        update_frontend_changelog(settings, dry_run, version)
+        update_frontend_changelog(settings, package, dry_run, version)
     else:
         # Use release-it to release and publish
         release_it = ReleaseIt(package_path)

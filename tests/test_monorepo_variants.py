@@ -82,12 +82,18 @@ def test_frontend_only_pipeline_steps(test_frontend_only_project, bust_path_cach
 
 def test_backend_only_changelog_utils(test_backend_only_project, bust_path_cache):
     res_settings = settings.get_settings()
-    assert changelog_utils.update_frontend_changelog(res_settings) == ""
+    assert (
+        changelog_utils.update_frontend_changelog(res_settings, res_settings.frontend)
+        == ""
+    )
 
 
 def test_frontend_only_changelog_utils(test_frontend_only_project, bust_path_cache):
     res_settings = settings.get_settings()
-    assert changelog_utils.update_backend_changelog(res_settings) == ""
+    assert (
+        changelog_utils.update_backend_changelog(res_settings, res_settings.backend)
+        == ""
+    )
 
 
 def test_backend_only_deps_upgrade_frontend_error(

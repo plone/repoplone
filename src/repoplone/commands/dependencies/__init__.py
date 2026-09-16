@@ -178,7 +178,7 @@ def stamp_volto_version(ctx: typer.Context):
         typer.echo("Error: Frontend component is not enabled in repository.toml")
         raise typer.Exit(1)
     try:
-        version = dependencies.stamp_volto_version(settings)
+        version = dependencies.stamp_volto_version(settings, settings.frontend)
     except ValueError as e:
         typer.echo(f"Error: {e}")
         raise typer.Exit(1) from e

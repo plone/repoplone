@@ -12,7 +12,9 @@ def step_release_backend(
     **kwargs: Any,
 ) -> bool:
     if settings.backend.enabled:
-        utils.release_backend(settings, state.next_version, state.dry_run)
+        utils.release_backend(
+            settings, settings.backend, state.next_version, state.dry_run
+        )
         dutils.indented_print(
             f"- Released {settings.backend.name}: {state.next_version}"
         )

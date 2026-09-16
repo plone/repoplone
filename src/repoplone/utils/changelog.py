@@ -100,14 +100,23 @@ def _update_project_changelog(
 
 
 def update_backend_changelog(
-    settings: t.RepositorySettings, draft: bool = True, version: str = ""
+    settings: t.RepositorySettings,
+    package: t.Package,
+    draft: bool = True,
+    version: str = "",
 ) -> str:
-    if not settings.backend.enabled:
+    """Build the changelog of one backend package.
+
+    :param settings: Repository settings.
+    :param package: Backend package to build the changelog for.
+    :param draft: Whether to render a draft instead of writing the changelog.
+    :param version: Version to render the changelog for.
+    :returns: The rendered changelog, or an empty string for a disabled package.
+    """
+    if not package.enabled:
         return ""
-    config_path = settings.towncrier.backend.path
-    package_name = settings.backend.name
     result = _run_towncrier(
-        config_path, name=package_name, version=version, draft=draft
+        package.towncrier, name=package.name, version=version, draft=draft
     )
     if draft:
         result = _cleanup_draft(result, True)
@@ -115,23 +124,34 @@ def update_backend_changelog(
 
 
 def update_frontend_changelog(
-    settings: t.RepositorySettings, draft: bool = True, version: str = ""
+    settings: t.RepositorySettings,
+    package: t.Package,
+    draft: bool = True,
+    version: str = "",
 ) -> str:
-    if not settings.frontend.enabled:
+    """Build the changelog of one frontend package.
+
+    Outside of a draft, the package changelog is also copied over the
+    frontend-wide one.
+
+    :param settings: Repository settings.
+    :param package: Frontend package to build the changelog for.
+    :param draft: Whether to render a draft instead of writing the changelog.
+    :param version: Version to render the changelog for.
+    :returns: The rendered changelog, or an empty string for a disabled package.
+    """
+    if not package.enabled:
         return ""
-    config_path = settings.towncrier.frontend.path
-    package_name = settings.frontend.name
     result = _run_towncrier(
-        config_path, name=package_name, version=version, draft=draft
+        package.towncrier, name=package.name, version=version, draft=draft
     )
     if draft:
         result = _cleanup_draft(result, True)
     else:
         # Copy result to the frontend changelog file
-        package_path = settings.frontend.path
+        package_path = package.path
         package_changelog = Path(package_path) / "CHANGELOG.md"
-        # Go up two levels to find the frontend root
-        frontend_path = package_path.parent.parent
+        frontend_path = utils.frontend_root(settings.root_path, package_path)
         frontend_changelog = Path(frontend_path) / "CHANGELOG.md"
         if frontend_changelog.exists():
             frontend_changelog.write_text(package_changelog.read_text())

@@ -5,6 +5,7 @@ from pathlib import Path
 from repoplone import _types as t
 from repoplone import defaults
 from repoplone.utils import versions
+from repoplone.utils._path import frontend_root
 from repoplone.utils.dependencies import frontend as frontend_utils
 from repoplone.utils.dependencies import pyproject as pyproject_utils
 
@@ -124,9 +125,15 @@ def _get_plone_versions(
     return versions
 
 
-def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
-    """Return package information for the backend."""
-    package_settings = raw_settings.backend.package
+def _build_backend_package(
+    root_path: Path, package_settings: DynaBox
+) -> t.BackendPackage:
+    """Build a backend package from one raw package table.
+
+    :param root_path: Repository root.
+    :param package_settings: Raw ``package`` table read from ``repository.toml``.
+    :returns: The backend package.
+    """
     version_func = versions.get_backend_version
     default_base_package: str = "Products.CMFPlone"
     package_info = _get_package_info(
@@ -166,16 +173,27 @@ def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
     return t.BackendPackage(**package_info)
 
 
-def get_frontend(root_path: Path, raw_settings: Dynaconf) -> t.FrontendPackage:
-    """Return package information for the frontend."""
-    package_settings = raw_settings.frontend.package
+def get_backend(root_path: Path, raw_settings: Dynaconf) -> t.BackendPackage:
+    """Return package information for the backend."""
+    return _build_backend_package(root_path, raw_settings.backend.package)
+
+
+def _build_frontend_package(
+    root_path: Path, package_settings: DynaBox
+) -> t.FrontendPackage:
+    """Build a frontend package from one raw package table.
+
+    :param root_path: Repository root.
+    :param package_settings: Raw ``package`` table read from ``repository.toml``.
+    :returns: The frontend package.
+    """
     version_func = versions.get_frontend_version
     default_base_package: str = "@plone/volto"
     package_info = _get_package_info(
         root_path, package_settings, default_base_package, version_func
     )
     if package_info["enabled"]:
-        path = root_path / "frontend"
+        path = frontend_root(root_path, package_info["path"])
         package_info["base_package_version"] = frontend_utils.package_version(
             path,
             package_info["base_package"],
@@ -189,3 +207,8 @@ def get_frontend(root_path: Path, raw_settings: Dynaconf) -> t.FrontendPackage:
         package_info["volto_version"] = ""
 
     return t.FrontendPackage(**package_info)
+
+
+def get_frontend(root_path: Path, raw_settings: Dynaconf) -> t.FrontendPackage:
+    """Return package information for the frontend."""
+    return _build_frontend_package(root_path, raw_settings.frontend.package)

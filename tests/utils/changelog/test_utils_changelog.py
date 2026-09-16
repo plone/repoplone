@@ -59,7 +59,9 @@ def test_update_changelog(settings, version: str):
 def test_update_backend_changelog(settings, version: str, draft: bool):
     old_changelog = settings.backend.changelog.read_text()
     func = changelog.update_backend_changelog
-    result = func(settings=settings, draft=draft, version=version)
+    result = func(
+        settings=settings, package=settings.backend, draft=draft, version=version
+    )
     new_changelog = settings.backend.changelog.read_text()
     if draft:
         assert old_changelog == new_changelog

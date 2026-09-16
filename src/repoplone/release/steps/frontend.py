@@ -14,7 +14,7 @@ def step_release_frontend(
 ) -> bool:
     if settings.frontend.enabled:
         next_version = vutils.convert_python_node_version(state.next_version)
-        utils.release_frontend(settings, next_version, state.dry_run)
+        utils.release_frontend(settings, settings.frontend, next_version, state.dry_run)
         dutils.indented_print(f"- Released {settings.frontend.name}: {next_version}")
     else:
         dutils.indented_print("- Frontend packaged is disabled")
