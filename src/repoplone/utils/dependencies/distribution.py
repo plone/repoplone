@@ -56,9 +56,7 @@ def fetch_distribution_metadata(
     return dependencies, volto_version
 
 
-def stamp_volto_version(
-    settings: t.RepositorySettings, package: t.FrontendPackage
-) -> str:
+def stamp_volto_version(settings: t.RepositorySettings, package: t.Package) -> str:
     """Record the Volto core version in the distribution package's package.json.
 
     Reads the ``@plone/volto`` checkout tag from ``mrs.developer.json`` and writes

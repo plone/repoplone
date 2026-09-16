@@ -13,6 +13,24 @@ import typer
 app = RepoPlone()
 
 
+def _require_base_package(package: t.Package, component: str) -> None:
+    """Fail cleanly when a component has no base package to track.
+
+    A generic ``python`` or ``node`` package builds on no ecosystem, so there
+    is no upstream version for these commands to report or upgrade.
+
+    :param package: The family's primary package.
+    :param component: Component name, as the user typed it.
+    :raises typer.Exit: If the package declares no base package.
+    """
+    if not package.base_package:
+        typer.echo(
+            f"The {component} package {package.name} declares no base_package, "
+            "so there is no Plone or Volto version to track."
+        )
+        raise typer.Exit(1)
+
+
 @app.command()
 def info(ctx: typer.Context):
     """Report the base packages in use."""
@@ -103,7 +121,10 @@ def constraints(
     ctx: typer.Context,
     component: Annotated[
         str,
-        typer.Argument(help="Which component to update constraints?"),
+        typer.Argument(
+            help="Which component to update constraints? "
+            "Acts on the component's primary package."
+        ),
     ] = "backend",
 ):
     """Update constraints for a specific component."""
@@ -112,6 +133,7 @@ def constraints(
     if component != "backend":
         typer.echo("Component must be 'backend'.")
         raise typer.Exit(1)
+    _require_base_package(settings.backend, component)
     managed_by_uv = settings.backend.managed_by_uv
     pyproject_path = utils.get_pyproject(settings)
     if managed_by_uv and pyproject_path:
@@ -131,7 +153,8 @@ def sync(
     component: Annotated[
         str,
         typer.Argument(
-            help="Which component to sync the lockfile? backend or frontend"
+            help="Which component to sync the lockfile? backend or frontend. "
+            "Acts on the component's primary package."
         ),
     ] = "both",
 ):
@@ -165,7 +188,16 @@ def sync(
 
 
 @app.command(name="stamp-volto-version")
-def stamp_volto_version(ctx: typer.Context):
+def stamp_volto_version(
+    ctx: typer.Context,
+    package_name: Annotated[
+        str,
+        typer.Option(
+            "--package",
+            help="Frontend package to stamp. Defaults to the primary one.",
+        ),
+    ] = "",
+):
     """Stamp the Volto core version into the frontend package.json.
 
     Reads the ``@plone/volto`` tag from ``mrs.developer.json`` and records it as
@@ -177,14 +209,22 @@ def stamp_volto_version(ctx: typer.Context):
     if not settings.frontend.enabled:
         typer.echo("Error: Frontend component is not enabled in repository.toml")
         raise typer.Exit(1)
+    package: t.Package = settings.frontend
+    if package_name:
+        packages = {p.name: p for p in settings.packages_for(t.FAMILY_NODE)}
+        if package_name not in packages:
+            known = ", ".join(sorted(packages)) or "none"
+            typer.echo(
+                f"Error: no frontend package named {package_name!r}. Known: {known}"
+            )
+            raise typer.Exit(1)
+        package = packages[package_name]
     try:
-        version = dependencies.stamp_volto_version(settings, settings.frontend)
+        version = dependencies.stamp_volto_version(settings, package)
     except ValueError as e:
         typer.echo(f"Error: {e}")
         raise typer.Exit(1) from e
-    typer.echo(
-        f"Stamped volto_version {version} into {settings.frontend.name} package.json."
-    )
+    typer.echo(f"Stamped volto_version {version} into {package.name} package.json.")
 
 
 UPGRADE_FUNC: dict[str, tuple[t.VersionChecker, t.VersionUpgrader]] = {
@@ -218,6 +258,7 @@ def upgrade(
             f"Error: {component.title()} component is not enabled in repository.toml"
         )
         raise typer.Exit(1)
+    _require_base_package(section, component)
 
     info_func, upgrade_func = UPGRADE_FUNC[component]
 
