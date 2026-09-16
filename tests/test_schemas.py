@@ -21,8 +21,19 @@ import tomlkit
 RESOURCES = Path(__file__).parent / "_resources"
 REPOSITORY_TOML = RESOURCES / "repository_toml"
 
-# Projects under tests/_resources/<name>/repository.toml are all spec 1.
 PROJECT_FILES = sorted(RESOURCES.glob("*/repository.toml"))
+
+
+def _load(path: Path) -> dict:
+    """Parse a TOML file into plain Python types.
+
+    ``unwrap`` matters: jsonschema matches native types, and tomlkit's own
+    wrappers do not all subclass them.
+
+    :param path: File to parse.
+    :returns: The parsed document.
+    """
+    return tomlkit.parse(path.read_text()).unwrap()
 
 
 def _fixtures(prefix: str, *, invalid: bool) -> list[Path]:
@@ -43,24 +54,28 @@ LEGACY_SPEC1_FILES = sorted(
     if not path.name.startswith(("spec1_", "spec2_"))
 )
 
+
+def _declared_spec(path: Path) -> int:
+    """Return the spec version a fixture project selects.
+
+    Project fixtures are real repositories of both specs, so the schema to
+    validate them against comes from the file itself.
+
+    :param path: Fixture path.
+    :returns: ``2`` when the file declares spec 2, ``1`` otherwise.
+    """
+    return 2 if str(_load(path).get("spec_version", "1")).startswith("2") else 1
+
+
+SPEC1_PROJECT_FILES = [p for p in PROJECT_FILES if _declared_spec(p) == 1]
+SPEC2_PROJECT_FILES = [p for p in PROJECT_FILES if _declared_spec(p) == 2]
+
 VALID_SPEC1_FILES = (
-    PROJECT_FILES + LEGACY_SPEC1_FILES + _fixtures("spec1", invalid=False)
+    SPEC1_PROJECT_FILES + LEGACY_SPEC1_FILES + _fixtures("spec1", invalid=False)
 )
 INVALID_SPEC1_FILES = _fixtures("spec1", invalid=True)
-VALID_SPEC2_FILES = _fixtures("spec2", invalid=False)
+VALID_SPEC2_FILES = SPEC2_PROJECT_FILES + _fixtures("spec2", invalid=False)
 INVALID_SPEC2_FILES = _fixtures("spec2", invalid=True)
-
-
-def _load(path: Path) -> dict:
-    """Parse a TOML file into plain Python types.
-
-    ``unwrap`` matters: jsonschema matches native types, and tomlkit's own
-    wrappers do not all subclass them.
-
-    :param path: File to parse.
-    :returns: The parsed document.
-    """
-    return tomlkit.parse(path.read_text()).unwrap()
 
 
 def _validator(spec_version: int) -> jsonschema.protocols.Validator:

@@ -1,3 +1,4 @@
+from . import spec
 from .parser import parse_config
 from dynaconf.base import LazySettings
 from pathlib import Path
@@ -59,7 +60,10 @@ def _check_deprecations(raw_settings: LazySettings) -> list[str]:
 
 def _get_compose_path(root_path: Path, raw_settings: LazySettings) -> list[Path]:
     paths = []
-    raw_compose = raw_settings.repository.compose
+    # A repository need not ship compose files at all -- a plain Python package
+    # has none. Declaring [repository] replaces the shipped defaults wholesale,
+    # so the key can genuinely be absent rather than falling back to them.
+    raw_compose = raw_settings.repository.get("compose", []) or []
     if isinstance(raw_compose, str):
         raw_compose = [raw_compose]
     for compose_file in raw_compose:
@@ -67,22 +71,87 @@ def _get_compose_path(root_path: Path, raw_settings: LazySettings) -> list[Path]
     return paths
 
 
-def _get_raw_settings(cwd_path: Path) -> LazySettings:
+def _get_raw_settings(cwd_path: Path) -> tuple[LazySettings, int]:
     raw_settings = parse_config(cwd_path)
     try:
         _ = raw_settings.repository.name
     except AttributeError:
         raise RuntimeError() from None
-    for deprecation in _check_deprecations(raw_settings):
-        warnings.warn(deprecation, DeprecationWarning, 1)
-    return raw_settings
+    spec_version = spec.resolve_spec_version(raw_settings)
+    if spec_version == 1:
+        # Spec 2 carries no legacy keys: there they are errors, raised while
+        # the packages are read, not deprecation warnings.
+        for deprecation in _check_deprecations(raw_settings):
+            warnings.warn(deprecation, DeprecationWarning, 1)
+    return raw_settings, spec_version
+
+
+def _get_packages(
+    root_path: Path, raw_settings: LazySettings, spec_version: int
+) -> list[t.Package]:
+    """Return every package declared in a file, in document order.
+
+    A spec 1 file declares at most one package per family, so it is normalized
+    into the same list: everything downstream then works the same for both
+    specs.
+
+    :param root_path: Repository root.
+    :param raw_settings: Parsed settings.
+    :param spec_version: Spec version the file selected.
+    :returns: The enabled packages.
+    """
+    tables = spec.package_tables(raw_settings, spec_version)
+    packages: list[t.Package] = []
+    declared_base_package: set[str] = set()
+    if spec_version == 1:
+        backend = utils.get_backend(root_path, raw_settings)
+        frontend = utils.get_frontend(root_path, raw_settings)
+        packages = [package for package in (backend, frontend) if package.enabled]
+    else:
+        for position, table in enumerate(tables):
+            package_type = spec.normalize_type(table.get("type", ""), position)
+            package = utils.build_package(root_path, table, package_type)
+            if table.get("base_package", ""):
+                declared_base_package.add(package.name)
+            packages.append(package)
+    spec.check_packages(packages)
+    spec.normalize_primaries(packages)
+    for warning in spec.base_package_warnings(packages, declared_base_package):
+        warnings.warn(warning, UserWarning, 1)
+    return packages
+
+
+def _family_primary(
+    root_path: Path,
+    raw_settings: LazySettings,
+    packages: list[t.Package],
+    family: str,
+) -> Any:
+    """Return the primary package of a family, or its disabled placeholder.
+
+    ``settings.backend`` and ``settings.frontend`` are read by project release
+    hooks and appear in ``settings dump``, so they keep answering for every
+    repository -- with the placeholder built from the shipped defaults when a
+    family declares no package, exactly as a disabled component does today.
+
+    :param root_path: Repository root.
+    :param raw_settings: Parsed settings.
+    :param packages: Every package declared in the file.
+    :param family: Family name.
+    :returns: The family's primary package.
+    """
+    primary = t.resolve_primary(packages, family)
+    if primary is not None:
+        return primary
+    builder = utils.get_backend if family == t.FAMILY_PYTHON else utils.get_frontend
+    return builder(root_path, raw_settings)
 
 
 def _get_settings(cwd_path: Path) -> t.RepositorySettings:
     """Given a path to a repository root or repository.toml
 
     return repository settings."""
-    raw_settings = _get_raw_settings(cwd_path)
+    raw_settings, spec_version = _get_raw_settings(cwd_path)
     repository = raw_settings.repository
     root_path: Path = repository.__root__
     name: str = repository.name
@@ -93,9 +162,10 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
     version_format: str = repository.get("version_format", "semver")
     compose_path: list[Path] = _get_compose_path(root_path, raw_settings)
     repository_towncrier: dict = repository.get("towncrier", {})
-    backend = utils.get_backend(root_path, raw_settings)
+    packages = _get_packages(root_path, raw_settings, spec_version)
+    backend = _family_primary(root_path, raw_settings, packages, t.FAMILY_PYTHON)
     managed_by_uv = backend.managed_by_uv
-    frontend = utils.get_frontend(root_path, raw_settings)
+    frontend = _family_primary(root_path, raw_settings, packages, t.FAMILY_NODE)
     towncrier = utils.get_towncrier_settings(
         root_path, backend, frontend, repository_towncrier
     )
@@ -124,6 +194,8 @@ def _get_settings(cwd_path: Path) -> t.RepositorySettings:
         release_steps=release_steps,
         remote_origin=remote_origin,
         issues_url=issues_url,
+        spec_version=spec_version,
+        packages=packages,
     )
 
 
