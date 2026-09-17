@@ -41,8 +41,8 @@ STEP_IDS = [
     "changelog",
     "version",
     "repository",
-    "release_backend",
-    "release_frontend",
+    "release_python",
+    "release_node",
     "git",
     "gh_release",
     "bye",
@@ -146,19 +146,19 @@ def test_process_steps_returns_all_when_both_enabled(settings):
 
 
 def test_process_steps_drops_backend_when_disabled(settings):
-    """A disabled backend excludes the ``release_backend`` step."""
+    """A disabled backend excludes the ``release_python`` step."""
     settings.backend.enabled = False
     ids = [step.id for step in pipeline.process_steps(settings)]
-    assert "release_backend" not in ids
-    assert "release_frontend" in ids
+    assert "release_python" not in ids
+    assert "release_node" in ids
 
 
 def test_process_steps_drops_frontend_when_disabled(settings):
-    """A disabled frontend excludes the ``release_frontend`` step."""
+    """A disabled frontend excludes the ``release_node`` step."""
     settings.frontend.enabled = False
     ids = [step.id for step in pipeline.process_steps(settings)]
-    assert "release_frontend" not in ids
-    assert "release_backend" in ids
+    assert "release_node" not in ids
+    assert "release_python" in ids
 
 
 def test_process_desired_version_maps_next_to_empty(settings):

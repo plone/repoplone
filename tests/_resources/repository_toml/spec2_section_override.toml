@@ -1,0 +1,23 @@
+# `section` overrides the changelog heading, which defaults to the package name.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python-plone"
+name = "acme.core"
+path = "backend"
+section = "Backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+
+[[package]]
+type = "node-volto"
+name = "@acme/volto-core"
+path = "frontend/packages/volto-core"
+section = "Frontend"
+changelog = "frontend/packages/volto-core/CHANGELOG.md"
+towncrier_settings = "frontend/packages/volto-core/towncrier.toml"

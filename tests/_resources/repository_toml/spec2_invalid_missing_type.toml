@@ -1,0 +1,13 @@
+# `type` is required; there is no default.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+name = "acme.core"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"

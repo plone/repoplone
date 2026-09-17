@@ -1,0 +1,19 @@
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python-plone"
+name = "acme.core"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+
+# Written by cookieplone; repoplone never reads it.
+[cookieplone]
+template = "monorepo_addon"
+template_version = "91c845557fce11a401a959f763add9d1384b135f"
+generated_date = "2026-08-20 21:33:55"
