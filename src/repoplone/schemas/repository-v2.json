@@ -262,16 +262,6 @@
               "plone_versions": false
             }
           }
-        },
-        {
-          "$comment": "node-aurora has no built-in base package default, so it must be declared.",
-          "if": {
-            "required": ["type"],
-            "properties": { "type": { "const": "node-aurora" } }
-          },
-          "then": {
-            "required": ["base_package"]
-          }
         }
       ]
     }

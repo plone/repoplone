@@ -517,7 +517,7 @@ publish = true
 | `python-plone` | `python` | uv, PyPI, PEP 440        | `base_package` (default `Products.CMFPlone`), `python_version`, `python_versions`, `plone_versions` |
 | `python`       | `python` | uv, PyPI, PEP 440        | `python_version`, `python_versions`                                            |
 | `node-volto`   | `node`   | release-it, npm, semver  | `base_package` (default `@plone/volto`)                                        |
-| `node-aurora`  | `node`   | release-it, npm, semver  | `base_package` (**required**: there is no default)                             |
+| `node-aurora`  | `node`   | release-it, npm, semver  | `base_package` (default `@plone/aurora`)                                      |
 | `node`         | `node`   | release-it, npm, semver  | none                                                                           |
 
 Using an option on a type that does not support it — `plone_versions` on a `node-volto` package, say — is an error rather than a silently ignored key.

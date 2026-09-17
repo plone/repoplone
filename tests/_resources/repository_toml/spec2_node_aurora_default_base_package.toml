@@ -1,4 +1,4 @@
-# node-aurora has no built-in base package default, so it must be declared.
+# node-aurora defaults to @plone/aurora, so base_package may be omitted.
 spec_version = "2"
 
 [repository]

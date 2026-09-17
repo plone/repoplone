@@ -98,6 +98,33 @@ def _ids(paths: list[Path]) -> list[str]:
     return [f"{path.parent.name}/{path.name}" for path in paths]
 
 
+#: Fixtures the *published* spec 2 schema still rejects, because
+#: pytest-jsonschema 1.1.0 predates a change made here. Each is expected to
+#: fail through the plugin until a release carries the change; strict xfail
+#: then turns the fix into a failing test, so the marker cannot be forgotten.
+PENDING_UPSTREAM: dict[str, str] = {
+    "spec2_node_aurora_default_base_package.toml": (
+        "the published schema still requires base_package for node-aurora"
+    ),
+}
+
+
+def _plugin_params(paths: list[Path]) -> list:
+    """Return parametrize entries, marking the ones the published schema rejects.
+
+    :param paths: Fixture paths.
+    :returns: One entry per path, xfailed where upstream lags.
+    """
+    params = []
+    for path in paths:
+        reason = PENDING_UPSTREAM.get(path.name)
+        marks = [pytest.mark.xfail(strict=True, reason=reason)] if reason else []
+        params.append(
+            pytest.param(path, marks=marks, id=f"{path.parent.name}/{path.name}")
+        )
+    return params
+
+
 @pytest.mark.parametrize("spec_version", [1, 2])
 def test_schema_is_valid(spec_version: int):
     """Each shipped schema is itself a valid JSON Schema."""
@@ -176,8 +203,7 @@ def test_load_for_unknown_spec_raises():
         schemas.load_for_spec(99)
 
 
-@pytest.mark.parametrize("spec_version", [1, 2])
-def test_shipped_schema_matches_pytest_jsonschema(spec_version: int):
+def test_shipped_spec1_schema_matches_pytest_jsonschema():
     """The schemas here and the ones pytest-jsonschema publishes are the same.
 
     Both copies exist on purpose: repoplone reads its own at runtime, and
@@ -185,8 +211,54 @@ def test_shipped_schema_matches_pytest_jsonschema(spec_version: int):
     the moment someone edits one without the other, which is the only way
     they can silently diverge.
     """
-    name = schemas.SPEC_SCHEMAS[spec_version]
+    name = schemas.SPEC_SCHEMAS[1]
     assert schemas.load(name) == plugin_schemas.load(name)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "repository-v2 dropped the node-aurora base_package requirement once "
+        "the default (@plone/aurora) was settled. pytest-jsonschema 1.1.0 "
+        "still ships the stricter copy. When a release carries the change "
+        "this XPASSes and fails strictly -- remove the marker then."
+    ),
+)
+def test_shipped_spec2_schema_matches_pytest_jsonschema():
+    name = schemas.SPEC_SCHEMAS[2]
+    assert schemas.load(name) == plugin_schemas.load(name)
+
+
+def test_spec2_schemas_differ_only_in_the_known_way():
+    """Pin exactly how the two spec 2 copies differ, so nothing else drifts.
+
+    The plain equality check above is expected to fail until pytest-jsonschema
+    ships the update; without this, any *other* edit to one copy would hide
+    behind that expected failure.
+    """
+    ours = schemas.load(schemas.SPEC_SCHEMAS[2])
+    theirs = plugin_schemas.load(schemas.SPEC_SCHEMAS[2])
+    ours_branches = ours["$defs"]["package"]["allOf"]
+    theirs_branches = theirs["$defs"]["package"]["allOf"]
+    aurora = {
+        "$comment": (
+            "node-aurora has no built-in base package default, so it must be declared."
+        ),
+        "if": {
+            "required": ["type"],
+            "properties": {"type": {"const": "node-aurora"}},
+        },
+        "then": {"required": ["base_package"]},
+    }
+    assert theirs_branches == [*ours_branches, aurora]
+
+    # Everything outside that one branch is identical.
+    ours_rest = {k: v for k, v in ours.items() if k != "$defs"}
+    theirs_rest = {k: v for k, v in theirs.items() if k != "$defs"}
+    assert ours_rest == theirs_rest
+    ours_defs = {k: v for k, v in ours["$defs"].items() if k != "package"}
+    theirs_defs = {k: v for k, v in theirs["$defs"].items() if k != "package"}
+    assert ours_defs == theirs_defs
 
 
 @pytest.mark.parametrize("path", VALID_SPEC1_FILES, ids=_ids(VALID_SPEC1_FILES))
@@ -195,7 +267,7 @@ def test_valid_spec1_file_through_plugin(schema_validate_file, path: Path):
     assert schema_validate_file(path=path, schema_name="repository-v1") is True
 
 
-@pytest.mark.parametrize("path", VALID_SPEC2_FILES, ids=_ids(VALID_SPEC2_FILES))
+@pytest.mark.parametrize("path", _plugin_params(VALID_SPEC2_FILES))
 def test_valid_spec2_file_through_plugin(schema_validate_file, path: Path):
     assert schema_validate_file(path=path, schema_name="repository-v2") is True
 

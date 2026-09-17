@@ -41,6 +41,7 @@ PACKAGE_TYPE_ALIASES: dict[str, str] = {
 DEFAULT_BASE_PACKAGES: dict[str, str] = {
     "python-plone": "Products.CMFPlone",
     "node-volto": "@plone/volto",
+    "node-aurora": "@plone/aurora",
 }
 
 

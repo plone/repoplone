@@ -252,6 +252,21 @@ def test_spec_2_errors_point_at_the_migrate_command(load):
         load("spec2_invalid_legacy_key.toml")
 
 
+@pytest.mark.parametrize(
+    "package_type,expected",
+    [
+        ["python-plone", "Products.CMFPlone"],
+        ["node-volto", "@plone/volto"],
+        ["node-aurora", "@plone/aurora"],
+        # Generic types build on no ecosystem.
+        ["python", ""],
+        ["node", ""],
+    ],
+)
+def test_default_base_package_per_type(package_type: str, expected: str):
+    assert t.DEFAULT_BASE_PACKAGES.get(package_type, "") == expected
+
+
 def test_spec_2_without_packages_is_valid(load):
     result = load("spec2_no_packages.toml")
     assert result.spec_version == 2
