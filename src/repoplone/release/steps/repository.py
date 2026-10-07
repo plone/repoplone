@@ -5,10 +5,19 @@ from typing import Any
 
 
 def _update_changelog(settings: t.RepositorySettings, state: t.PipelineState) -> None:
-    """Update the root project changelog (skipped on dry-run)."""
+    """Update the root project changelog (skipped on dry-run).
+
+    The entry written to the changelog is also stored in
+    ``settings._tmp_changelog`` so the GitHub release body uses it. The draft
+    stored by the ``changelog`` step was generated before the ``version`` step
+    resolved ``next_version``, so its header carries the wrong version.
+    """
     dry_run = state.dry_run
     if not dry_run:
-        chgutils.update_changelog(settings, draft=False, version=state.next_version)
+        new_entry, _ = chgutils.update_changelog(
+            settings, draft=False, version=state.next_version
+        )
+        settings._tmp_changelog = new_entry
     verb = "Would update" if dry_run else "Updated"
     dutils.indented_print(f"- {verb} {settings.changelogs.root} file")
 

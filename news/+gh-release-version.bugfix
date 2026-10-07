@@ -1,0 +1,1 @@
+Fix the GitHub release body using the previous version in its changelog header: the `repository` step now replaces the draft generated before the next version was known. @sneridagh
