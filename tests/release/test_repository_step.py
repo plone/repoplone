@@ -17,6 +17,7 @@ helpers together and reports success.
 from repoplone import settings as settings_module
 from repoplone.release import _types as t
 from repoplone.release.steps import repository as repo_step
+from repoplone.release.steps.changelog import step_prepare_changelog
 
 import pytest
 
@@ -39,6 +40,7 @@ def stub_changelog(monkeypatch):
 
     def _stub(settings, draft, version):
         calls.append((settings, draft, version))
+        return f"## {version} (2026-01-01)\n", ""
 
     monkeypatch.setattr(
         "repoplone.release.steps.repository.chgutils.update_changelog",
@@ -159,6 +161,54 @@ def test_update_changelog_real_run_invokes_machinery(
     assert draft is False
     assert version == "9.9.9"
     assert captured_output == [f"- Updated {repo_settings.changelogs.root} file"]
+
+
+def test_update_changelog_real_run_stores_entry_for_gh_release(
+    repo_settings, captured_output, stub_changelog
+):
+    """The GitHub release body must use the entry for ``next_version``."""
+    repo_settings._tmp_changelog = "## 1.0.0 (2026-01-01)\n"
+    state = t.PipelineState(dry_run=False, next_version="9.9.9")
+
+    repo_step._update_changelog(repo_settings, state)
+
+    assert repo_settings._tmp_changelog == "## 9.9.9 (2026-01-01)\n"
+
+
+def test_changelog_then_repository_step_gh_release_body_uses_next_version(
+    repo_settings, monkeypatch
+):
+    """Regression: draft from the ``changelog`` step used the old version.
+
+    The ``changelog`` step runs before the ``version`` step, so when the next
+    version is chosen interactively the draft falls back to ``version.txt``
+    (the current version). The ``repository`` step must replace that draft
+    with the entry generated for the resolved ``next_version``.
+    """
+    monkeypatch.setattr(
+        "repoplone.release.steps.changelog.dutils.check_confirm", lambda: True
+    )
+    monkeypatch.setattr(
+        "repoplone.release.steps.changelog.dutils.indented_print", lambda text: None
+    )
+    monkeypatch.setattr(
+        "repoplone.release.steps.repository.dutils.indented_print", lambda text: None
+    )
+    original_version = repo_settings.version_path.read_text().strip()
+    next_version = "99.0.0"
+    # Next version not known yet, as when it is prompted in the version step
+    state = t.PipelineState(
+        dry_run=False, original_version=original_version, next_version=""
+    )
+    assert step_prepare_changelog("changelog", "Changelog", repo_settings, state)
+    assert repo_settings._tmp_changelog.startswith(f"## {original_version} (")
+
+    state.next_version = next_version
+    repo_step._update_changelog(repo_settings, state)
+
+    assert repo_settings._tmp_changelog.startswith(f"## {next_version} (")
+    changelog = repo_settings.changelogs.root.read_text()
+    assert f"## {next_version} (" in changelog
 
 
 # ---------------------------------------------------------------------------
