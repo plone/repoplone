@@ -2,6 +2,13 @@
 
 <!-- towncrier release notes start -->
 
+## 1.1.4 (2026-10-08)
+
+
+### Bugfix
+
+- Fix the GitHub release body using the previous version in its changelog header: the `repository` step now replaces the draft generated before the next version was known. @sneridagh 
+
 ## 1.1.3 (2026-09-15)
 
 
