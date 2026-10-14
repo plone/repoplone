@@ -1,0 +1,8 @@
+{
+  "core": {
+    "url": "https://github.com/plone/volto.git",
+    "package": "@plone/volto",
+    "tag": "18.14.1",
+    "path": "packages/volto"
+  }
+}

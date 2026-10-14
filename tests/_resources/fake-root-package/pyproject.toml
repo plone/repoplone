@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "acme-tool"
+version = "1.0.0"
+description = "Fake root-level package"
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+]
+
+[tool.towncrier]
+package = "acme-tool"
+filename = "CHANGELOG.md"
+directory = "news"

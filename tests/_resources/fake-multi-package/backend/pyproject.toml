@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "acme.core"
+version = "1.0.0"
+description = "Fake package acme.core"
+classifiers = [
+  "Programming Language :: Python :: 3.12",
+  "Framework :: Plone :: 6.1",
+]
+
+[tool.towncrier]
+package = "acme.core"
+filename = "CHANGELOG.md"
+directory = "news"

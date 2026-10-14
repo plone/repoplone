@@ -1,5 +1,8 @@
+from repoplone._types import FAMILY_NODE
+from repoplone._types import FAMILY_PYTHON
 from repoplone._types import RepositorySettings
 from repoplone.release import _types as t
+from repoplone.release.steps import canonical_step_id
 from repoplone.release.steps.version import resolve_skipped_version
 from repoplone.utils import display as dutils
 
@@ -20,18 +23,30 @@ def resolve_start(steps: list[t.PipelineReleaseStep], start_step: str) -> int:
         return 0
     ids = [step.id for step in steps]
     if start_step not in ids:
+        # Typing the spec 1 name is muscle memory, not a configuration error,
+        # so the CLI accepts it whatever spec the file uses.
+        start_step = canonical_step_id(start_step)
+    if start_step not in ids:
         valid = ", ".join(ids)
         raise ValueError(f"Unknown start step {start_step!r}. Valid steps: {valid}.")
     return ids.index(start_step)
+
+
+#: Release steps that only run when their family declares a package.
+FAMILY_STEPS: dict[str, str] = {
+    "release_python": FAMILY_PYTHON,
+    "release_node": FAMILY_NODE,
+}
 
 
 def process_steps(settings: RepositorySettings) -> list[t.PipelineReleaseStep]:
     """Return the list of release steps to execute for the repository."""
     steps = []
     for step in settings.release_steps:
-        if step.id == "release_backend" and not settings.backend.enabled:
-            continue
-        if step.id == "release_frontend" and not settings.frontend.enabled:
+        family = FAMILY_STEPS.get(step.id)
+        if family is not None and not [
+            package for package in settings.packages_for(family) if package.enabled
+        ]:
             continue
         steps.append(step)
     return steps

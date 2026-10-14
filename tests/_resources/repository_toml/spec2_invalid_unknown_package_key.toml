@@ -1,0 +1,15 @@
+# A typo inside [[package]] is an error, unlike in spec 1.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python-plone"
+name = "acme.core"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+publsh = true

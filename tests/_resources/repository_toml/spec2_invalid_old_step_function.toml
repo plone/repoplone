@@ -1,0 +1,14 @@
+# Registry entries may not bind to the spec 1 function names either.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[repository.release]
+steps = ["changelog", "release_addons", "bye"]
+
+[repository.release.registry.release_addons]
+title = "Release add-ons"
+function = "release_frontend"

@@ -96,7 +96,7 @@ towncrier_settings = "frontend/packages/fake-distribution/towncrier.toml"
 publish = false
 ```
 
-Please refer to [`repository.toml` Specification](#repositorytoml-specification) for more information.
+Please refer to [`repository.toml` Specification 1](#repositorytoml-specification-1) for more information, or to [Specification 2](#repositorytoml-specification-2) to declare several packages.
 
 ### List Available Commands
 To see all available commands, run:
@@ -387,9 +387,11 @@ base package to the branch through a `[tool.uv.sources]` entry instead of a
 version specifier. The base package must declare repository information to be
 installable this way.
 
-## `repository.toml` Specification
+## `repository.toml` Specification 1
 
-This section outlines the format and available options for the `repository.toml` file used in the project. Each section is detailed below, along with the available options and their default values.
+This section outlines the format and available options for a specification 1 `repository.toml` — a file with no `spec_version` key. Each section is detailed below, along with the available options and their default values.
+
+Specification 1 declares at most one backend and one frontend package. To declare several, or to release a plain Python or Node package, see [Specification 2](#repositorytoml-specification-2).
 
 | Section               | Option                    | Description                                                                                                                     | Example Value                                   | Default Value Source                                                                                                                                         |
 |-----------------------|---------------------------|------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -421,6 +423,164 @@ This section outlines the format and available options for the `repository.toml`
 |                       | `towncrier_settings`      | Path to Towncrier settings for frontend.                                                                                        | `"frontend/packages/volto-addon/towncrier.toml"`|                                                                                                                                                              |
 |                       | `publish`                 | Whether to publish the frontend package to npm.                                                                                 | `true` or `false`                               |                                                                                                                                                              |
 |                       | `base_package`            | Name of the frontend base package (e.g. a Volto distribution).                                                                  | `"@kitconcept/intranet"`                        | Defaults to `"@plone/volto"`.                                                                                                                                 |
+
+
+## `repository.toml` Specification 2
+
+Specification 2 lets a repository declare **several packages**, of several kinds. It is selected by a top-level `spec_version` key:
+
+```toml
+spec_version = "2"
+```
+
+A file without that key is a specification 1 file and keeps behaving exactly as before. Run [`repoplone settings migrate`](#migrating-from-specification-1) to convert one.
+
+### The `[[package]]` array
+
+Specification 2 replaces the `[backend.package]` and `[frontend.package]` tables with a single array of packages. Note the double brackets: each `[[package]]` adds an entry.
+
+```toml
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+compose = ["docker-compose.yml"]
+
+[repository.towncrier]
+section = "Project"
+settings = "towncrier.toml"
+
+[[package]]
+type = "python-plone"
+primary = true
+name = "acme.core"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+base_package = "Products.CMFPlone"
+publish = true
+
+[[package]]
+type = "python-plone"
+name = "acme.theme"
+path = "backend/sources/acme.theme"
+changelog = "backend/sources/acme.theme/CHANGELOG.md"
+towncrier_settings = "backend/sources/acme.theme/pyproject.toml"
+publish = true
+
+[[package]]
+type = "node-volto"
+primary = true
+name = "@acme/volto-core"
+path = "frontend/packages/volto-core"
+changelog = "frontend/packages/volto-core/CHANGELOG.md"
+towncrier_settings = "frontend/packages/volto-core/towncrier.toml"
+publish = true
+
+[[package]]
+type = "node-volto"
+name = "@acme/volto-theme"
+path = "frontend/packages/volto-theme"
+changelog = "frontend/packages/volto-theme/CHANGELOG.md"
+towncrier_settings = "frontend/packages/volto-theme/towncrier.toml"
+publish = true
+```
+
+A repository that releases a single Python package living at its own root needs no frontend at all:
+
+```toml
+spec_version = "2"
+
+[repository]
+name = "acme-tool"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python"
+name = "acme-tool"
+path = "."
+code_path = "src/acme_tool"
+changelog = "CHANGELOG.md"
+towncrier_settings = "pyproject.toml"
+publish = true
+```
+
+### Package types
+
+`type` is required. It encodes two things: the **language prefix** decides how a package is built, versioned and published, and the **ecosystem suffix** decides which extra options apply.
+
+| `type`         | Family   | Built and published with | Extra options                                                                 |
+|----------------|----------|--------------------------|-------------------------------------------------------------------------------|
+| `python-plone` | `python` | uv, PyPI, PEP 440        | `base_package` (default `Products.CMFPlone`), `python_version`, `python_versions`, `plone_versions` |
+| `python`       | `python` | uv, PyPI, PEP 440        | `python_version`, `python_versions`                                            |
+| `node-volto`   | `node`   | release-it, npm, semver  | `base_package` (default `@plone/volto`)                                        |
+| `node-aurora`  | `node`   | release-it, npm, semver  | `base_package` (default `@plone/aurora`)                                      |
+| `node`         | `node`   | release-it, npm, semver  | none                                                                           |
+
+Using an option on a type that does not support it — `plone_versions` on a `node-volto` package, say — is an error rather than a silently ignored key.
+
+### Families and the primary package
+
+Packages group into two families by their language prefix. Each family has one **primary** package, which owns the settings that belong to the component rather than to a single package: the base package and its constraints, `pyproject.toml` resolution, `mrs.developer.json`, the lockfiles.
+
+Mark it with `primary = true`. When a family marks none, the first one in the file is primary — which is what a family with a single package has always meant.
+
+`settings.backend` and `settings.frontend` still answer, with the primary package of the `python` and `node` families, so project release hooks keep working.
+
+### Per-package options
+
+| Option               | Description                                                                 |
+|----------------------|-----------------------------------------------------------------------------|
+| `type`               | **Required.** One of the types above.                                        |
+| `name`               | Package name, as published to PyPI or npm.                                   |
+| `path`               | Path to the package, relative to the repository root. Use `"."` for a package that *is* the repository. |
+| `changelog`          | Path to the package changelog.                                               |
+| `towncrier_settings` | Path to the package Towncrier settings.                                      |
+| `code_path`          | Path to the source code, relative to `path`.                                 |
+| `publish`            | Whether to publish this package to its registry.                             |
+| `primary`            | Marks the primary package of its family.                                     |
+| `section`            | Heading for this package in the repository changelog. Defaults to its name.  |
+| `base_package`       | Package this one builds on. Only meaningful on a family's primary package.   |
+
+### What changed from specification 1
+
+| Specification 1                                    | Specification 2                                        |
+|----------------------------------------------------|--------------------------------------------------------|
+| `[backend.package]` / `[frontend.package]` tables  | a flat `[[package]]` array, each entry with a `type`    |
+| `compose` as a string or a list                    | a list                                                  |
+| `repository.managed_by_uv`, `backend.path`, `frontend.path` | removed                                        |
+| release steps `release_backend`, `release_frontend`| `release_python`, `release_node`                        |
+| changelog sections titled `Backend` / `Frontend`   | titled with the package name, unless `section` says otherwise |
+
+The release step ids are user-facing, so the rename is gradual: a specification 1 file accepts either spelling, a specification 2 file accepts only the new ones, and `--start-step` always accepts both.
+
+Changelog headings only change when a file moves to specification 2. Upgrading RepoPlone never rewrites the headings of an existing project.
+
+### JSON Schemas
+
+Both specifications are described by JSON Schemas, shipped in `repoplone/schemas/` and published through [pytest-jsonschema](https://github.com/collective/pytest-jsonschema) as `repository-v1` and `repository-v2`. They validate the shape of a file: which tables and options exist, and their types. Rules that span the whole document — duplicate package names, one primary per family, paths existing on disk — are checked by RepoPlone when it reads the file.
+
+### Migrating from specification 1
+
+```shell
+repoplone settings migrate
+```
+
+The command rewrites `repository.toml` in place, preserving comments and formatting, and validates the result against the specification 2 schema before writing it. It:
+
+- adds `spec_version = "2"`
+- turns each component's package table into a `[[package]]` entry, with its `type` and `primary = true`
+- normalizes `compose` to a list
+- removes the deprecated `repository.managed_by_uv`, `backend.path` and `frontend.path`
+- renames the release step ids
+- leaves tables it does not own, such as `[cookieplone]`, alone
+
+Every change is reported. Use `--dry-run` to print the result without writing it, and `--path` to migrate a file other than the detected one.
+
+The command does **not** add `section` options to keep the old `Backend` / `Frontend` changelog headings — migrating is the deliberate moment those become package names. It says so, and adding `section = "Backend"` to a package restores the old heading.
 
 ## Contribute 🤝
 

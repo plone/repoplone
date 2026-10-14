@@ -1,0 +1,7 @@
+# spec_version is a string; write "2", not 2.
+spec_version = 2
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"

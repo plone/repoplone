@@ -1,0 +1,14 @@
+# node-aurora defaults to @plone/aurora, so base_package may be omitted.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "node-aurora"
+name = "@acme/aurora-core"
+path = "frontend/packages/aurora-core"
+changelog = "frontend/packages/aurora-core/CHANGELOG.md"
+towncrier_settings = "frontend/packages/aurora-core/towncrier.toml"

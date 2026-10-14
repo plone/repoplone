@@ -1,0 +1,23 @@
+# `backend` and `frontend` are deprecated aliases, accepted so a hand-migrated
+# file still loads. `repoplone settings migrate` writes the canonical names.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "backend"
+name = "acme.core"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+plone_versions = ["6.1"]
+
+[[package]]
+type = "frontend"
+name = "@acme/volto-core"
+path = "frontend/packages/volto-core"
+changelog = "frontend/packages/volto-core/CHANGELOG.md"
+towncrier_settings = "frontend/packages/volto-core/towncrier.toml"

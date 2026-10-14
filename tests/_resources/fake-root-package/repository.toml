@@ -1,0 +1,16 @@
+# A single Python package at the repository root, with no frontend at all.
+spec_version = "2"
+
+[repository]
+name = "acme-tool"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python"
+name = "acme-tool"
+path = "."
+code_path = "src/acme_tool"
+changelog = "CHANGELOG.md"
+towncrier_settings = "pyproject.toml"
+publish = true

@@ -1,0 +1,15 @@
+# Node packages carry no Python version keys.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "node"
+name = "@acme/tooling"
+path = "frontend/packages/tooling"
+changelog = "frontend/packages/tooling/CHANGELOG.md"
+towncrier_settings = "frontend/packages/tooling/towncrier.toml"
+python_version = "3.13"

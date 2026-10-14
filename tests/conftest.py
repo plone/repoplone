@@ -165,6 +165,26 @@ def test_frontend_only_no_section_project(monkeypatch, tmp_path) -> Path:
 
 
 @pytest.fixture
+def test_multi_package_project(monkeypatch, tmp_path) -> Path:
+    """A spec 2 project with two python and two node packages."""
+    src = RESOURCES / "fake-multi-package"
+    dst = tmp_path / "fake-multi-package"
+    shutil.copytree(src, dst)
+    monkeypatch.chdir(dst)
+    return dst
+
+
+@pytest.fixture
+def test_root_package_project(monkeypatch, tmp_path) -> Path:
+    """A spec 2 project with one generic Python package at the root."""
+    src = RESOURCES / "fake-root-package"
+    dst = tmp_path / "fake-root-package"
+    shutil.copytree(src, dst)
+    monkeypatch.chdir(dst)
+    return dst
+
+
+@pytest.fixture
 def bust_path_cache():
     from repoplone.utils import _path
 
@@ -197,7 +217,9 @@ def vcr_cassette_dir(request):
 
 
 @pytest.fixture
-def settings(test_public_project):
+def settings(test_public_project, bust_path_cache):
+    # get_cwd_path is cached, so without busting it this answers with whichever
+    # project a test earlier in the session chdir-ed into.
     from repoplone import settings
 
     return settings.get_settings()

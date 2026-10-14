@@ -1,0 +1,7 @@
+{
+  "name": "fake-multi-package-frontend",
+  "version": "1.0.0",
+  "dependencies": {
+    "@plone/volto": "18.14.1"
+  }
+}

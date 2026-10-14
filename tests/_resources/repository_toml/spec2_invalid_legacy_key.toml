@@ -1,0 +1,8 @@
+# repository.managed_by_uv is gone in spec 2.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+managed_by_uv = true
+changelog = "CHANGELOG.md"
+version = "version.txt"

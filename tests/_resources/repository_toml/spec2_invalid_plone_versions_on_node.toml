@@ -1,0 +1,15 @@
+# plone_versions belongs to Plone packages only.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "node-volto"
+name = "@acme/volto-core"
+path = "frontend/packages/volto-core"
+changelog = "frontend/packages/volto-core/CHANGELOG.md"
+towncrier_settings = "frontend/packages/volto-core/towncrier.toml"
+plone_versions = ["6.1"]

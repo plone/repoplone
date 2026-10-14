@@ -1,9 +1,12 @@
+from pathlib import Path
 from repoplone import _types as t
 from repoplone.app import RepoPlone
 from repoplone.release.steps import BUILTIN_STEPS
 from repoplone.release.steps.local_step import _resolve_entrypoint
+from repoplone.settings import migrate as migrate_utils
 from repoplone.utils import display as dutils
 from repoplone.utils import settings as utils
+from typing import Annotated
 
 import json
 import typer
@@ -100,3 +103,42 @@ def release_steps(
         [(r["id"], r["title"], r["function"], r["source"]) for r in rows],
     )
     dutils.print(table)
+
+
+@app.command()
+def migrate(
+    ctx: typer.Context,
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run",
+            help="Print the migrated file instead of writing it.",
+        ),
+    ] = False,
+    path: Annotated[
+        Path | None,
+        typer.Option(
+            "--path",
+            help="repository.toml to migrate. Defaults to the detected one.",
+        ),
+    ] = None,
+) -> None:
+    """Rewrite `repository.toml` from specification 1 to specification 2.
+
+    Comments and formatting are preserved. The result is validated against the
+    specification 2 JSON Schema before anything is written.
+    """
+    settings: t.RepositorySettings = ctx.obj.settings
+    target = path or (settings.root_path / migrate_utils.SETTINGS_FILE)
+    text, notes = migrate_utils.migrate_file(target)
+    migrate_utils.validate_migrated(text)
+    for note in notes:
+        dutils.indented_print(f"- {note}")
+    if dry_run:
+        # Raw echo, not the rich console: it would read [repository] and
+        # [[package]] as markup tags and print the file without its headers.
+        typer.echo(text)
+        typer.echo(f"\nDry run: {target} was not modified.")
+        return
+    target.write_text(text)
+    typer.echo(f"\nMigrated {target} to specification 2.")

@@ -1,0 +1,8 @@
+{
+  "name": "@acme/volto-core",
+  "version": "1.0.0",
+  "description": "Fake package @acme/volto-core",
+  "dependencies": {
+    "@plone/volto": "18.14.1"
+  }
+}

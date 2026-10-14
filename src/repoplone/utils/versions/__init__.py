@@ -138,23 +138,39 @@ def next_version(desired_version: str, original_version: str) -> str:
         return semver.next_version(desired_version, original_version)
 
 
+#: Component labels a spec 1 file has always printed, kept so upgrading
+#: repoplone never changes the output for an existing project.
+LEGACY_COMPONENT_NAMES: dict[str, str] = {
+    t.FAMILY_PYTHON: "Backend",
+    t.FAMILY_NODE: "Frontend",
+}
+
+
 def report_cur_versions(settings: t.RepositorySettings) -> dict:
     sections: list[dict] = []
     cur_versions = {
         "repository": {"title": "Repository", "version": settings.version},
         "sections": sections,
     }
-    for title, section in (
-        ("Repository", settings),
-        ("Backend", settings.backend),
-        ("Frontend", settings.frontend),
-    ):
-        if section.enabled if hasattr(section, "enabled") else True:
-            sections.append({
-                "title": title,
-                "name": section.name,
-                "version": section.version,
-            })
+    sections.append({
+        "title": "Repository",
+        "name": settings.name,
+        "version": settings.version,
+    })
+    # One row per package, so a repository releasing several of them reports
+    # every one rather than only the primary of each family. Spec 1 files keep
+    # the Backend / Frontend labels they have always printed.
+    for package in settings.packages:
+        if not package.enabled:
+            continue
+        title = package.type
+        if settings.spec_version == 1:
+            title = LEGACY_COMPONENT_NAMES.get(package.family, package.type)
+        sections.append({
+            "title": title,
+            "name": package.name,
+            "version": package.version,
+        })
     return cur_versions
 
 

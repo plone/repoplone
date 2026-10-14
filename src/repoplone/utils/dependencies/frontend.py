@@ -2,6 +2,7 @@ from functools import cache
 from pathlib import Path
 from repoplone import _types as t
 from repoplone.utils import versions as v_utils
+from repoplone.utils._path import frontend_root
 from typing import Any
 
 import json
@@ -120,8 +121,7 @@ def _update_version_mrs_developer(
 ) -> bool:
     """Update package version in mrs.developer.json."""
     frontend_package_path = settings.frontend.path
-    # Package will be inside frontend/packages/<package>
-    frontend_root_path = frontend_package_path.parent.parent
+    frontend_root_path = frontend_root(settings.root_path, frontend_package_path)
     data = _load_mrs_developer(frontend_path=frontend_root_path)
     checkout_entry: t.MrsDeveloperEntry = _get_entry_mrs_developer(data, package_name)
     current_version_raw = _parse_version_from_mrs_developer(
@@ -180,7 +180,7 @@ def update_base_package(
 ) -> bool:
     """Update package version."""
     func = _update_version_package_json
-    frontend_root_path = settings.frontend.path.parent.parent
+    frontend_root_path = frontend_root(settings.root_path, settings.frontend.path)
     try:
         _get_version_from_mrs_developer(frontend_root_path, package_name=package_name)
     except ValueError:
