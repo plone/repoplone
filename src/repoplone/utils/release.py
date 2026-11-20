@@ -50,6 +50,7 @@ def sanity_check(settings: t.RepositorySettings) -> ReleaseSanityCheckResult:
             warnings.append(
                 "GITHUB_TOKEN is not present or does not have correct permissions."
                 " GitHub release will be skipped."
+                " Set the environment variable or authenticate with the `gh` CLI."
             )
     return ReleaseSanityCheckResult(errors=errors, warnings=warnings)
 

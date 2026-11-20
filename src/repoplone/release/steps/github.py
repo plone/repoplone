@@ -29,6 +29,6 @@ def step_gh_release(
     else:
         dutils.indented_print(
             "- Skipping GitHub release creation as you do not have a GITHUB_TOKEN"
-            "environment variable set"
+            "environment variable set or an authenticated `gh` CLI session"
         )
     return True

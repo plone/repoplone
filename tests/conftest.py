@@ -239,6 +239,9 @@ def set_environment_variables(monkeypatch):
     to_remove = ["GITHUB_TOKEN", "UV_PUBLISH_TOKEN", "NPM_TOKEN"]
 
     def func(env_vars: dict[str, str]):
+        from repoplone.utils import _github
+
+        _github._reset_gh_cli_token_cache()
         for var in to_remove:
             monkeypatch.delenv(var, raising=False)
         for key, value in env_vars.items():
