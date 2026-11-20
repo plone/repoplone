@@ -58,6 +58,8 @@ To add releases to GitHub, you should have an environment variable `GITHUB_TOKEN
 export GITHUB_TOKEN='<token>'
 ```
 
+Alternatively, if you have the [GitHub CLI](https://cli.github.com/) installed and authenticated (`gh auth login`), repoplone will offer to reuse that authentication session when `GITHUB_TOKEN` is not set. You will be asked to confirm before the `gh` token is used.
+
 ## Usage
 
 ### Prepare the repository

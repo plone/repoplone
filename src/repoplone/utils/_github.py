@@ -1,13 +1,67 @@
 from repoplone import _types as t
+from repoplone.utils import display as dutils
 
 import os
 import re
 import requests
+import shutil
+import subprocess
+import sys
+
+
+# Cache of the token obtained from the gh CLI (and whether the user was asked).
+_gh_cli_token_cache: dict = {"asked": False, "token": None}
+
+
+def _reset_gh_cli_token_cache() -> None:
+    """Reset the cached gh CLI token, mostly useful for tests."""
+    _gh_cli_token_cache["asked"] = False
+    _gh_cli_token_cache["token"] = None
+
+
+def _token_from_gh_cli() -> str | None:
+    """Return a GitHub token from an authenticated ``gh`` CLI session.
+
+    The user is asked, once per session, if repoplone may reuse the token from
+    the GitHub CLI. Returns ``None`` if the CLI is missing, there is no
+    authenticated session, the user declines, or the run is not interactive
+    (we do not want to prompt, or silently reuse credentials, in scripts).
+    """
+    if _gh_cli_token_cache["asked"]:
+        return _gh_cli_token_cache["token"]
+    _gh_cli_token_cache["asked"] = True
+    if not sys.stdin.isatty():
+        return None
+    gh_path = shutil.which("gh")
+    if not gh_path:
+        return None
+    try:
+        process = subprocess.run(  # noQA: S603
+            [gh_path, "auth", "token"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    token = process.stdout.strip()
+    if process.returncode != 0 or not token:
+        return None
+    question = (
+        "[bold yellow]GITHUB_TOKEN is not set.[/bold yellow] Use the token from "
+        "your authenticated `gh` CLI session instead?"
+    )
+    if not dutils.confirm(question):
+        dutils.indented_print("- Not using the `gh` CLI token")
+        return None
+    _gh_cli_token_cache["token"] = token
+    dutils.indented_print("- Using the token from the `gh` CLI session")
+    return token
 
 
 def get_token() -> str | None:
-    """Check if this environment has the GITHUB_TOKEN set."""
-    return os.getenv("GITHUB_TOKEN")
+    """Return the GitHub token, either from GITHUB_TOKEN or the ``gh`` CLI."""
+    return os.getenv("GITHUB_TOKEN") or _token_from_gh_cli()
 
 
 def gh_session() -> requests.Session | None:
