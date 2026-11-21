@@ -1,0 +1,10 @@
+# release_backend was renamed to release_python in spec 2.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[repository.release]
+steps = ["changelog", "version", "release_backend", "bye"]

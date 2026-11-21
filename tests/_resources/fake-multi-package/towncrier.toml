@@ -1,0 +1,4 @@
+[tool.towncrier]
+filename = "CHANGELOG.md"
+directory = "news"
+title_format = false

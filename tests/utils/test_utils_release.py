@@ -32,7 +32,7 @@ def test_release_backend(
 ):
     package = settings.backend
     func = release.release_backend
-    func(settings, version, dry_run)
+    func(settings, package, version, dry_run)
     package_version = get_backend_version(package.path)
     changelog_text = package.changelog.read_text()
     if dry_run:
@@ -57,7 +57,7 @@ def test_release_frontend(
 ):
     package = settings.frontend
     func = release.release_frontend
-    func(settings, version, dry_run)
+    func(settings, package, version, dry_run)
     package_version = get_frontend_version(package.path)
     changelog_text = package.changelog.read_text()
     if dry_run:

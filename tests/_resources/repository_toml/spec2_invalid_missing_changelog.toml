@@ -1,0 +1,13 @@
+# `changelog` is required on every package.
+spec_version = "2"
+
+[repository]
+name = "acme-site"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+
+[[package]]
+type = "python-plone"
+name = "acme.core"
+path = "backend"
+towncrier_settings = "backend/pyproject.toml"

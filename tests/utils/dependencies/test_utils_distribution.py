@@ -112,7 +112,7 @@ def test_sync_distribution_skips_without_volto_version(dist_settings, mock_npm):
 
 
 def test_stamp_volto_version(dist_settings):
-    version = dist_utils.stamp_volto_version(dist_settings)
+    version = dist_utils.stamp_volto_version(dist_settings, dist_settings.frontend)
     # mrs.developer core.tag of the distribution fixture project.
     assert version == "18.14.1"
     pkg = json.loads((dist_settings.frontend.path / "package.json").read_text())
@@ -126,7 +126,7 @@ def test_stamp_volto_version_missing_tag(dist_settings):
     del data["core"]["tag"]
     mrs_path.write_text(json.dumps(data))
     with pytest.raises(ValueError):
-        dist_utils.stamp_volto_version(dist_settings)
+        dist_utils.stamp_volto_version(dist_settings, dist_settings.frontend)
 
 
 def test_update_core_tag_no_volto_entry(tmp_path):

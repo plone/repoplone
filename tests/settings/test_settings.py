@@ -103,8 +103,8 @@ def test_internal_project_packages(test_internal_project, bust_path_cache):
 @pytest.mark.parametrize(
     "idx,section_id,exists",
     [
-        (0, "backend", True),
-        (1, "frontend", True),
+        (0, "python", True),
+        (1, "node", True),
         (2, "repository", True),
     ],
 )

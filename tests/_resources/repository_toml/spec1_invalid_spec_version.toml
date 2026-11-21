@@ -1,0 +1,7 @@
+# Only "1" and "1.0" select spec 1.
+spec_version = "3"
+
+[repository]
+name = "fake-project"
+changelog = "CHANGELOG.md"
+version = "version.txt"

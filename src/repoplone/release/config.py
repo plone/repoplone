@@ -4,6 +4,8 @@ from collections.abc import Mapping
 from repoplone.release import _types as t
 from repoplone.release.steps import BUILTIN_STEPS
 from repoplone.release.steps import DEFAULT_STEPS
+from repoplone.release.steps import RENAMED_STEPS
+from repoplone.release.steps import canonical_step_id
 from typing import Any
 
 
@@ -20,8 +22,29 @@ def _default_pipeline() -> list[t.PipelineReleaseStep]:
     ]
 
 
+def _resolve_renamed(step_id: str, where: str, spec_version: int) -> str:
+    """Return the canonical id of a step, rejecting the old name in spec 2.
+
+    Spec 1 files keep working with either spelling. Spec 2 dropped every other
+    legacy name, so it drops these too -- and says which one to use.
+
+    :param step_id: Id as written by the user.
+    :param where: Location quoted in the error message.
+    :param spec_version: Spec version of the file.
+    :returns: The canonical id.
+    :raises RepositoryConfigError: If a spec 2 file uses a spec 1 name.
+    """
+    replacement = RENAMED_STEPS.get(step_id)
+    if replacement and spec_version >= 2:
+        raise RepositoryConfigError(
+            f"{where} uses {step_id!r}, which spec 2 renamed to "
+            f"{replacement!r}. Run `repoplone settings migrate`."
+        )
+    return canonical_step_id(step_id)
+
+
 def _validate_registry_entry(
-    entry_id: str, entry: Any
+    entry_id: str, entry: Any, spec_version: int = 1
 ) -> tuple[str, str, dict[str, Any]]:
     """Validate a ``[repository.release.registry.<id>]`` entry.
 
@@ -40,6 +63,11 @@ def _validate_registry_entry(
             f"[repository.release.registry.{entry_id}] is missing required key "
             "'function'"
         )
+    function_id = _resolve_renamed(
+        function_id,
+        f"[repository.release.registry.{entry_id}].function",
+        spec_version,
+    )
     if function_id not in BUILTIN_STEPS:
         known = ", ".join(sorted(BUILTIN_STEPS))
         raise RepositoryConfigError(
@@ -70,13 +98,17 @@ def _find_duplicates(items: list[str]) -> list[str]:
     return dups
 
 
-def _validate_steps_list(steps_raw: Any) -> list[str]:
+def _validate_steps_list(steps_raw: Any, spec_version: int = 1) -> list[str]:
     if not isinstance(steps_raw, list) or not all(
         isinstance(s, str) for s in steps_raw
     ):
         raise RepositoryConfigError(
             "[repository.release].steps must be a list of strings"
         )
+    steps_raw = [
+        _resolve_renamed(step_id, "[repository.release].steps", spec_version)
+        for step_id in steps_raw
+    ]
     duplicates = _find_duplicates(list(steps_raw))
     if duplicates:
         raise RepositoryConfigError(
@@ -85,12 +117,14 @@ def _validate_steps_list(steps_raw: Any) -> list[str]:
     return list(steps_raw)
 
 
-def _validate_registry(registry_raw: Any) -> dict[str, tuple[str, str, dict[str, Any]]]:
+def _validate_registry(
+    registry_raw: Any, spec_version: int = 1
+) -> dict[str, tuple[str, str, dict[str, Any]]]:
     if not isinstance(registry_raw, Mapping):
         raise RepositoryConfigError("[repository.release.registry] must be a table")
     user_specs: dict[str, tuple[str, str, dict[str, Any]]] = {}
     for entry_id, entry in registry_raw.items():
-        user_specs[entry_id] = _validate_registry_entry(entry_id, entry)
+        user_specs[entry_id] = _validate_registry_entry(entry_id, entry, spec_version)
     return user_specs
 
 
@@ -120,7 +154,9 @@ def _resolve_step(
     )
 
 
-def build_release_steps(release_config: Any) -> list[t.PipelineReleaseStep]:
+def build_release_steps(
+    release_config: Any, spec_version: int = 1
+) -> list[t.PipelineReleaseStep]:
     """Build the ordered list of release pipeline steps.
 
     Resolves the parsed ``[repository.release]`` section into a list of
@@ -138,6 +174,6 @@ def build_release_steps(release_config: Any) -> list[t.PipelineReleaseStep]:
     steps_raw = release_config.get("steps")
     if not steps_raw:
         return _default_pipeline()
-    step_ids = _validate_steps_list(steps_raw)
-    user_specs = _validate_registry(release_config.get("registry") or {})
+    step_ids = _validate_steps_list(steps_raw, spec_version)
+    user_specs = _validate_registry(release_config.get("registry") or {}, spec_version)
     return [_resolve_step(sid, user_specs) for sid in step_ids]

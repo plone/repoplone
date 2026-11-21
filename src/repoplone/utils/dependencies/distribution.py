@@ -18,6 +18,7 @@ This module handles both sides of that contract:
 
 from pathlib import Path
 from repoplone import _types as t
+from repoplone.utils._path import frontend_root as _resolve_frontend_root
 from repoplone.utils._requests import get_remote_data
 
 import json
@@ -29,8 +30,8 @@ NPM_REGISTRY = "https://registry.npmjs.org"
 
 
 def _frontend_root(settings: t.RepositorySettings) -> Path:
-    """Return the frontend root path (parent of ``packages/<package>``)."""
-    return settings.frontend.path.parent.parent
+    """Return the frontend root path of the primary frontend package."""
+    return _resolve_frontend_root(settings.root_path, settings.frontend.path)
 
 
 def fetch_distribution_metadata(
@@ -55,7 +56,7 @@ def fetch_distribution_metadata(
     return dependencies, volto_version
 
 
-def stamp_volto_version(settings: t.RepositorySettings) -> str:
+def stamp_volto_version(settings: t.RepositorySettings, package: t.Package) -> str:
     """Record the Volto core version in the distribution package's package.json.
 
     Reads the ``@plone/volto`` checkout tag from ``mrs.developer.json`` and writes
@@ -66,14 +67,19 @@ def stamp_volto_version(settings: t.RepositorySettings) -> str:
 
     Returns the stamped version. Raises ``ValueError`` when the core tag is
     missing.
+
+    :param settings: Repository settings.
+    :param package: Frontend package to stamp.
+    :returns: The stamped Volto version.
+    :raises ValueError: If the core tag or the package ``package.json`` is missing.
     """
     from repoplone.utils.dependencies import frontend as frontend_utils
 
-    frontend_root = _frontend_root(settings)
+    frontend_root = _resolve_frontend_root(settings.root_path, package.path)
     volto_version = frontend_utils.get_core_tag(frontend_root)
     if not volto_version:
         raise ValueError("Missing mrs.developer.json @plone/volto core tag")
-    package_json_path = settings.frontend.path / "package.json"
+    package_json_path = package.path / "package.json"
     if not package_json_path.exists():
         raise ValueError(f"Missing package.json at {package_json_path}")
     data = json.loads(package_json_path.read_text())

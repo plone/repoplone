@@ -1,0 +1,29 @@
+[repository]
+name = "fake-cookieplone"
+changelog = "CHANGELOG.md"
+version = "version.txt"
+compose = ["docker-compose.yml"]
+
+[repository.towncrier]
+section = "Project"
+settings = "towncrier.toml"
+
+[backend.package]
+name = "fake.cookieplone"
+path = "backend"
+changelog = "backend/CHANGELOG.md"
+towncrier_settings = "backend/pyproject.toml"
+publish = true
+
+[frontend.package]
+name = "@plone-collective/volto-fake"
+path = "frontend/packages/volto-fake"
+changelog = "frontend/packages/volto-fake/CHANGELOG.md"
+towncrier_settings = "frontend/packages/volto-fake/towncrier.toml"
+publish = true
+
+# Written by cookieplone; repoplone never reads it.
+[cookieplone]
+template = "monorepo_addon"
+template_version = "91c845557fce11a401a959f763add9d1384b135f"
+generated_date = "2026-08-20 21:33:55"
